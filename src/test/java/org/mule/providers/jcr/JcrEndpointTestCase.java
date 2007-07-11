@@ -14,7 +14,6 @@ import org.mule.impl.endpoint.MuleEndpointURI;
 import org.mule.tck.AbstractMuleTestCase;
 import org.mule.umo.endpoint.UMOEndpointURI;
 
-
 public class JcrEndpointTestCase extends AbstractMuleTestCase
 {
 
