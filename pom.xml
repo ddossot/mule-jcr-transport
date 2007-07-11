@@ -12,6 +12,13 @@
 		<url>http://mule.mulesource.org/jira/browse/JCR</url>
 	</issueManagement>
 
+	<scm>
+		<connection>scm:svn:http://svn.muleforge.org/mule-transport-jcr/</connection>
+		<developerConnection>scm:svn:https://svn.muleforge.org/mule-transport-jcr/</developerConnection>
+		<tag>HEAD</tag>
+		<url>http://svn.mule-transport-jcr.muleforge.org/</url>
+	</scm>
+
 	<repositories>
 		<repository>
 			<id>day</id>
