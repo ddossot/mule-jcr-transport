@@ -1,15 +1,21 @@
+/*
+ * $Id$
+ * --------------------------------------------------------------------------------------
+ * Copyright (c) MuleSource, Inc.  All rights reserved.  http://www.mulesource.com
+ *
+ * The software in this package is published under the terms of the MuleSource MPL
+ * license, a copy of which has been included with this distribution in the
+ * LICENSE.txt file.
+ */
+
 package org.mule.providers.jcr;
 
 import junit.framework.TestCase;
 
 /**
- * TODO comment
- *
  * @author David Dossot (david@dossot.net)
  */
 public class JcrContentPayloadTypeTestCase extends TestCase {
-
-    // FIXME test equals / hashcode
 
     public void testFromStringLowerCaseEquals() {
         assertEquals(JcrContentPayloadType.NONE,
