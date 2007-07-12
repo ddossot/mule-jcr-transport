@@ -19,24 +19,23 @@ import org.mule.umo.provider.UMOMessageReceiver;
 
 import com.mockobjects.dynamic.Mock;
 
+/**
+ * @author David Dossot (david@dossot.net)
+ */
 public class JcrMessageReceiverTestCase extends AbstractMessageReceiverTestCase {
 
-    /*
-     * For general guidelines on writing transports see
-     * http://mule.mulesource.org/display/MULE/Writing+Transports
-     */
+	public UMOMessageReceiver getMessageReceiver() throws Exception {
+		Mock mockComponent = new Mock(UMOComponent.class);
+		Mock mockDescriptor = new Mock(UMODescriptor.class);
+		mockComponent.expectAndReturn("getDescriptor", mockDescriptor.proxy());
+		mockDescriptor.expectAndReturn("getResponseTransformer", null);
+		
+		return new JcrMessageReceiver(endpoint.getConnector(),
+				(UMOComponent) mockComponent.proxy(), endpoint);
+	}
 
-    public UMOMessageReceiver getMessageReceiver() throws Exception {
-        Mock mockComponent = new Mock(UMOComponent.class);
-        Mock mockDescriptor = new Mock(UMODescriptor.class);
-        mockComponent.expectAndReturn("getDescriptor", mockDescriptor.proxy());
-        mockDescriptor.expectAndReturn("getResponseTransformer", null);
-        return new JcrMessageReceiver(endpoint.getConnector(),
-                (UMOComponent) mockComponent.proxy(), endpoint);
-    }
-
-    public UMOEndpoint getEndpoint() throws Exception {
-        return new MuleEndpoint("jcr://path/to/observedNode?eventTypes=5", true);
-    }
+	public UMOEndpoint getEndpoint() throws Exception {
+		return new MuleEndpoint("jcr://path/to/observedNode?eventTypes=5", true);
+	}
 
 }

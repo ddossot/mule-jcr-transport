@@ -13,13 +13,16 @@ package org.mule.providers.jcr;
 import java.util.ArrayList;
 import java.util.Collection;
 
+/**
+ * @author David Dossot (david@dossot.net)
+ */
 public class JcrHeterogeneousCollectionMessageAdapterTestCase extends
-        JcrMessageAdapterTestCase {
+		JcrMessageAdapterTestCase {
 
-    public Object getInvalidMessage() {
-        Collection hc = new ArrayList(JcrMessageAdapterTestCase.getJcrEvents());
-        hc.add(super.getInvalidMessage());
-        return hc;
-    }
+	public Object getInvalidMessage() {
+		Collection hc = new ArrayList(JcrMessageAdapterTestCase.getJcrEvents());
+		hc.add(super.getInvalidMessage());
+		return hc;
+	}
 
 }

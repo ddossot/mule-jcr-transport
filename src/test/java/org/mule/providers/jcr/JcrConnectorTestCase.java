@@ -16,51 +16,39 @@ import org.apache.jackrabbit.core.TransientRepository;
 import org.mule.tck.providers.AbstractConnectorTestCase;
 import org.mule.umo.provider.UMOConnector;
 
+/**
+ * @author David Dossot (david@dossot.net)
+ */
 public class JcrConnectorTestCase extends AbstractConnectorTestCase {
-    private Repository repository;
+	private Repository repository;
 
-    public JcrConnectorTestCase() throws Exception {
-        repository = new TransientRepository();
-    }
+	public JcrConnectorTestCase() throws Exception {
+		repository = new TransientRepository();
+	}
 
-    /*
-     * For general guidelines on writing transports see
-     * http://mule.mulesource.org/display/MULE/Writing+Transports
-     */
+	public UMOConnector getConnector() throws Exception {
+		JcrConnector c = new JcrConnector();
+		c.setName("Test-Jcr");
+		c.setRepository(repository);
+		c.initialise();
+		return c;
+	}
 
-    public UMOConnector getConnector() throws Exception {
+	public String getTestEndpointURI() {
+		return "jcr://path/to/observedFolder";
+	}
 
-        /*
-         * IMPLEMENTATION NOTE: Create and initialise an instance of your
-         * connector here. Do not actually call the connect method.
-         */
+	public Object getValidMessage() throws Exception {
+		return JcrMessageAdapterTestCase.getJcrEvents();
+	}
 
-        JcrConnector c = new JcrConnector();
-        c.setName("Test-Jcr");
-        // TODO Set any additional properties on the connector here
+	public void testProperties() throws Exception {
+		// TODO test setting and retrieving any custom properties on the
+		// Connector as necessary
+	}
 
-        c.setRepository(repository);
-
-        c.initialise();
-
-        return c;
-    }
-
-    public String getTestEndpointURI() {
-        return "jcr://path/to/observedFolder";
-    }
-
-    public Object getValidMessage() throws Exception {
-        return JcrMessageAdapterTestCase.getJcrEvents();
-    }
-
-    public void testProperties() throws Exception {
-        // TODO test setting and retrieving any custom properties on the
-        // Connector as necessary
-    }
-
-    public void testConnectorMessageDispatcherFactory() throws Exception {
-        // disable this test as the connector does not have a dispatcher
-    }
+	public void testConnectorMessageDispatcherFactory() throws Exception {
+		// disables this test as the connector does not have a dispatcher
+	}
 
 }

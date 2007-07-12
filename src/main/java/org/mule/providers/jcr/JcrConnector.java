@@ -18,278 +18,248 @@ import javax.jcr.Session;
 import javax.jcr.SimpleCredentials;
 
 import org.mule.providers.AbstractConnector;
-import org.mule.providers.jcr.i18n.JcrMessage;
+import org.mule.providers.jcr.i18n.JcrMessages;
 import org.mule.umo.lifecycle.InitialisationException;
 
 /**
- * <code>JcrConnector</code> TODO document
+ * <code>JcrConnector</code> is a transport that connects to JCR 1.0 (aka JSR
+ * 170) repositories and leverages the observation mechanism to receive events
+ * raised by operations made on the repository.
  */
 public final class JcrConnector extends AbstractConnector {
 
-    /*
-     * For general guidelines on writing transports see http://mule.mulesource.org/display/MULE/Writing+Transports
-     */
+	private Repository repository;
 
-    /*
-     * IMPLEMENTATION NOTE: All configuaration for the transport should be set on the Connector object, this is the object that gets
-     * configured in MuleXml
-     */
+	private String workspaceName;
 
-    private Repository repository;
+	private String username;
 
-    private String workspaceName;
+	private String password;
 
-    private String username;
+	private Session session;
 
-    private String password;
+	private Integer eventTypes;
 
-    private Session session;
+	private Boolean deep;
 
-    private Integer eventTypes;
+	private List uuid;
 
-    private Boolean deep;
+	private List nodeTypeName;
 
-    private List uuid;
+	private Boolean noLocal;
 
-    private List nodeTypeName;
+	private String contentPayloadType;
 
-    private Boolean noLocal;
+	public JcrConnector() {
+		super();
 
-    private String contentPayloadType;
+		setDefaultEndpointValues();
+	}
 
-    public JcrConnector() {
-        super();
+	public void doDispose() {
+		// NOOP
+	}
 
-        setDefaultEndpointValues();
-    }
+	public void doStop() throws org.mule.umo.UMOException {
+		// NOOP
+	}
 
-    public void doDispose() {
-        // Optional; does not need to be implemented. Delete if not required
+	public void doStart() throws org.mule.umo.UMOException {
+		// NOOP
+	}
 
-        /*
-         * IMPLEMENTATION NOTE: Should clean up any open resources associated with the connector.
-         */
-    }
+	public void doDisconnect() throws Exception {
+		if (session != null) {
+			session.logout();
+		}
+	}
 
-    public void doStop() throws org.mule.umo.UMOException {
-        // Optional; does not need to be implemented. Delete if not required
+	public void doConnect() throws Exception {
+		Credentials credentials = ((getUsername() != null) && (getPassword() != null)) ? new SimpleCredentials(
+				getUsername(), getPassword().toCharArray())
+				: null;
 
-        /*
-         * IMPLEMENTATION NOTE: Should put any associated resources into a stopped state. Mule will automatically call the stop() method.
-         */
-    }
+		session = getRepository().login(credentials, getWorkspaceName());
+	}
 
-    public void doStart() throws org.mule.umo.UMOException {
-        // Optional; does not need to be implemented. Delete if not required
+	public void doInitialise() throws InitialisationException {
+		// Future JCR version will offer a standard way to get a repository
+		// instance, so injecting it in the connector will become optional at
+		// that time
+		if (getRepository() == null) {
+			throw new InitialisationException(JcrMessages
+					.missingDependency("repository"), this);
+		}
 
-        /*
-         * IMPLEMENTATION NOTE: If there is a single server instance or connection associated with the connector i.e. AxisServer or a Jms
-         * Connection or Jdbc Connection, this method should put the resource in a started state here.
-         */
-    }
+	}
 
-    public void doDisconnect() throws Exception {
-        // Optional; does not need to be implemented. Delete if not required
+	private void setDefaultEndpointValues() {
+		setEventTypes(new Integer(0));
+		setDeep(Boolean.FALSE);
+		setNoLocal(Boolean.TRUE);
+		setUuid(null);
+		setNodeTypeName(null);
+	}
 
-        /*
-         * IMPLEMENTATION NOTE: Disconnects any connections made in the connect method If the connect method did not do anything then this
-         * method shouldn't do anything either.
-         */
+	/**
+	 * @return the session
+	 */
+	public Session getSession() {
+		return session;
+	}
 
-        if (session != null) {
-            session.logout();
-        }
-    }
+	public String getProtocol() {
+		return "jcr";
+	}
 
-    public void doConnect() throws Exception {
-        // Optional; does not need to be implemented. Delete if not required
+	/**
+	 * @return the password
+	 */
+	public String getPassword() {
+		return password;
+	}
 
-        /*
-         * IMPLEMENTATION NOTE: Makes a connection to the underlying resource. When connections are managed at the receiver/dispatcher
-         * level, this method may do nothing
-         */
+	/**
+	 * @param password
+	 *            the password to set
+	 */
+	public void setPassword(String password) {
+		this.password = password;
+	}
 
-        Credentials credentials = ((getUsername() != null) && (getPassword() != null)) ? new SimpleCredentials(getUsername(), getPassword()
-            .toCharArray()) : null;
+	/**
+	 * @return the repository
+	 */
+	public Repository getRepository() {
+		return repository;
+	}
 
-        session = getRepository().login(credentials, getWorkspaceName());
-    }
+	/**
+	 * @param repository
+	 *            the repository to set
+	 */
+	public void setRepository(Repository repository) {
+		this.repository = repository;
+	}
 
-    public void doInitialise() throws InitialisationException {
-        // Future JCR version will offer a standard way to get a repository
-        // instance, so injecting it in the connector will become optional at
-        // that time
-        if (getRepository() == null) { throw new InitialisationException(JcrMessage.missingDependency("repository"), this); }
+	/**
+	 * @return the username
+	 */
+	public String getUsername() {
+		return username;
+	}
 
-    }
+	/**
+	 * @param username
+	 *            the username to set
+	 */
+	public void setUsername(String username) {
+		this.username = username;
+	}
 
-    private void setDefaultEndpointValues() {
-        setEventTypes(new Integer(0));
-        setDeep(Boolean.FALSE);
-        setNoLocal(Boolean.TRUE);
-        setUuid(null);
-        setNodeTypeName(null);
-    }
+	/**
+	 * @return the workspaceName
+	 */
+	public String getWorkspaceName() {
+		return workspaceName;
+	}
 
-    /**
-     * @return the session
-     */
-    public Session getSession() {
-        return session;
-    }
+	/**
+	 * @param workspaceName
+	 *            the workspaceName to set
+	 */
+	public void setWorkspaceName(String workspaceName) {
+		this.workspaceName = workspaceName;
+	}
 
-    public String getProtocol() {
-        return "jcr";
-    }
+	/**
+	 * @return the deep
+	 */
+	public Boolean isDeep() {
+		return deep;
+	}
 
-    /**
-     * @return the password
-     */
-    public String getPassword() {
-        return password;
-    }
+	/**
+	 * @param deep
+	 *            the deep to set
+	 */
+	public void setDeep(Boolean deep) {
+		this.deep = deep;
+	}
 
-    /**
-     * @param password
-     *            the password to set
-     */
-    public void setPassword(String password) {
-        this.password = password;
-    }
+	/**
+	 * @return the eventTypes
+	 */
+	public Integer getEventTypes() {
+		return eventTypes;
+	}
 
-    /**
-     * @return the repository
-     */
-    public Repository getRepository() {
-        return repository;
-    }
+	/**
+	 * @param eventTypes
+	 *            the eventTypes to set
+	 */
+	public void setEventTypes(Integer eventTypes) {
+		this.eventTypes = eventTypes;
+	}
 
-    /**
-     * @param repository
-     *            the repository to set
-     */
-    public void setRepository(Repository repository) {
-        this.repository = repository;
-    }
+	/**
+	 * @return the nodeTypeName
+	 */
+	public List getNodeTypeName() {
+		return nodeTypeName;
+	}
 
-    /**
-     * @return the username
-     */
-    public String getUsername() {
-        return username;
-    }
+	/**
+	 * @param nodeTypeName
+	 *            the nodeTypeName to set
+	 */
+	public void setNodeTypeName(List nodeTypeName) {
+		this.nodeTypeName = nodeTypeName;
+	}
 
-    /**
-     * @param username
-     *            the username to set
-     */
-    public void setUsername(String username) {
-        this.username = username;
-    }
+	/**
+	 * @return the noLocal
+	 */
+	public Boolean isNoLocal() {
+		return noLocal;
+	}
 
-    /**
-     * @return the workspaceName
-     */
-    public String getWorkspaceName() {
-        return workspaceName;
-    }
+	/**
+	 * @param noLocal
+	 *            the noLocal to set
+	 */
+	public void setNoLocal(Boolean noLocal) {
+		this.noLocal = noLocal;
+	}
 
-    /**
-     * @param workspaceName
-     *            the workspaceName to set
-     */
-    public void setWorkspaceName(String workspaceName) {
-        this.workspaceName = workspaceName;
-    }
+	/**
+	 * @return the uuid
+	 */
+	public List getUuid() {
+		return uuid;
+	}
 
-    /**
-     * @return the deep
-     */
-    public Boolean isDeep() {
-        return deep;
-    }
+	/**
+	 * @param uuid
+	 *            the uuid to set
+	 */
+	public void setUuid(List uuid) {
+		this.uuid = uuid;
+	}
 
-    /**
-     * @param deep
-     *            the deep to set
-     */
-    public void setDeep(Boolean deep) {
-        this.deep = deep;
-    }
+	/**
+	 * @return the contentPayloadType
+	 */
+	public String getContentPayloadType() {
+		return contentPayloadType;
+	}
 
-    /**
-     * @return the eventTypes
-     */
-    public Integer getEventTypes() {
-        return eventTypes;
-    }
-
-    /**
-     * @param eventTypes
-     *            the eventTypes to set
-     */
-    public void setEventTypes(Integer eventTypes) {
-        this.eventTypes = eventTypes;
-    }
-
-    /**
-     * @return the nodeTypeName
-     */
-    public List getNodeTypeName() {
-        return nodeTypeName;
-    }
-
-    /**
-     * @param nodeTypeName
-     *            the nodeTypeName to set
-     */
-    public void setNodeTypeName(List nodeTypeName) {
-        this.nodeTypeName = nodeTypeName;
-    }
-
-    /**
-     * @return the noLocal
-     */
-    public Boolean isNoLocal() {
-        return noLocal;
-    }
-
-    /**
-     * @param noLocal
-     *            the noLocal to set
-     */
-    public void setNoLocal(Boolean noLocal) {
-        this.noLocal = noLocal;
-    }
-
-    /**
-     * @return the uuid
-     */
-    public List getUuid() {
-        return uuid;
-    }
-
-    /**
-     * @param uuid
-     *            the uuid to set
-     */
-    public void setUuid(List uuid) {
-        this.uuid = uuid;
-    }
-
-    /**
-     * @return the contentPayloadType
-     */
-    public String getContentPayloadType() {
-        return contentPayloadType;
-    }
-
-    /**
-     * @param contentPayloadType
-     *            the contentPayloadType to set
-     */
-    public void setContentPayloadType(String contentPayloadType) {
-        this.contentPayloadType = contentPayloadType;
-    }
+	/**
+	 * @param contentPayloadType
+	 *            the contentPayloadType to set
+	 */
+	public void setContentPayloadType(String contentPayloadType) {
+		this.contentPayloadType = contentPayloadType;
+	}
 
 }

@@ -18,45 +18,51 @@ import org.mule.umo.provider.MessageTypeNotSupportedException;
 import org.mule.util.CollectionUtils;
 
 /**
- * <code>JcrMessageAdapter</code> TODO document
+ * <code>JcrMessageAdapter</code> allows a <code>MuleEvent</code> to access
+ * the properties and payload of a JCR Event in a uniform way. The
+ * <code>JcrMessageAdapter</code> expects a message of type
+ * <i>java.util.Collection</i> that only contains objects of type
+ * <code>SerializableJcrEvent</code>. It will throw an
+ * IllegalArgumentException if the source message type is not compatible.
  */
 public final class JcrMessageAdapter extends AbstractMessageAdapter {
-    private static final long serialVersionUID = 2337091822007161288L;
+	private static final long serialVersionUID = 2337091822007161288L;
 
-    private final Collection payload;
+	private final Collection payload;
 
-    private final byte[] payloadBytes;
+	private final byte[] payloadBytes;
 
-    public JcrMessageAdapter(Object message) throws MessagingException {
-        if (message instanceof Collection) {
-            this.payload = (Collection) message;
+	public JcrMessageAdapter(Object message) throws MessagingException {
+		if (message instanceof Collection) {
+			this.payload = (Collection) message;
 
-            // validate the collection is homogeneous
-            try {
-                CollectionUtils.typedCollection(payload, SerializableJcrEvent.class);
-            } catch (IllegalArgumentException iae) {
-                throw new MessageTypeNotSupportedException(message, getClass(),
-                        iae);
-            }
+			// validate the collection is homogeneous
+			try {
+				CollectionUtils.typedCollection(payload,
+						SerializableJcrEvent.class);
+			} catch (IllegalArgumentException iae) {
+				throw new MessageTypeNotSupportedException(message, getClass(),
+						iae);
+			}
 
-            payloadBytes = message.toString().getBytes();
+			payloadBytes = message.toString().getBytes();
 
-        } else {
-            throw new MessageTypeNotSupportedException(message, getClass());
-        }
+		} else {
+			throw new MessageTypeNotSupportedException(message, getClass());
+		}
 
-    }
+	}
 
-    public String getPayloadAsString(String encoding) throws Exception {
-        return new String(getPayloadAsBytes(), encoding);
-    }
+	public String getPayloadAsString(String encoding) throws Exception {
+		return new String(getPayloadAsBytes(), encoding);
+	}
 
-    public byte[] getPayloadAsBytes() throws Exception {
-        return payloadBytes;
-    }
+	public byte[] getPayloadAsBytes() throws Exception {
+		return payloadBytes;
+	}
 
-    public Object getPayload() {
-        return payload;
-    }
+	public Object getPayload() {
+		return payload;
+	}
 
 }

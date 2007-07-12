@@ -15,26 +15,24 @@ import org.mule.providers.service.TransportFactory;
 import org.mule.tck.AbstractMuleTestCase;
 import org.mule.umo.endpoint.UMOEndpoint;
 
+/**
+ * @author David Dossot (david@dossot.net)
+ */
+public class JcrConnectorFactoryTestCase extends AbstractMuleTestCase {
 
-public class JcrConnectorFactoryTestCase extends AbstractMuleTestCase
-{
+	public void testCreateFromFactory() throws Exception {
+		MuleEndpointURI url = new MuleEndpointURI(getEndpointURI());
+		UMOEndpoint endpoint = TransportFactory.createEndpoint(url,
+				UMOEndpoint.ENDPOINT_TYPE_RECEIVER);
+		
+		assertNotNull(endpoint);
+		assertNotNull(endpoint.getConnector());
+		assertTrue(endpoint.getConnector() instanceof JcrConnector);
+		assertEquals(getEndpointURI(), endpoint.getEndpointURI().getAddress());
+	}
 
-    /* For general guidelines on writing transports see
-       http://mule.mulesource.org/display/MULE/Writing+Transports */
-
-    public void testCreateFromFactory() throws Exception
-    {
-        MuleEndpointURI url = new MuleEndpointURI(getEndpointURI());
-        UMOEndpoint endpoint = TransportFactory.createEndpoint(url, UMOEndpoint.ENDPOINT_TYPE_RECEIVER);
-        assertNotNull(endpoint);
-        assertNotNull(endpoint.getConnector());
-        assertTrue(endpoint.getConnector() instanceof JcrConnector);
-        assertEquals(getEndpointURI(), endpoint.getEndpointURI().getAddress());
-    }
-
-    public String getEndpointURI()
-    {
-        return "jcr://path/to/observedNode";
-    }
+	public String getEndpointURI() {
+		return "jcr://path/to/observedNode";
+	}
 
 }
