@@ -6,10 +6,10 @@
 	<name>Mule Jcr Transport</name>
 	<version>1.0.0-SNAPSHOT</version>
 	<description>Listens to events from a JCR repository.</description>
-	
-	  <properties>
-    <muleVersion>1.4.1</muleVersion>
-  </properties>
+
+	<properties>
+		<muleVersion>1.4.1</muleVersion>
+	</properties>
 
 	<issueManagement>
 		<system>Jira</system>
