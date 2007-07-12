@@ -137,7 +137,7 @@ public final class JcrConnector extends AbstractConnector {
     }
 
     private void setDefaultEndpointValues() {
-        setEventTypes(Integer.valueOf(0));
+        setEventTypes(new Integer(0));
         setDeep(Boolean.FALSE);
         setNoLocal(Boolean.TRUE);
         setUuid(null);
