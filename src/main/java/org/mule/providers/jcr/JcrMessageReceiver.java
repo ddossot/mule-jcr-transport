@@ -61,7 +61,8 @@ public final class JcrMessageReceiver extends AbstractMessageReceiver implements
     private ObservationManager observationManager;
 
     public JcrMessageReceiver(UMOConnector connector, UMOComponent component,
-            UMOEndpoint endpoint) throws InitialisationException {
+                              UMOEndpoint endpoint)
+                                                   throws InitialisationException {
 
         super(connector, component, endpoint);
 
@@ -75,76 +76,75 @@ public final class JcrMessageReceiver extends AbstractMessageReceiver implements
         // instance, at that time host/port will be used for what they are on
         // the endpoint because it will become possible to specify a full URL to
         // a repository
-        absPath =
-                "/" + endpoint.getEndpointURI().getHost()
-                        + endpoint.getEndpointURI().getPath();
+        absPath = "/"
+                  + endpoint.getEndpointURI().getHost()
+                  + endpoint.getEndpointURI().getPath();
 
-        eventTypes =
-                (Integer) new IntegerConverter(jcrConnector.getEventTypes()).convert(
-                        Integer.class, endpoint.getProperty("eventTypes"));
+        eventTypes = (Integer) new IntegerConverter(jcrConnector
+            .getEventTypes()).convert(Integer.class, endpoint
+            .getProperty("eventTypes"));
 
-        deep =
-                (Boolean) new BooleanConverter(jcrConnector.isDeep()).convert(
-                        Boolean.class, endpoint.getProperty("deep"));
+        deep = (Boolean) new BooleanConverter(jcrConnector.isDeep()).convert(
+            Boolean.class, endpoint.getProperty("deep"));
 
         Object uuidProperty = endpoint.getProperty("uuid");
 
         if (uuidProperty == null) {
             uuid = jcrConnector.getUuid();
-        } else {
+        }
+        else {
             uuid = (List) uuidProperty;
         }
 
-        Object nodeTypeNameProperty =
-                (List) endpoint.getProperty("nodeTypeName");
+        Object nodeTypeNameProperty = (List) endpoint
+            .getProperty("nodeTypeName");
 
         if (nodeTypeNameProperty == null) {
             nodeTypeName = jcrConnector.getNodeTypeName();
-        } else {
+        }
+        else {
             nodeTypeName = (List) nodeTypeNameProperty;
         }
 
-        noLocal =
-                (Boolean) new BooleanConverter(jcrConnector.isNoLocal()).convert(
-                        Boolean.class, endpoint.getProperty("noLocal"));
+        noLocal = (Boolean) new BooleanConverter(jcrConnector.isNoLocal())
+            .convert(Boolean.class, endpoint.getProperty("noLocal"));
 
-        String contentPayload = (String) endpoint.getProperty("contentPayload");
+        String contentPayloadTypeProperty = (String) endpoint
+            .getProperty("contentPayloadType");
 
-        if (contentPayload == null) {
-            contentPayload = jcrConnector.getContentPayload();
+        if (contentPayloadTypeProperty == null) {
+            contentPayloadTypeProperty = jcrConnector.getContentPayloadType();
         }
 
         try {
-            contentPayloadType =
-                    JcrContentPayloadType.fromString(contentPayload);
-        } catch (IllegalArgumentException iae) {
+            contentPayloadType = JcrContentPayloadType
+                .fromString(contentPayloadTypeProperty);
+        }
+        catch (IllegalArgumentException iae) {
             throw new InitialisationException(iae, this);
         }
     }
 
     public void doConnect() throws ConnectException {
         if (jcrConnector.getRepository().getDescriptor(
-                Repository.OPTION_OBSERVATION_SUPPORTED) == null) {
-            throw new ConnectException(JcrMessage.observationsNotSupported(),
-                    this);
-        }
+            Repository.OPTION_OBSERVATION_SUPPORTED) == null) { throw new ConnectException(
+            JcrMessage.observationsNotSupported(), this); }
 
         try {
-            observationManager =
-                    jcrConnector.getSession().getWorkspace().getObservationManager();
-        } catch (Exception e) {
-            throw new ConnectException(
-                    JcrMessage.canNotGetObservationManager(jcrConnector.getWorkspaceName()),
-                    e, this);
+            observationManager = jcrConnector.getSession().getWorkspace()
+                .getObservationManager();
+        }
+        catch (Exception e) {
+            throw new ConnectException(JcrMessage
+                .canNotGetObservationManager(jcrConnector.getWorkspaceName()),
+                e, this);
         }
     }
 
     public void doDisconnect() throws ConnectException {
         /*
-         * IMPLEMENTATION NOTE: Disconnects and tidies up any rources allocted
-         * using the doConnect() method. This method should return the
-         * MessageReceiver into a disconnected state so that it can be connected
-         * again using the doConnect() method.
+         * IMPLEMENTATION NOTE: Disconnects and tidies up any rources allocted using the doConnect() method. This method should return the
+         * MessageReceiver into a disconnected state so that it can be connected again using the doConnect() method.
          */
 
         // TODO release any resources
@@ -152,26 +152,32 @@ public final class JcrMessageReceiver extends AbstractMessageReceiver implements
 
     public void doStart() throws UMOException {
         try {
-            observationManager.addEventListener(
-                    this,
-                    eventTypes.intValue(),
-                    absPath,
-                    deep.booleanValue(),
-                    uuid == null ? null
-                            : (String[]) uuid.toArray(EMPTY_STRING_ARRAY),
-                    nodeTypeName == null ? null
-                            : (String[]) nodeTypeName.toArray(EMPTY_STRING_ARRAY),
-                    noLocal.booleanValue());
+            observationManager.addEventListener(this, eventTypes.intValue(),
+                absPath, deep.booleanValue(),
+                uuid == null ? null : (String[]) uuid
+                    .toArray(EMPTY_STRING_ARRAY),
+                nodeTypeName == null ? null : (String[]) nodeTypeName
+                    .toArray(EMPTY_STRING_ARRAY), noLocal.booleanValue());
 
             if (logger.isInfoEnabled()) {
-                logger.info("Observing JCR for events of types: " + eventTypes
-                        + " - at: " + absPath + " - deep: " + deep
-                        + " - uuid: " + uuid + " - nodeTypeName: "
-                        + nodeTypeName + " - noLocal: " + noLocal
-                        + " - contentPayloadType: " + contentPayloadType);
+                logger.info("Observing JCR for events of types: "
+                            + eventTypes
+                            + " - at: "
+                            + absPath
+                            + " - deep: "
+                            + deep
+                            + " - uuid: "
+                            + uuid
+                            + " - nodeTypeName: "
+                            + nodeTypeName
+                            + " - noLocal: "
+                            + noLocal
+                            + " - contentPayloadType: "
+                            + contentPayloadType);
             }
 
-        } catch (RepositoryException re) {
+        }
+        catch (RepositoryException re) {
             throw new LifecycleException(re, this);
         }
     }
@@ -179,7 +185,8 @@ public final class JcrMessageReceiver extends AbstractMessageReceiver implements
     public void doStop() throws UMOException {
         try {
             observationManager.removeEventListener(this);
-        } catch (RepositoryException re) {
+        }
+        catch (RepositoryException re) {
             throw new LifecycleException(re, this);
         }
 
@@ -199,24 +206,26 @@ public final class JcrMessageReceiver extends AbstractMessageReceiver implements
         while (eventIterator.hasNext()) {
             try {
 
-                eventList.add(JcrEvent.newInstance(
-                        eventIterator.nextEvent(), jcrConnector.getSession(),
-                        contentPayloadType));
+                eventList.add(JcrEvent.newInstance(eventIterator.nextEvent(),
+                    jcrConnector.getSession(), contentPayloadType));
 
-            } catch (RepositoryException re) {
+            }
+            catch (RepositoryException re) {
                 logger.error("Can not process JCR event", re);
             }
         }
 
         try {
-            UMOMessageAdapter adapter =
-                    jcrConnector.getMessageAdapter(eventList);
+            UMOMessageAdapter adapter = jcrConnector
+                .getMessageAdapter(eventList);
 
             routeMessage(new MuleMessage(adapter));
 
-        } catch (MessagingException me) {
+        }
+        catch (MessagingException me) {
             handleException(me);
-        } catch (UMOException umoe) {
+        }
+        catch (UMOException umoe) {
             handleException(umoe);
         }
     }

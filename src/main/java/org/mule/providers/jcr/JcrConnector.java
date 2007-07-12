@@ -27,14 +27,12 @@ import org.mule.umo.lifecycle.InitialisationException;
 public final class JcrConnector extends AbstractConnector {
 
     /*
-     * For general guidelines on writing transports see
-     * http://mule.mulesource.org/display/MULE/Writing+Transports
+     * For general guidelines on writing transports see http://mule.mulesource.org/display/MULE/Writing+Transports
      */
 
     /*
-     * IMPLEMENTATION NOTE: All configuaration for the transport should be set
-     * on the Connector object, this is the object that gets configured in
-     * MuleXml
+     * IMPLEMENTATION NOTE: All configuaration for the transport should be set on the Connector object, this is the object that gets
+     * configured in MuleXml
      */
 
     private Repository repository;
@@ -57,7 +55,7 @@ public final class JcrConnector extends AbstractConnector {
 
     private Boolean noLocal;
 
-    private String contentPayload;
+    private String contentPayloadType;
 
     public JcrConnector() {
         super();
@@ -69,8 +67,7 @@ public final class JcrConnector extends AbstractConnector {
         // Optional; does not need to be implemented. Delete if not required
 
         /*
-         * IMPLEMENTATION NOTE: Should clean up any open resources associated
-         * with the connector.
+         * IMPLEMENTATION NOTE: Should clean up any open resources associated with the connector.
          */
     }
 
@@ -78,8 +75,7 @@ public final class JcrConnector extends AbstractConnector {
         // Optional; does not need to be implemented. Delete if not required
 
         /*
-         * IMPLEMENTATION NOTE: Should put any associated resources into a
-         * stopped state. Mule will automatically call the stop() method.
+         * IMPLEMENTATION NOTE: Should put any associated resources into a stopped state. Mule will automatically call the stop() method.
          */
     }
 
@@ -87,10 +83,8 @@ public final class JcrConnector extends AbstractConnector {
         // Optional; does not need to be implemented. Delete if not required
 
         /*
-         * IMPLEMENTATION NOTE: If there is a single server instance or
-         * connection associated with the connector i.e. AxisServer or a Jms
-         * Connection or Jdbc Connection, this method should put the resource in
-         * a started state here.
+         * IMPLEMENTATION NOTE: If there is a single server instance or connection associated with the connector i.e. AxisServer or a Jms
+         * Connection or Jdbc Connection, this method should put the resource in a started state here.
          */
     }
 
@@ -98,9 +92,8 @@ public final class JcrConnector extends AbstractConnector {
         // Optional; does not need to be implemented. Delete if not required
 
         /*
-         * IMPLEMENTATION NOTE: Disconnects any connections made in the connect
-         * method If the connect method did not do anything then this method
-         * shouldn't do anything either.
+         * IMPLEMENTATION NOTE: Disconnects any connections made in the connect method If the connect method did not do anything then this
+         * method shouldn't do anything either.
          */
 
         if (session != null) {
@@ -112,15 +105,12 @@ public final class JcrConnector extends AbstractConnector {
         // Optional; does not need to be implemented. Delete if not required
 
         /*
-         * IMPLEMENTATION NOTE: Makes a connection to the underlying resource.
-         * When connections are managed at the receiver/dispatcher level, this
-         * method may do nothing
+         * IMPLEMENTATION NOTE: Makes a connection to the underlying resource. When connections are managed at the receiver/dispatcher
+         * level, this method may do nothing
          */
 
-        Credentials credentials =
-                ((getUsername() != null) && (getPassword() != null)) ? new SimpleCredentials(
-                        getUsername(), getPassword().toCharArray())
-                        : null;
+        Credentials credentials = ((getUsername() != null) && (getPassword() != null)) ? new SimpleCredentials(getUsername(), getPassword()
+            .toCharArray()) : null;
 
         session = getRepository().login(credentials, getWorkspaceName());
     }
@@ -129,10 +119,7 @@ public final class JcrConnector extends AbstractConnector {
         // Future JCR version will offer a standard way to get a repository
         // instance, so injecting it in the connector will become optional at
         // that time
-        if (getRepository() == null) {
-            throw new InitialisationException(
-                    JcrMessage.missingDependency("repository"), this);
-        }
+        if (getRepository() == null) { throw new InitialisationException(JcrMessage.missingDependency("repository"), this); }
 
     }
 
@@ -291,18 +278,18 @@ public final class JcrConnector extends AbstractConnector {
     }
 
     /**
-     * @return the contentPayload
+     * @return the contentPayloadType
      */
-    public String getContentPayload() {
-        return contentPayload;
+    public String getContentPayloadType() {
+        return contentPayloadType;
     }
 
     /**
-     * @param contentPayload
-     *            the contentPayload to set
+     * @param contentPayloadType
+     *            the contentPayloadType to set
      */
-    public void setContentPayload(String contentPayload) {
-        this.contentPayload = contentPayload;
+    public void setContentPayloadType(String contentPayloadType) {
+        this.contentPayloadType = contentPayloadType;
     }
 
 }
