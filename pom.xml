@@ -17,11 +17,32 @@
 	</issueManagement>
 
 	<scm>
-		<connection>scm:svn:http://svn.muleforge.org/mule-transport-jcr/</connection>
-		<developerConnection>scm:svn:https://svn.muleforge.org/mule-transport-jcr/</developerConnection>
+		<connection>scm:svn:http://svn.muleforge.org/${artifactId}/</connection>
+		<developerConnection>scm:svn:https://svn.muleforge.org/${artifactId}/</developerConnection>
 		<tag>HEAD</tag>
-		<url>http://svn.mule-transport-jcr.muleforge.org/</url>
+		<url>http://svn.${artifactId}.muleforge.org/</url>
 	</scm>
+
+	<ciManagement>
+		<system>Bamboo</system>
+		<url>http://bamboo.muleforge.org/browse/JCR-FORGE</url>
+		<notifiers />
+	</ciManagement>
+
+	<distributionManagement>
+		<repository>
+			<id>muleforge.webdav.releases</id>
+			<url>dav:https://dav.muleforge.org/repository/${artifactId}/</url>
+		</repository>
+		<snapshotRepository>
+			<id>muleforge.webdav.snapshots</id>
+			<url>dav:https://dav.muleforge.org/snapshots.repository/${artifactId}/</url>
+		</snapshotRepository>
+		<site>
+			<id>muleforge.webdav.sites</id>
+			<url>dav:https://dav.muleforge.org/${artifactId}/</url>
+		</site>
+	</distributionManagement>
 
 	<repositories>
 		<repository>
@@ -40,6 +61,16 @@
 			</snapshots>
 		</repository>
 	</repositories>
+
+	<build>
+		<extensions>
+			<extension>
+				<groupId>org.apache.maven.wagon</groupId>
+				<artifactId>wagon-webdav</artifactId>
+				<version>1.0-beta-2</version>
+			</extension>
+		</extensions>
+	</build>
 
 	<reporting>
 		<plugins>
