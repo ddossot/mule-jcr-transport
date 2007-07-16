@@ -31,8 +31,4 @@ public abstract class JcrMessages extends MessageFactory {
 	public static Message canNotGetObservationManager(String workspaceName) {
 		return createMessage(BUNDLE_PATH, 2, workspaceName);
 	}
-
-	public static Message noSaxTransformer() {
-		return createMessage(BUNDLE_PATH, 3);
-	}
 }

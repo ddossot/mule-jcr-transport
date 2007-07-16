@@ -11,8 +11,8 @@
 package org.mule.providers.jcr;
 
 import java.io.ByteArrayOutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.List;
 
 import javax.jcr.Item;
 import javax.jcr.Property;
@@ -26,7 +26,6 @@ import javax.jcr.observation.Event;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.mule.util.Base64;
 import org.mule.util.IOUtils;
 
 /**
@@ -35,6 +34,8 @@ import org.mule.util.IOUtils;
  * @author David Dossot (david@dossot.net)
  */
 final class JcrEvent implements SerializableJcrEvent {
+	static final String UNKNOWN_EVENT_TYPE = "UNKNOWN";
+
 	private static final long serialVersionUID = -7200906980423201081L;
 
 	protected static final Log logger = LogFactory.getLog(JcrEvent.class);
@@ -45,10 +46,10 @@ final class JcrEvent implements SerializableJcrEvent {
 
 	private final String userID;
 
-	private final Object content;
+	private final Serializable content;
 
 	private JcrEvent(final String path, final String type, final String userID,
-			final Object content) {
+			final Serializable content) {
 
 		this.path = path;
 		this.type = type;
@@ -65,11 +66,11 @@ final class JcrEvent implements SerializableJcrEvent {
 				contentPayloadType));
 	}
 
-	private static Object getEventContent(Event event, Session session,
+	private static Serializable getEventContent(Event event, Session session,
 			JcrContentPayloadType contentPayloadType)
 			throws RepositoryException {
 
-		Object result = "";
+		Serializable result = "";
 
 		if (!JcrContentPayloadType.NONE.equals(contentPayloadType)) {
 
@@ -106,14 +107,14 @@ final class JcrEvent implements SerializableJcrEvent {
 		return result;
 	}
 
-	private static Object outputProperty(Property property,
+	private static Serializable outputProperty(Property property,
 			JcrContentPayloadType contentPayloadType)
 			throws RepositoryException, ValueFormatException {
 
-		Object result;
+		Serializable result;
 
 		if (property.getDefinition().isMultiple()) {
-			List contentList = new ArrayList();
+			ArrayList contentList = new ArrayList();
 
 			Value[] propertyValues = property.getValues();
 
@@ -131,10 +132,10 @@ final class JcrEvent implements SerializableJcrEvent {
 		return result;
 	}
 
-	private static String outputPropertyValue(Property property,
+	private static Serializable outputPropertyValue(Property property,
 			Value propertyValue, JcrContentPayloadType contentPayloadType) {
 
-		String result = "";
+		Serializable result = "";
 
 		try {
 			int propertyType = propertyValue.getType();
@@ -142,13 +143,11 @@ final class JcrEvent implements SerializableJcrEvent {
 			if (propertyType == PropertyType.BINARY) {
 				if (!JcrContentPayloadType.NO_BINARY.equals(contentPayloadType)) {
 					ByteArrayOutputStream baos = new ByteArrayOutputStream();
-
-					IOUtils.copy(property.getStream(), new Base64.OutputStream(
-							baos));
-
-					result = baos.toString();
+					IOUtils.copy(property.getStream(), baos);
+					result = baos.toByteArray();
 				}
 			} else {
+				//TODO handle types more accurately
 				result = propertyValue.getString();
 			}
 		} catch (Exception e) {
@@ -169,7 +168,7 @@ final class JcrEvent implements SerializableJcrEvent {
 	}
 
 	// This should really be in JCR API!
-	private static String getEventTypeNameFromValue(int eventType) {
+	static String getEventTypeNameFromValue(int eventType) {
 		switch (eventType) {
 
 		case Event.NODE_ADDED:
@@ -188,7 +187,7 @@ final class JcrEvent implements SerializableJcrEvent {
 			return "PROPERTY_REMOVED";
 
 		default:
-			return "UNKNOWN";
+			return UNKNOWN_EVENT_TYPE;
 		}
 	}
 
@@ -199,8 +198,8 @@ final class JcrEvent implements SerializableJcrEvent {
 	/**
 	 * @return the content
 	 */
-	public String getContent() {
-		return content.toString();
+	public Serializable getContent() {
+		return content;
 	}
 
 	/**

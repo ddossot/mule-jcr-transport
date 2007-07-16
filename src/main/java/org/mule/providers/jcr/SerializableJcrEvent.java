@@ -26,7 +26,7 @@ public interface SerializableJcrEvent extends Serializable {
 	/**
 	 * @return the content
 	 */
-	String getContent();
+	Serializable getContent();
 
 	/**
 	 * @return the path

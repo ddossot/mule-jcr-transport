@@ -207,4 +207,55 @@ public final class JcrMessageReceiver extends AbstractMessageReceiver implements
 			handleException(umoe);
 		}
 	}
+
+	/**
+	 * @return the absPath
+	 */
+	String getAbsPath() {
+		return absPath;
+	}
+
+	/**
+	 * @return the contentPayloadType
+	 */
+	JcrContentPayloadType getContentPayloadType() {
+		return contentPayloadType;
+	}
+
+	/**
+	 * @return the deep
+	 */
+	Boolean isDeep() {
+		return deep;
+	}
+
+	/**
+	 * @return the eventTypes
+	 */
+	Integer getEventTypes() {
+		return eventTypes;
+	}
+
+	/**
+	 * @return the nodeTypeName
+	 */
+	List getNodeTypeName() {
+		return nodeTypeName;
+	}
+
+	/**
+	 * @return the noLocal
+	 */
+	Boolean isNoLocal() {
+		return noLocal;
+	}
+
+	/**
+	 * @return the uuid
+	 */
+	List getUuid() {
+		return uuid;
+	}
+	
+	
 }

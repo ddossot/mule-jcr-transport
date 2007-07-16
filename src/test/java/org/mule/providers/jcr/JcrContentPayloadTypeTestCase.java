@@ -61,4 +61,33 @@ public class JcrContentPayloadTypeTestCase extends TestCase {
 				.fromString("FULL"));
 	}
 
+	public void testEqualsMarginalCases() {
+		assertFalse(JcrContentPayloadType.NONE.equals(null));
+		assertFalse(JcrContentPayloadType.NONE.equals(new Object()));
+	}
+
+	public void testFromStringMarginalCases() {
+		assertEquals(JcrContentPayloadType.NONE, JcrContentPayloadType
+				.fromString(null));
+
+		assertEquals(JcrContentPayloadType.NONE, JcrContentPayloadType
+				.fromString(""));
+
+		assertEquals(JcrContentPayloadType.NONE, JcrContentPayloadType
+				.fromString(" "));
+
+		try {
+			JcrContentPayloadType.fromString("foo-bar");
+
+			fail("Should have thrown an IllegalArgumentException");
+		} catch (IllegalArgumentException iea) {
+			// expected
+		}
+	}
+
+	public void testHashCode() {
+		assertEquals(JcrContentPayloadType.NO_BINARY.hashCode(),
+				JcrContentPayloadType.NO_BINARY.toString().hashCode());
+	}
+
 }
