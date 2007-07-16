@@ -10,6 +10,7 @@
 
 package org.mule.providers.jcr;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -39,7 +40,7 @@ public class JcrMessageAdapterTestCase extends AbstractMessageAdapterTestCase {
 
 		private static final long serialVersionUID = -5600415166013135158L;
 
-		public String getContent() {
+		public Serializable getContent() {
 			return "";
 		}
 

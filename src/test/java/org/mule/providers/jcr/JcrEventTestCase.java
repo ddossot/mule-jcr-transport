@@ -10,26 +10,27 @@
 
 package org.mule.providers.jcr;
 
+import java.io.ByteArrayInputStream;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.GregorianCalendar;
+import java.util.TimeZone;
+
 import javax.jcr.Node;
 import javax.jcr.Property;
-import javax.jcr.Repository;
-import javax.jcr.Session;
-import javax.jcr.SimpleCredentials;
 import javax.jcr.observation.Event;
 
 import junit.framework.TestCase;
 
-import org.apache.jackrabbit.core.TransientRepository;
+import com.thoughtworks.xstream.XStream;
 
 /**
  * @author David Dossot
  */
 public class JcrEventTestCase extends TestCase {
-	private Repository repository;
+	private static final XStream XSTREAM = new XStream();
 
-	private Session session;
-
-	private Node testDataNode;
+	private static final String USER_ID = "jqdoe";
 
 	private static class DummyEvent implements Event {
 		private final String path;
@@ -57,38 +58,148 @@ public class JcrEventTestCase extends TestCase {
 		}
 	}
 
-	public JcrEventTestCase() throws Exception {
-		repository = new TransientRepository();
-
-		session = repository.login(new SimpleCredentials("admin", "admin"
-				.toCharArray()));
-
-		Node root = session.getRootNode();
-
-		if (root.hasNode("testData")) {
-			root.getNode("testData").remove();
-		}
-
-		testDataNode = root.addNode("testData");
-		session.save();
+	public void testGetEventTypeNameFromValueMarginalCases() {
+		assertEquals(JcrEvent.UNKNOWN_EVENT_TYPE, JcrEvent
+				.getEventTypeNameFromValue(Integer.MIN_VALUE));
 	}
 
 	public void testIgnoredEventTypes() throws Exception {
-		// TODO test all ignored types
-		Property property = testDataNode.setProperty("ignored", "fooValue");
-		session.save();
+		Property property = RepositoryTestSupport.getTestDataNode()
+				.setProperty("ignored", "fooValue");
+		RepositoryTestSupport.getSession().save();
+
+		testContentEventType(property.getPath(), Event.NODE_ADDED, "");
+		testContentEventType(property.getPath(), Event.NODE_REMOVED, "");
+		testContentEventType(property.getPath(), Event.PROPERTY_REMOVED, "");
+	}
+
+	public void testKeptEventTypes() throws Exception {
+		Property property = RepositoryTestSupport.getTestDataNode()
+				.setProperty("kept", "content");
+		RepositoryTestSupport.getSession().save();
+
+		testContentEventType(property.getPath(), Event.PROPERTY_ADDED, property
+				.getString());
+
+		testContentEventType(property.getPath(), Event.PROPERTY_CHANGED,
+				property.getString());
+	}
+
+	public void testUnreachableProperty() throws Exception {
+		testContentEventType("/foo/bar", Event.PROPERTY_ADDED, "");
+	}
+
+	public void testBinaryProperty() throws Exception {
+		byte[] binaryContent = "binary.content".getBytes();
+
+		Property property = RepositoryTestSupport.getTestDataNode()
+				.setProperty("binary", new ByteArrayInputStream(binaryContent));
+
+		RepositoryTestSupport.getSession().save();
+
+		testContentEventType(JcrContentPayloadType.FULL, property.getPath(),
+				Event.PROPERTY_ADDED, binaryContent);
+
+		testContentEventType(JcrContentPayloadType.NO_BINARY, property
+				.getPath(), Event.PROPERTY_ADDED, "");
+	}
+
+	public void testBooleanProperty() throws Exception {
+		Property property = RepositoryTestSupport.getTestDataNode()
+				.setProperty("boolean", true);
+
+		RepositoryTestSupport.getSession().save();
+
+		testContentEventType(JcrContentPayloadType.NO_BINARY, property
+				.getPath(), Event.PROPERTY_ADDED, Boolean.toString(true));
+	}
+
+	public void testCalendarProperty() throws Exception {
+		GregorianCalendar calendar = new GregorianCalendar(1969, 7, 21, 2, 56,
+				0);
+
+		calendar.setTimeZone(TimeZone.getTimeZone("GMT"));
+
+		Property property = RepositoryTestSupport.getTestDataNode()
+				.setProperty("calendar", calendar);
+
+		RepositoryTestSupport.getSession().save();
+
+		testContentEventType(JcrContentPayloadType.NO_BINARY, property
+				.getPath(), Event.PROPERTY_ADDED, "1969-08-21T02:56:00.000Z");
+	}
+
+	public void testNodeProperty() throws Exception {
+		Node testDataNode = RepositoryTestSupport.getTestDataNode();
+
+		Node targetNode = testDataNode.addNode("target");
+		targetNode.addMixin("mix:referenceable");
+
+		Property property = testDataNode.setProperty("node", targetNode);
+
+		RepositoryTestSupport.getSession().save();
+
+		testContentEventType(JcrContentPayloadType.NO_BINARY, property
+				.getPath(), Event.PROPERTY_ADDED, targetNode.getUUID());
+	}
+
+	public void testMultipleProperty() throws Exception {
+		String[] values = new String[] { "one", "two" };
+
+		Property property = RepositoryTestSupport.getTestDataNode()
+				.setProperty("multi", values);
+
+		RepositoryTestSupport.getSession().save();
+
+		testContentEventType(property.getPath(), Event.PROPERTY_CHANGED, Arrays
+				.asList(values));
+	}
+
+	private void testContentEventType(String propertyPath, int eventType,
+			Object expectedContent) throws Exception {
+
+		testContentEventType(JcrContentPayloadType.FULL, propertyPath,
+				eventType, expectedContent);
+	}
+
+	private void testContentEventType(
+			JcrContentPayloadType jcrContentPayloadType, String propertyPath,
+			int eventType, Object expectedContent) throws Exception {
 
 		SerializableJcrEvent jcrEvent = JcrEvent.newInstance(new DummyEvent(
-				property.getPath(), Event.PROPERTY_REMOVED, "fooUserID"),
-				session, JcrContentPayloadType.FULL);
+				propertyPath, eventType, USER_ID), RepositoryTestSupport
+				.getSession(), jcrContentPayloadType);
 
-		assertEquals(property.getPath(), jcrEvent.getPath());
-		assertEquals("fooUserID", jcrEvent.getUserID());
-		assertEquals("PROPERTY_REMOVED", jcrEvent.getType());
-		assertEquals("", jcrEvent.getContent());
+		testXStreamSerialization(jcrEvent);
+
+		assertNotNull(jcrEvent.toString());
+		assertEquals(propertyPath, jcrEvent.getPath());
+		assertEquals(USER_ID, jcrEvent.getUserID());
+
+		assertEquals(JcrEvent.getEventTypeNameFromValue(eventType), jcrEvent
+				.getType());
+
+		if (expectedContent instanceof Collection) {
+			assertTrue(jcrEvent.getContent() instanceof Collection);
+
+			Collection colContent = (Collection) jcrEvent.getContent();
+			Collection colExpectedContent = (Collection) expectedContent;
+
+			assertTrue(colContent.containsAll(colExpectedContent));
+			assertTrue(colExpectedContent.containsAll(colContent));
+
+		} else if (expectedContent instanceof String) {
+			assertEquals(expectedContent, jcrEvent.getContent());
+		} else if (expectedContent instanceof byte[]) {
+			assertTrue(Arrays.equals((byte[]) expectedContent,
+					(byte[]) jcrEvent.getContent()));
+		} else {
+			fail("Unexpected type of content: "
+					+ expectedContent.getClass().getName());
+		}
 	}
-	
-	//TODO test non ignored event types
-	//TODO test all property types, including multiple
 
+	private void testXStreamSerialization(SerializableJcrEvent jcrEvent) {
+		assertNotNull(XSTREAM.toXML(jcrEvent));
+	}
 }

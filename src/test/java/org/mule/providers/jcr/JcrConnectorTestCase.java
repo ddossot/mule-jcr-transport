@@ -10,27 +10,23 @@
 
 package org.mule.providers.jcr;
 
-import javax.jcr.Repository;
-
-import org.apache.jackrabbit.core.TransientRepository;
 import org.mule.tck.providers.AbstractConnectorTestCase;
+import org.mule.umo.lifecycle.InitialisationException;
 import org.mule.umo.provider.UMOConnector;
 
 /**
  * @author David Dossot (david@dossot.net)
  */
 public class JcrConnectorTestCase extends AbstractConnectorTestCase {
-	private Repository repository;
-
-	public JcrConnectorTestCase() throws Exception {
-		repository = new TransientRepository();
-	}
-
 	public UMOConnector getConnector() throws Exception {
 		JcrConnector c = new JcrConnector();
 		c.setName("Test-Jcr");
-		c.setRepository(repository);
+		c.setRepository(RepositoryTestSupport.getRepository());
+		c.setUsername(RepositoryTestSupport.USERNAME);
+		c.setPassword(RepositoryTestSupport.PASSWORD);
+		c.setWorkspaceName(null);
 		c.initialise();
+		c.connect();
 		return c;
 	}
 
@@ -42,9 +38,22 @@ public class JcrConnectorTestCase extends AbstractConnectorTestCase {
 		return JcrMessageAdapterTestCase.getJcrEvents();
 	}
 
+	public void testInitializingWithoutConnector() {
+		try {
+			new JcrConnector().doInitialise();
+			fail("An InitialisationException should have been thrown");
+		} catch (InitialisationException ie) {
+			// expected
+		}
+	}
+
 	public void testProperties() throws Exception {
-		// TODO test setting and retrieving any custom properties on the
-		// Connector as necessary
+		JcrConnector jcrConnector = (JcrConnector) connector;
+
+		assertNotNull(jcrConnector.getSession());
+		assertEquals(RepositoryTestSupport.USERNAME, jcrConnector.getUsername());
+		assertEquals(RepositoryTestSupport.PASSWORD, jcrConnector.getPassword());
+		assertNull(jcrConnector.getWorkspaceName());
 	}
 
 	public void testConnectorMessageDispatcherFactory() throws Exception {

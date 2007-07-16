@@ -56,32 +56,6 @@ public final class JcrConnector extends AbstractConnector {
 		setDefaultEndpointValues();
 	}
 
-	public void doDispose() {
-		// NOOP
-	}
-
-	public void doStop() throws org.mule.umo.UMOException {
-		// NOOP
-	}
-
-	public void doStart() throws org.mule.umo.UMOException {
-		// NOOP
-	}
-
-	public void doDisconnect() throws Exception {
-		if (session != null) {
-			session.logout();
-		}
-	}
-
-	public void doConnect() throws Exception {
-		Credentials credentials = ((getUsername() != null) && (getPassword() != null)) ? new SimpleCredentials(
-				getUsername(), getPassword().toCharArray())
-				: null;
-
-		session = getRepository().login(credentials, getWorkspaceName());
-	}
-
 	public void doInitialise() throws InitialisationException {
 		// Future JCR version will offer a standard way to get a repository
 		// instance, so injecting it in the connector will become optional at
@@ -93,7 +67,35 @@ public final class JcrConnector extends AbstractConnector {
 
 	}
 
+	public void doConnect() throws Exception {
+		Credentials credentials = ((getUsername() != null) && (getPassword() != null)) ? new SimpleCredentials(
+				getUsername(), getPassword().toCharArray())
+				: null;
+
+		session = getRepository().login(credentials, getWorkspaceName());
+	}
+
+	public void doStart() throws org.mule.umo.UMOException {
+		// NOOP
+	}
+
+	public void doStop() throws org.mule.umo.UMOException {
+		// NOOP
+	}
+
+	public void doDisconnect() throws Exception {
+		if (session != null) {
+			session.logout();
+		}
+	}
+
+	public void doDispose() {
+		// NOOP
+	}
+
 	private void setDefaultEndpointValues() {
+		// any change here must be reflected in the documentation
+		setContentPayloadType(JcrContentPayloadType.NONE.toString());
 		setEventTypes(new Integer(0));
 		setDeep(Boolean.FALSE);
 		setNoLocal(Boolean.TRUE);

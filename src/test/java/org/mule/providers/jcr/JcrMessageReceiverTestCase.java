@@ -10,6 +10,7 @@
 
 package org.mule.providers.jcr;
 
+import org.mule.MuleManager;
 import org.mule.impl.endpoint.MuleEndpoint;
 import org.mule.tck.providers.AbstractMessageReceiverTestCase;
 import org.mule.umo.UMOComponent;
@@ -29,13 +30,38 @@ public class JcrMessageReceiverTestCase extends AbstractMessageReceiverTestCase 
 		Mock mockDescriptor = new Mock(UMODescriptor.class);
 		mockComponent.expectAndReturn("getDescriptor", mockDescriptor.proxy());
 		mockDescriptor.expectAndReturn("getResponseTransformer", null);
-		
+
 		return new JcrMessageReceiver(endpoint.getConnector(),
 				(UMOComponent) mockComponent.proxy(), endpoint);
 	}
 
 	public UMOEndpoint getEndpoint() throws Exception {
-		return new MuleEndpoint("jcr://path/to/observedNode?eventTypes=5", true);
+		MuleManager.getInstance().registerConnector(new JcrConnector());
+		return new MuleEndpoint("jcr://path/to/observedNode", true);
 	}
+
+	public void testReceiverProperties() throws Exception {
+		JcrMessageReceiver messageReceiver = (JcrMessageReceiver) getMessageReceiver();
+		
+		assertEquals("/path/to/observedNode", messageReceiver.getAbsPath());
+
+		JcrConnector connector = (JcrConnector) messageReceiver.getConnector();
+
+		assertEquals(connector.getContentPayloadType(), messageReceiver
+				.getContentPayloadType().toString());
+
+		assertEquals(connector.getEventTypes(), messageReceiver.getEventTypes());
+
+		assertEquals(connector.isDeep(), messageReceiver.isDeep());
+
+		assertEquals(connector.getUuid(), messageReceiver.getUuid());
+
+		assertEquals(connector.getNodeTypeName(), messageReceiver
+				.getNodeTypeName());
+
+		assertEquals(connector.isNoLocal(), messageReceiver.isNoLocal());
+	}
+	
+	//public void testReceiver
 
 }
