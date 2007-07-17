@@ -111,7 +111,31 @@ public class JcrEventTestCase extends TestCase {
 		RepositoryTestSupport.getSession().save();
 
 		testContentEventType(JcrContentPayloadType.NO_BINARY, property
-				.getPath(), Event.PROPERTY_ADDED, Boolean.toString(true));
+				.getPath(), Event.PROPERTY_ADDED, Boolean.TRUE);
+	}
+
+	public void testDoubleProperty() throws Exception {
+		Double doubleContent = new Double(3.14d);
+
+		Property property = RepositoryTestSupport.getTestDataNode()
+				.setProperty("double", doubleContent.doubleValue());
+
+		RepositoryTestSupport.getSession().save();
+
+		testContentEventType(JcrContentPayloadType.NO_BINARY, property
+				.getPath(), Event.PROPERTY_ADDED, doubleContent);
+	}
+
+	public void testLongProperty() throws Exception {
+		Long longContent = new Long(149);
+
+		Property property = RepositoryTestSupport.getTestDataNode()
+				.setProperty("long", longContent.longValue());
+
+		RepositoryTestSupport.getSession().save();
+
+		testContentEventType(JcrContentPayloadType.NO_BINARY, property
+				.getPath(), Event.PROPERTY_ADDED, longContent);
 	}
 
 	public void testCalendarProperty() throws Exception {
@@ -126,7 +150,7 @@ public class JcrEventTestCase extends TestCase {
 		RepositoryTestSupport.getSession().save();
 
 		testContentEventType(JcrContentPayloadType.NO_BINARY, property
-				.getPath(), Event.PROPERTY_ADDED, "1969-08-21T02:56:00.000Z");
+				.getPath(), Event.PROPERTY_ADDED, calendar);
 	}
 
 	public void testNodeProperty() throws Exception {
@@ -153,6 +177,10 @@ public class JcrEventTestCase extends TestCase {
 
 		testContentEventType(property.getPath(), Event.PROPERTY_CHANGED, Arrays
 				.asList(values));
+	}
+
+	public void testExceptionWhenGettingValue() {
+		assertEquals("", JcrEvent.outputPropertyValue("/foo/bar", null, null));
 	}
 
 	private void testContentEventType(String propertyPath, int eventType,
@@ -187,19 +215,17 @@ public class JcrEventTestCase extends TestCase {
 
 			assertTrue(colContent.containsAll(colExpectedContent));
 			assertTrue(colExpectedContent.containsAll(colContent));
-
-		} else if (expectedContent instanceof String) {
-			assertEquals(expectedContent, jcrEvent.getContent());
 		} else if (expectedContent instanceof byte[]) {
 			assertTrue(Arrays.equals((byte[]) expectedContent,
 					(byte[]) jcrEvent.getContent()));
 		} else {
-			fail("Unexpected type of content: "
-					+ expectedContent.getClass().getName());
+			assertEquals(expectedContent, jcrEvent.getContent());
 		}
 	}
 
 	private void testXStreamSerialization(SerializableJcrEvent jcrEvent) {
+		// we just want to ensure that the event is always serializable by
+		// XStream, not the actual outcome of the serialization
 		assertNotNull(XSTREAM.toXML(jcrEvent));
 	}
 }

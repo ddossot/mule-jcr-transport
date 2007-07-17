@@ -90,7 +90,8 @@ final class JcrEvent implements SerializableJcrEvent {
 					Item item = session.getItem(eventPath);
 
 					if (!item.isNode()) {
-						result = outputProperty((Property) item,
+						// is not a node == is a property
+						result = outputProperty(eventPath, (Property) item,
 								contentPayloadType);
 					}
 
@@ -107,8 +108,8 @@ final class JcrEvent implements SerializableJcrEvent {
 		return result;
 	}
 
-	private static Serializable outputProperty(Property property,
-			JcrContentPayloadType contentPayloadType)
+	private static Serializable outputProperty(String propertyPath,
+			Property property, JcrContentPayloadType contentPayloadType)
 			throws RepositoryException, ValueFormatException {
 
 		Serializable result;
@@ -119,20 +120,20 @@ final class JcrEvent implements SerializableJcrEvent {
 			Value[] propertyValues = property.getValues();
 
 			for (int i = 0; i < propertyValues.length; i++) {
-				contentList.add(outputPropertyValue(property,
+				contentList.add(outputPropertyValue(propertyPath,
 						propertyValues[i], contentPayloadType));
 			}
 
 			result = contentList;
 		} else {
-			result = outputPropertyValue(property, property.getValue(),
+			result = outputPropertyValue(propertyPath, property.getValue(),
 					contentPayloadType);
 		}
 
 		return result;
 	}
 
-	private static Serializable outputPropertyValue(Property property,
+	static Serializable outputPropertyValue(String propertyPath,
 			Value propertyValue, JcrContentPayloadType contentPayloadType) {
 
 		Serializable result = "";
@@ -143,25 +144,25 @@ final class JcrEvent implements SerializableJcrEvent {
 			if (propertyType == PropertyType.BINARY) {
 				if (!JcrContentPayloadType.NO_BINARY.equals(contentPayloadType)) {
 					ByteArrayOutputStream baos = new ByteArrayOutputStream();
-					IOUtils.copy(property.getStream(), baos);
+					IOUtils.copy(propertyValue.getStream(), baos);
 					result = baos.toByteArray();
 				}
+			} else if (propertyType == PropertyType.BOOLEAN) {
+				result = Boolean.valueOf(propertyValue.getBoolean());
+			} else if (propertyType == PropertyType.DATE) {
+				result = propertyValue.getDate();
+			} else if (propertyType == PropertyType.DOUBLE) {
+				result = new Double(propertyValue.getDouble());
+			} else if (propertyType == PropertyType.LONG) {
+				result = new Long(propertyValue.getLong());
 			} else {
-				//TODO handle types more accurately
 				result = propertyValue.getString();
 			}
 		} catch (Exception e) {
-			String propertyPath = "N/A";
-
-			try {
-				propertyPath = property.getPath();
-			} catch (RepositoryException re) {
-				propertyPath = re.getMessage();
-			} finally {
-				// log error but do not break message building
-				logger.error("Can not fetch property value for: "
-						+ propertyPath, e);
-			}
+			// log error but do not break message building
+			logger
+					.error("Can not fetch property value for: " + propertyPath,
+							e);
 		}
 
 		return result;
