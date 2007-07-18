@@ -42,7 +42,7 @@ public class JcrMessageReceiverTestCase extends AbstractMessageReceiverTestCase 
 
 	public void testReceiverProperties() throws Exception {
 		JcrMessageReceiver messageReceiver = (JcrMessageReceiver) getMessageReceiver();
-		
+
 		assertEquals("/path/to/observedNode", messageReceiver.getAbsPath());
 
 		JcrConnector connector = (JcrConnector) messageReceiver.getConnector();
@@ -61,7 +61,5 @@ public class JcrMessageReceiverTestCase extends AbstractMessageReceiverTestCase 
 
 		assertEquals(connector.isNoLocal(), messageReceiver.isNoLocal());
 	}
-	
-	//public void testReceiver
 
 }
