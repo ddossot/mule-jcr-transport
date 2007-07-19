@@ -12,6 +12,8 @@ package org.mule.providers.jcr;
 
 import java.io.Serializable;
 
+import javax.jcr.observation.Event;
+
 /**
  * Defines a serializable, disconnected and fully resolved JCR event
  * representation. JCR events are often RMI stubs hence not fitted to be carried
@@ -21,7 +23,7 @@ import java.io.Serializable;
  * 
  * @author David Dossot (david@dossot.net)
  */
-public interface SerializableJcrEvent extends Serializable {
+public interface SerializableJcrEvent extends Event, Serializable {
 
 	/**
 	 * @return the content
@@ -36,7 +38,12 @@ public interface SerializableJcrEvent extends Serializable {
 	/**
 	 * @return the type
 	 */
-	String getType();
+	int getType();
+	
+	/**
+	 * @return the type as a human readable string
+	 */
+	String getTypeAsString();
 
 	/**
 	 * @return the userID

@@ -205,7 +205,7 @@ public class JcrEventTestCase extends TestCase {
 		assertEquals(USER_ID, jcrEvent.getUserID());
 
 		assertEquals(JcrEvent.getEventTypeNameFromValue(eventType), jcrEvent
-				.getType());
+				.getTypeAsString());
 
 		if (expectedContent instanceof Collection) {
 			assertTrue(jcrEvent.getContent() instanceof Collection);
