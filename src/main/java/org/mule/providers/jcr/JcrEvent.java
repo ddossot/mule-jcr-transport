@@ -42,27 +42,29 @@ final class JcrEvent implements SerializableJcrEvent {
 
 	private final String path;
 
-	private final String type;
+	private final int type;
+
+	private final String typeAsString;
 
 	private final String userID;
 
 	private final Serializable content;
 
-	private JcrEvent(final String path, final String type, final String userID,
-			final Serializable content) {
+	private JcrEvent(final Event event, final Serializable content)
+			throws RepositoryException {
 
-		this.path = path;
-		this.type = type;
-		this.userID = userID;
+		this.path = event.getPath();
+		this.type = event.getType();
+		this.userID = event.getUserID();
 		this.content = content;
+		this.typeAsString = getEventTypeNameFromValue(this.type);
 	}
 
 	static SerializableJcrEvent newInstance(Event event, Session session,
 			JcrContentPayloadType contentPayloadType)
 			throws RepositoryException {
 
-		return new JcrEvent(event.getPath(), getEventTypeNameFromValue(event
-				.getType()), event.getUserID(), getEventContent(event, session,
+		return new JcrEvent(event, getEventContent(event, session,
 				contentPayloadType));
 	}
 
@@ -213,8 +215,15 @@ final class JcrEvent implements SerializableJcrEvent {
 	/**
 	 * @return the type
 	 */
-	public String getType() {
+	public int getType() {
 		return type;
+	}
+
+	/**
+	 * @return the typeAsString
+	 */
+	public String getTypeAsString() {
+		return typeAsString;
 	}
 
 	/**

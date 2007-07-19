@@ -48,8 +48,12 @@ public class JcrMessageAdapterTestCase extends AbstractMessageAdapterTestCase {
 			return "/foo/bar";
 		}
 
-		public String getType() {
+		public String getTypeAsString() {
 			return "dummy";
+		}
+		
+		public int getType() {
+			return 0;
 		}
 
 		public String getUserID() {
