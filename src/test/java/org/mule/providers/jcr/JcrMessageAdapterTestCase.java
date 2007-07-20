@@ -10,7 +10,6 @@
 
 package org.mule.providers.jcr;
 
-import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -24,7 +23,7 @@ import org.mule.umo.provider.UMOMessageAdapter;
 public class JcrMessageAdapterTestCase extends AbstractMessageAdapterTestCase {
 
 	public Object getValidMessage() throws Exception {
-		return getJcrEvents();
+		return getJcrMessages();
 	}
 
 	public UMOMessageAdapter createAdapter(Object payload)
@@ -32,34 +31,9 @@ public class JcrMessageAdapterTestCase extends AbstractMessageAdapterTestCase {
 		return new JcrMessageAdapter(payload);
 	}
 
-	public static Collection getJcrEvents() {
-		return Arrays.asList(new SerializableJcrEvent[] { new NullJcrEvent() });
-	}
-
-	private static class NullJcrEvent implements SerializableJcrEvent {
-
-		private static final long serialVersionUID = -5600415166013135158L;
-
-		public Serializable getContent() {
-			return "";
-		}
-
-		public String getPath() {
-			return "/foo/bar";
-		}
-
-		public String getTypeAsString() {
-			return "dummy";
-		}
-		
-		public int getType() {
-			return 0;
-		}
-
-		public String getUserID() {
-			return "user";
-		}
-
+	public static Collection getJcrMessages() {
+		return Arrays.asList(new JcrMessage[] { new JcrMessage(null, 0, null,
+				null, null) });
 	}
 
 }

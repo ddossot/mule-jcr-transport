@@ -59,7 +59,7 @@ public class JcrEventTestCase extends TestCase {
 	}
 
 	public void testGetEventTypeNameFromValueMarginalCases() {
-		assertEquals(JcrEvent.UNKNOWN_EVENT_TYPE, JcrEvent
+		assertEquals(JcrMessage.UNKNOWN_EVENT_TYPE, JcrMessageFactory
 				.getEventTypeNameFromValue(Integer.MIN_VALUE));
 	}
 
@@ -180,7 +180,8 @@ public class JcrEventTestCase extends TestCase {
 	}
 
 	public void testExceptionWhenGettingValue() {
-		assertEquals("", JcrEvent.outputPropertyValue("/foo/bar", null, null));
+		assertEquals("", JcrMessageFactory.outputPropertyValue("/foo/bar",
+				null, null));
 	}
 
 	private void testContentEventType(String propertyPath, int eventType,
@@ -194,7 +195,7 @@ public class JcrEventTestCase extends TestCase {
 			JcrContentPayloadType jcrContentPayloadType, String propertyPath,
 			int eventType, Object expectedContent) throws Exception {
 
-		SerializableJcrEvent jcrEvent = JcrEvent.newInstance(new DummyEvent(
+		JcrMessage jcrEvent = JcrMessageFactory.newInstance(new DummyEvent(
 				propertyPath, eventType, USER_ID), RepositoryTestSupport
 				.getSession(), jcrContentPayloadType);
 
@@ -204,8 +205,8 @@ public class JcrEventTestCase extends TestCase {
 		assertEquals(propertyPath, jcrEvent.getPath());
 		assertEquals(USER_ID, jcrEvent.getUserID());
 
-		assertEquals(JcrEvent.getEventTypeNameFromValue(eventType), jcrEvent
-				.getTypeAsString());
+		assertEquals(JcrMessageFactory.getEventTypeNameFromValue(eventType),
+				jcrEvent.getTypeAsString());
 
 		if (expectedContent instanceof Collection) {
 			assertTrue(jcrEvent.getContent() instanceof Collection);
@@ -223,9 +224,7 @@ public class JcrEventTestCase extends TestCase {
 		}
 	}
 
-	private void testXStreamSerialization(SerializableJcrEvent jcrEvent) {
-		// we just want to ensure that the event is always serializable by
-		// XStream, not the actual outcome of the serialization
-		assertNotNull(XSTREAM.toXML(jcrEvent));
+	private void testXStreamSerialization(JcrMessage jcrMessage) {
+		assertEquals(jcrMessage, XSTREAM.fromXML(XSTREAM.toXML(jcrMessage)));
 	}
 }

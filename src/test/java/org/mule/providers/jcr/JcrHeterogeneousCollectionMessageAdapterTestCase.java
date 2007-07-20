@@ -20,7 +20,7 @@ public class JcrHeterogeneousCollectionMessageAdapterTestCase extends
 		JcrMessageAdapterTestCase {
 
 	public Object getInvalidMessage() {
-		Collection hc = new ArrayList(JcrMessageAdapterTestCase.getJcrEvents());
+		Collection hc = new ArrayList(JcrMessageAdapterTestCase.getJcrMessages());
 		hc.add(super.getInvalidMessage());
 		return hc;
 	}

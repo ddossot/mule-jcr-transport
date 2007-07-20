@@ -187,7 +187,7 @@ public final class JcrMessageReceiver extends AbstractMessageReceiver implements
 		while (eventIterator.hasNext()) {
 			try {
 
-				eventList.add(JcrEvent.newInstance(eventIterator.nextEvent(),
+				eventList.add(JcrMessageFactory.newInstance(eventIterator.nextEvent(),
 						jcrConnector.getSession(), contentPayloadType));
 
 			} catch (RepositoryException re) {
