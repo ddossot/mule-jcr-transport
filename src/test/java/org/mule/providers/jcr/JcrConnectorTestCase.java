@@ -35,7 +35,7 @@ public class JcrConnectorTestCase extends AbstractConnectorTestCase {
 	}
 
 	public Object getValidMessage() throws Exception {
-		return JcrMessageAdapterTestCase.getJcrEvents();
+		return JcrMessageAdapterTestCase.getJcrMessages();
 	}
 
 	public void testInitializingWithoutConnector() {

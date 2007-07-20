@@ -39,7 +39,7 @@ public final class JcrMessageAdapter extends AbstractMessageAdapter {
 			// validate the collection is homogeneous
 			try {
 				CollectionUtils.typedCollection(payload,
-						SerializableJcrEvent.class);
+						JcrMessage.class);
 			} catch (IllegalArgumentException iae) {
 				throw new MessageTypeNotSupportedException(message, getClass(),
 						iae);

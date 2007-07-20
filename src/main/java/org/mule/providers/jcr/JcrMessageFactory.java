@@ -23,52 +23,25 @@ import javax.jcr.Value;
 import javax.jcr.ValueFormatException;
 import javax.jcr.observation.Event;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.mule.util.IOUtils;
 
 /**
- * Provides an immutable implementation of <code>SerializableJcrEvent</code>.
+ * All the necessary goodness for building a <code>JcrMessage</code>.
  * 
- * @author David Dossot (david@dossot.net)
+ * @author David Dossot
  */
-final class JcrEvent implements SerializableJcrEvent {
-	static final String UNKNOWN_EVENT_TYPE = "UNKNOWN";
+class JcrMessageFactory {
 
-	private static final long serialVersionUID = -7200906980423201081L;
-
-	protected static final Log logger = LogFactory.getLog(JcrEvent.class);
-
-	private final String path;
-
-	private final int type;
-
-	private final String typeAsString;
-
-	private final String userID;
-
-	private final Serializable content;
-
-	private JcrEvent(final Event event, final Serializable content)
-			throws RepositoryException {
-
-		this.path = event.getPath();
-		this.type = event.getType();
-		this.userID = event.getUserID();
-		this.content = content;
-		this.typeAsString = getEventTypeNameFromValue(this.type);
-	}
-
-	static SerializableJcrEvent newInstance(Event event, Session session,
+	static JcrMessage newInstance(Event event, Session session,
 			JcrContentPayloadType contentPayloadType)
 			throws RepositoryException {
 
-		return new JcrEvent(event, getEventContent(event, session,
-				contentPayloadType));
+		return new JcrMessage(event.getPath(), event.getType(),
+				getEventTypeNameFromValue(event.getType()), event.getUserID(),
+				getEventContent(event, session, contentPayloadType));
 	}
 
-	private static Serializable getEventContent(Event event, Session session,
+	static Serializable getEventContent(Event event, Session session,
 			JcrContentPayloadType contentPayloadType)
 			throws RepositoryException {
 
@@ -98,10 +71,11 @@ final class JcrEvent implements SerializableJcrEvent {
 					}
 
 				} catch (Exception ignoredException) {
-					if (logger.isInfoEnabled()) {
-						logger.info("Can not fetch content for event path: "
-								+ eventPath + "("
-								+ ignoredException.getMessage() + ")");
+					if (JcrMessage.logger.isInfoEnabled()) {
+						JcrMessage.logger
+								.info("Can not fetch content for event path: "
+										+ eventPath + "("
+										+ ignoredException.getMessage() + ")");
 					}
 				}
 			}
@@ -162,9 +136,8 @@ final class JcrEvent implements SerializableJcrEvent {
 			}
 		} catch (Exception e) {
 			// log error but do not break message building
-			logger
-					.error("Can not fetch property value for: " + propertyPath,
-							e);
+			JcrMessage.logger.error("Can not fetch property value for: "
+					+ propertyPath, e);
 		}
 
 		return result;
@@ -190,47 +163,8 @@ final class JcrEvent implements SerializableJcrEvent {
 			return "PROPERTY_REMOVED";
 
 		default:
-			return UNKNOWN_EVENT_TYPE;
+			return JcrMessage.UNKNOWN_EVENT_TYPE;
 		}
-	}
-
-	public String toString() {
-		return ToStringBuilder.reflectionToString(this);
-	}
-
-	/**
-	 * @return the content
-	 */
-	public Serializable getContent() {
-		return content;
-	}
-
-	/**
-	 * @return the path
-	 */
-	public String getPath() {
-		return path;
-	}
-
-	/**
-	 * @return the type
-	 */
-	public int getType() {
-		return type;
-	}
-
-	/**
-	 * @return the typeAsString
-	 */
-	public String getTypeAsString() {
-		return typeAsString;
-	}
-
-	/**
-	 * @return the userID
-	 */
-	public String getUserID() {
-		return userID;
 	}
 
 }
