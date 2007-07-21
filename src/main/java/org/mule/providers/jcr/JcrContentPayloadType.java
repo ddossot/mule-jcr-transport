@@ -75,7 +75,7 @@ final class JcrContentPayloadType {
 			return NONE;
 		}
 
-		if ((type != null) && (!type.equals(""))) {
+		if (!type.equals("")) {
 			for (int i = 0; i < ALL_TYPES.length; i++) {
 				JcrContentPayloadType contentPayload = ALL_TYPES[i];
 

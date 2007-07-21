@@ -17,8 +17,6 @@ import javax.jcr.observation.Event;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Provides an immutable JCR message, which is an augmented and serializable
@@ -30,8 +28,6 @@ public final class JcrMessage implements Event, Serializable {
 	static final String UNKNOWN_EVENT_TYPE = "UNKNOWN";
 
 	private static final long serialVersionUID = -7200906980423201081L;
-
-	protected static final Log logger = LogFactory.getLog(JcrMessage.class);
 
 	private final String path;
 
