@@ -12,6 +12,7 @@ package org.mule.providers.jcr;
 
 import java.util.Collection;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.mule.providers.AbstractMessageAdapter;
 import org.mule.umo.MessagingException;
 import org.mule.umo.provider.MessageTypeNotSupportedException;
@@ -38,8 +39,7 @@ public final class JcrMessageAdapter extends AbstractMessageAdapter {
 
 			// validate the collection is homogeneous
 			try {
-				CollectionUtils.typedCollection(payload,
-						JcrMessage.class);
+				CollectionUtils.typedCollection(payload, JcrMessage.class);
 			} catch (IllegalArgumentException iae) {
 				throw new MessageTypeNotSupportedException(message, getClass(),
 						iae);
@@ -58,7 +58,7 @@ public final class JcrMessageAdapter extends AbstractMessageAdapter {
 	}
 
 	public byte[] getPayloadAsBytes() throws Exception {
-		return payloadBytes;
+		return ArrayUtils.clone(payloadBytes);
 	}
 
 	public Object getPayload() {

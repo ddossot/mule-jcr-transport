@@ -23,6 +23,8 @@ import javax.jcr.Value;
 import javax.jcr.ValueFormatException;
 import javax.jcr.observation.Event;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.mule.util.IOUtils;
 
 /**
@@ -31,6 +33,8 @@ import org.mule.util.IOUtils;
  * @author David Dossot
  */
 class JcrMessageFactory {
+
+	private static final Log LOG = LogFactory.getLog(JcrMessageFactory.class);
 
 	static JcrMessage newInstance(Event event, Session session,
 			JcrContentPayloadType contentPayloadType)
@@ -42,14 +46,12 @@ class JcrMessageFactory {
 	}
 
 	static Serializable getEventContent(Event event, Session session,
-			JcrContentPayloadType contentPayloadType)
-			throws RepositoryException {
+			JcrContentPayloadType contentPayloadType) {
 
 		Serializable result = "";
 
 		if (!JcrContentPayloadType.NONE.equals(contentPayloadType)) {
 
-			String eventPath = event.getPath();
 			int eventType = event.getType();
 
 			// tentatively add content from the path of the event if the
@@ -61,7 +63,10 @@ class JcrMessageFactory {
 			if ((eventType == Event.PROPERTY_ADDED)
 					|| (eventType == Event.PROPERTY_CHANGED)) {
 
+				String eventPath = "N/A";
+
 				try {
+					eventPath = event.getPath();
 					Item item = session.getItem(eventPath);
 
 					if (!item.isNode()) {
@@ -70,12 +75,11 @@ class JcrMessageFactory {
 								contentPayloadType);
 					}
 
-				} catch (Exception ignoredException) {
-					if (JcrMessage.logger.isInfoEnabled()) {
-						JcrMessage.logger
-								.info("Can not fetch content for event path: "
-										+ eventPath + "("
-										+ ignoredException.getMessage() + ")");
+				} catch (RepositoryException ignoredException) {
+					if (LOG.isInfoEnabled()) {
+						LOG.info("Can not fetch content for event path: "
+								+ eventPath + "("
+								+ ignoredException.getMessage() + ")");
 					}
 				}
 			}
@@ -136,8 +140,7 @@ class JcrMessageFactory {
 			}
 		} catch (Exception e) {
 			// log error but do not break message building
-			JcrMessage.logger.error("Can not fetch property value for: "
-					+ propertyPath, e);
+			LOG.error("Can not fetch property value for: " + propertyPath, e);
 		}
 
 		return result;
