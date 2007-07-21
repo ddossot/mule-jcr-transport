@@ -73,11 +73,6 @@
 		<plugins>
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
-				<!--
-					Uncomment when it's published, contains wildcards functionality.
-					Don't want to go with a SNAPSHOT yet.
-				-->
-				<!-- version>2.2</version -->
 				<configuration>
 					<finalName>${artifactId}-${version}</finalName>
 					<descriptors>
@@ -85,14 +80,6 @@
 					</descriptors>
 					<appendAssemblyId>false</appendAssemblyId>
 				</configuration>
-				<executions>
-					<execution>
-						<phase>package</phase>
-						<goals>
-							<goal>assembly</goal>
-						</goals>
-					</execution>
-				</executions>
 			</plugin>
 		</plugins>
 	</build>
