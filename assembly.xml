@@ -26,10 +26,14 @@
 			<outputDirectory>site</outputDirectory>
 		</fileSet>
 		<fileSet>
-			<directory>examples/target</directory>
+			<directory>examples</directory>
 			<outputDirectory>examples</outputDirectory>
 			<includes>
-				<include>*.jar</include>
+				<include>pom.xml</include>
+				<include>jcr-example</include>	
+				<include>jcr-example.bat</include>			
+				<include>src/**</include>
+				<include>conf/**</include>
 			</includes>
 		</fileSet>
 	</fileSets>
