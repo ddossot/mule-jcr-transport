@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<project name="Mule JCR Transport">
+  <body>
+    <links>
+      <item name="JCR Mule Wiki" href="http://mule.mulesource.org/display/JCR/Home" />
+      <item name="JCR MuleForge" href="http://xircles.muleforge.org/projects/mule-transport-jcr"/>
+    </links>
+
+    <menu name="General Information">
+      <item name="About" href="index.html"/>
+    </menu>
+
+    <menu ref="reports"/>
+  </body>
+</project>
