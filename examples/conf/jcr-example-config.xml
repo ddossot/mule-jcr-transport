@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mule-configuration PUBLIC "-//MuleSource //DTD mule-configuration XML V1.0//EN"
+                                "http://mule.mulesource.org/dtds/mule-configuration.dtd">
+<mule-configuration id="JCR_Example" version="1.0">
+	
+	<container-context className="org.mule.extras.spring.SpringContainerContext">
+		<properties>
+			<property name="configFile" value="../conf/jcr-example-beans.xml"/>
+		</properties>
+	</container-context>
+	
+	<connector name="JcrConnector" className="org.mule.providers.jcr.JcrConnector">
+		<properties>
+			<container-property name="repository" reference="jcrRepository" required="true"/>
+			<property name="username" value="admin"/>
+			<property name="password" value="admin"/>
+			<property name="eventTypes" value="31"/>
+			<property name="deep" value="true"/>
+			<property name="noLocal" value="true"/>
+		</properties>
+	</connector>
+	
+	<transformers>
+		<transformer name="ObjectToXml" className="org.mule.transformers.xml.ObjectToXml"/>
+	</transformers>
+	
+	<model name="jcrExample">
+		<mule-descriptor name="JcrBridgeUMO" implementation="org.mule.components.simple.EchoComponent">
+			<inbound-router>
+				<endpoint address="jcr://example" connector="JcrConnector">
+					<properties>
+						<property name="contentPayloadType" value="full"/>
+					</properties>
+				</endpoint>
+			</inbound-router>
+			<outbound-router>
+				<router className="org.mule.routing.outbound.OutboundPassThroughRouter">
+					<endpoint address="stream://System.out" transformers="ObjectToXml"/>
+				</router>
+			</outbound-router>
+		</mule-descriptor>
+	</model>
+</mule-configuration>

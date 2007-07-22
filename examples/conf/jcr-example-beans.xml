@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd">
+	<bean id="jcrRepository" class="org.apache.jackrabbit.core.TransientRepository" />
+	<bean id="contentGenerator" class="org.mule.examples.jcr.RandomContentGenerator" init-method="initialize">
+		<property name="repository">
+			<ref bean="jcrRepository" />
+		</property>
+		<property name="username">
+			<value>admin</value>
+		</property>
+		<property name="password">
+			<value>admin</value>
+		</property>
+		<property name="rootNodeName">
+			<value>example</value>
+		</property>
+	</bean>
+	<bean id="scheduledTask" lazy-init="false" class="org.springframework.scheduling.timer.ScheduledTimerTask">
+		<!-- wait 10 seconds before starting repeated execution -->
+		<property name="delay" value="10000" />
+		<!-- run every 3 seconds -->
+		<property name="period" value="3000" />
+		<property name="timerTask" ref="contentGenerator" />
+	</bean>
+	<bean id="timerFactory" class="org.springframework.scheduling.timer.TimerFactoryBean">
+		<property name="scheduledTimerTasks">
+			<list>
+				<ref bean="scheduledTask" />
+			</list>
+		</property>
+	</bean>
+</beans>
+
