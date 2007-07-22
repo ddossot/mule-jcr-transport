@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.mule.transports</groupId>
 	<artifactId>mule-transport-jcr</artifactId>
-	<name>Mule Jcr Transport</name>
+	<name>Mule JCR Transport</name>
 	<version>1.0.0-SNAPSHOT</version>
 	<description>Listens to events from a JCR repository.</description>
 
