@@ -25,6 +25,8 @@ import org.mule.util.CollectionUtils;
  * <i>java.util.Collection</i> that only contains objects of type
  * <code>SerializableJcrEvent</code>. It will throw an
  * IllegalArgumentException if the source message type is not compatible.
+ * 
+ * @author David Dossot (david@dossot.net)
  */
 public final class JcrMessageAdapter extends AbstractMessageAdapter {
 	private static final long serialVersionUID = 2337091822007161288L;

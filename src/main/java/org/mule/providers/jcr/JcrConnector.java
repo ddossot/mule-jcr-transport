@@ -23,8 +23,9 @@ import org.mule.umo.lifecycle.InitialisationException;
 
 /**
  * <code>JcrConnector</code> is a transport that connects to JCR 1.0 (aka JSR
- * 170) repositories and leverages the observation mechanism to receive events
- * raised by operations made on the repository.
+ * 170) repositories.
+ * 
+ * @author David Dossot (david@dossot.net)
  */
 public final class JcrConnector extends AbstractConnector {
 
