@@ -56,8 +56,4 @@ public class JcrConnectorTestCase extends AbstractConnectorTestCase {
 		assertNull(jcrConnector.getWorkspaceName());
 	}
 
-	public void testConnectorMessageDispatcherFactory() throws Exception {
-		// disables this test as the connector does not have a dispatcher
-	}
-
 }

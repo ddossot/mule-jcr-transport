@@ -30,7 +30,7 @@ import org.mule.util.IOUtils;
 /**
  * All the necessary goodness for building a <code>JcrMessage</code>.
  * 
- * @author David Dossot
+ * @author David Dossot (david@dossot.net)
  */
 class JcrMessageFactory {
 

@@ -37,6 +37,8 @@ import org.mule.umo.provider.UMOMessageAdapter;
 /**
  * Registers a JCR <code>javax.jcr.observation.EventListener</code> to the
  * <code>javax.jcr.observation.ObservationManager</code> of the repository.
+ * 
+ * @author David Dossot (david@dossot.net)
  */
 public final class JcrMessageReceiver extends AbstractMessageReceiver implements
 		EventListener {
