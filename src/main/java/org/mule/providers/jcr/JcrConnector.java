@@ -29,6 +29,9 @@ import org.mule.umo.lifecycle.InitialisationException;
  */
 public final class JcrConnector extends AbstractConnector {
 
+	// TODO add transaction support
+	// TODO add streaming support
+	
 	private Repository repository;
 
 	private String workspaceName;
@@ -50,6 +53,11 @@ public final class JcrConnector extends AbstractConnector {
 	private Boolean noLocal;
 
 	private String contentPayloadType;
+
+	/**
+	 * Event property to force the lookup of a particular node by UUID.
+	 */
+	public static final String JCR_NODE_UUID_PROPERTY = "jcr.nodeUUID";
 
 	public JcrConnector() {
 		super();

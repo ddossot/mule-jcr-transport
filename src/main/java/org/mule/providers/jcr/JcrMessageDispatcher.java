@@ -10,101 +10,134 @@
 
 package org.mule.providers.jcr;
 
+import javax.jcr.Item;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+
+import org.mule.impl.MuleMessage;
+import org.mule.impl.RequestContext;
 import org.mule.providers.AbstractMessageDispatcher;
 import org.mule.umo.UMOEvent;
 import org.mule.umo.UMOMessage;
+import org.mule.umo.endpoint.UMOEndpointURI;
 import org.mule.umo.endpoint.UMOImmutableEndpoint;
 
 /**
- * <code>JcrMessageDispatcher</code> TODO document
+ * TODO document
+ * 
+ * @author David Dossot (david@dossot.net)
  */
-public class JcrMessageDispatcher extends AbstractMessageDispatcher
-{
+public class JcrMessageDispatcher extends AbstractMessageDispatcher {
+	private final JcrConnector connector;
 
-    /* For general guidelines on writing transports see
-       http://mule.mulesource.org/display/MULE/Writing+Transports */
+	public JcrMessageDispatcher(UMOImmutableEndpoint endpoint) {
+		super(endpoint);
+		connector = (JcrConnector) endpoint.getConnector();
+	}
 
-    public JcrMessageDispatcher(UMOImmutableEndpoint endpoint)
-    {
-        super(endpoint);
+	public void doConnect() throws Exception {
+		// NOOP
+	}
 
-        /* IMPLEMENTATION NOTE: If you need a reference to the specific
-           connector for this dispatcher use:
+	public void doDisconnect() throws Exception {
+		// NOOP
+	}
 
-           JcrConnector cnn = (JcrConnector)endpoint.getConnector(); */
-    }
+	public void doDispatch(UMOEvent event) throws Exception {
+		/*
+		 * IMPLEMENTATION NOTE: This is invoked when the endpoint is
+		 * asynchronous. It should invoke the transport but not return any
+		 * result. If a result is returned it should be ignorred, but if the
+		 * underlying transport does have a notion of asynchronous processing,
+		 * that should be invoked. This method is executed in a different thread
+		 * to the request thread.
+		 */
 
-    public void doConnect() throws Exception
-    {
-        /* IMPLEMENTATION NOTE: Makes a connection to the underlying
-           resource. Where connections are managed by the connector this
-           method may do nothing */
+		// TODO Write the client code here to dispatch the event over this
+		// transport
+		throw new UnsupportedOperationException("doDispatch");
+	}
 
-        // If a resource for this Dispatcher needs a connection established,
-        // then this is the place to do it
-    }
+	public UMOMessage doSend(UMOEvent event) throws Exception {
+		/*
+		 * IMPLEMENTATION NOTE: Should send the event payload over the
+		 * transport. If there is a response from the transport it shuold be
+		 * returned from this method. The sendEvent method is called when the
+		 * endpoint is running synchronously and any response returned will
+		 * ultimately be passed back to the callee. This method is executed in
+		 * the same thread as the request thread.
+		 */
 
-    public void doDisconnect() throws Exception
-    {
-        /* IMPLEMENTATION NOTE: Disconnect any conections made in the connect
-           method */
+		// TODO Write the client code here to send the event over this
+		// transport (or to dispatch the event to a store or repository)
+		// TODO Once the event has been sent, return the result (if any)
+		// wrapped in a MuleMessage object
+		throw new UnsupportedOperationException("doSend");
+	}
 
-        // If the connect method did not do anything then this method
-        // shouldn't do anything either
-    }
+	public UMOMessage doReceive(long ignoredTimeout) throws Exception {
+		Session session = connector.getSession();
 
-    public void doDispatch(UMOEvent event) throws Exception
-    {
-        /* IMPLEMENTATION NOTE: This is invoked when the endpoint is
-           asynchronous.  It should invoke the transport but not return any
-           result.  If a result is returned it should be ignorred, but if the
-           underlying transport does have a notion of asynchronous processing,
-           that should be invoked.  This method is executed in a different
-           thread to the request thread. */
+		if ((session != null) && (session.isLive())) {
+			Item targetItem = null;
 
-    	// TODO Write the client code here to dispatch the event over this
-    	// transport
+			// determine the full path to the Item to read
+			UMOEvent event = RequestContext.getEvent();
 
-        throw new UnsupportedOperationException("doDispatch");
-    }
+			if (event != null) {
+				if (logger.isDebugEnabled()) {
+					// TODO i18n message
+					logger.debug("Receiving from JCR with event: " + event);
+				}
 
-    public UMOMessage doSend(UMOEvent event) throws Exception
-    {
-    	/* IMPLEMENTATION NOTE: Should send the event payload over the
-           transport. If there is a response from the transport it shuold be
-           returned from this method. The sendEvent method is called when the
-           endpoint is running synchronously and any response returned will
-           ultimately be passed back to the callee. This method is executed in
-           the same thread as the request thread. */
-        
-    	// TODO Write the client code here to send the event over this
-    	// transport (or to dispatch the event to a store or repository)
-    	
-        // TODO Once the event has been sent, return the result (if any)
-        // wrapped in a MuleMessage object
+				String nodeUUID = (String) event.getProperty(
+						JcrConnector.JCR_NODE_UUID_PROPERTY, false);
 
-        throw new UnsupportedOperationException("doSend");
-    }
+				if (nodeUUID != null) {
+					try {
+						targetItem = session.getNodeByUUID(nodeUUID);
+					} catch (RepositoryException re) {
+						// TODO i18n message
+						logger.warn("No node was found for UUID '" + nodeUUID
+								+ "', using a null payload.");
+					}
+				}
 
-    public UMOMessage doReceive(long timeout) throws Exception
-    {
-    	/* IMPLEMENTATION NOTE: Can be used to make arbitary requests to a
-           transport resource. if the timeout is 0 the method should block
-           until an event on the endpoint is received. */
-        
-        // TODO Write the client code here to perform a request over the
-        // transport
+				// TODO check if there is jcr.nodeName override
+				// TODO check if there is jcr.nodeNamePattern override
+			} else {
+				if (logger.isDebugEnabled()) {
+					// TODO i18n message
+					logger.debug("Receiving from JCR for endpoint: "
+							+ getEndpoint());
+				}
 
-    	throw new UnsupportedOperationException("receive");
-    }
+				// TODO support a filter that defines nodeNamePattern
 
-    public void doDispose()
-    {
-    	// Optional; does not need to be implemented. Delete if not required
-    	
-        /* IMPLEMENTATION NOTE: Is called when the Dispatcher is being
-           disposed and should clean up any open resources. */
-    }
+				// TODO support relPath defined on endpoint
+
+				UMOEndpointURI uri = getEndpoint().getEndpointURI();
+
+				// TODO use specific endpoint builder
+				targetItem = session.getItem("/" + uri.getHost()
+						+ uri.getPath());
+			}
+
+			return new MuleMessage(targetItem);
+
+		} else {
+			throw new IllegalStateException("Invalid session: " + session);
+		}
+
+	}
+
+	public void doDispose() {
+		// Optional; does not need to be implemented. Delete if not required
+
+		/*
+		 * IMPLEMENTATION NOTE: Is called when the Dispatcher is being disposed
+		 * and should clean up any open resources.
+		 */
+	}
 
 }
-
