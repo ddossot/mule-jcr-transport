@@ -1,3 +1,13 @@
+/*
+ * $Id$
+ * --------------------------------------------------------------------------------------
+ * Copyright (c) MuleSource, Inc.  All rights reserved.  http://www.mulesource.com
+ *
+ * The software in this package is published under the terms of the MuleSource MPL
+ * license, a copy of which has been included with this distribution in the
+ * LICENSE.txt file.
+ */
+
 package org.mule.providers.jcr;
 
 import javax.jcr.Node;
@@ -9,6 +19,7 @@ import org.apache.jackrabbit.core.TransientRepository;
 
 /**
  * The Singleton Strikes Back!
+ * 
  * @author David Dossot
  */
 public abstract class RepositoryTestSupport {
@@ -17,7 +28,7 @@ public abstract class RepositoryTestSupport {
 
 	public static final String PASSWORD = "admin";
 
-	private static final String ROOT_NODE_NAME = "testData";
+	public static final String ROOT_NODE_NAME = "testData";
 
 	private static Repository repository;
 

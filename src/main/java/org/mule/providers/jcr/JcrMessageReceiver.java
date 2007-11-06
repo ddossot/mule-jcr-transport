@@ -78,6 +78,9 @@ public final class JcrMessageReceiver extends AbstractMessageReceiver implements
 		// instance, at that time host/port will be used for what they are on
 		// the endpoint because it will become possible to specify a full URL to
 		// a repository
+
+		// TODO create a specific endpoint builder for JCR that will build the
+		// following in address
 		absPath = "/" + endpoint.getEndpointURI().getHost()
 				+ endpoint.getEndpointURI().getPath();
 
@@ -189,8 +192,9 @@ public final class JcrMessageReceiver extends AbstractMessageReceiver implements
 		while (eventIterator.hasNext()) {
 			try {
 
-				eventList.add(JcrMessageFactory.newInstance(eventIterator.nextEvent(),
-						jcrConnector.getSession(), contentPayloadType));
+				eventList.add(JcrMessageFactory.newInstance(eventIterator
+						.nextEvent(), jcrConnector.getSession(),
+						contentPayloadType));
 
 			} catch (RepositoryException re) {
 				logger.error("Can not process JCR event", re);
@@ -258,6 +262,5 @@ public final class JcrMessageReceiver extends AbstractMessageReceiver implements
 	List getUuid() {
 		return uuid;
 	}
-	
-	
+
 }

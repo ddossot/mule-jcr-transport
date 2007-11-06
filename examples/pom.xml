@@ -10,7 +10,7 @@
 	<description>Demonstrates JCR event listening.</description>
 
 	<properties>
-		<muleVersion>1.4.1</muleVersion>
+		<muleVersion>1.4.3</muleVersion>
 	</properties>
 
 	<dependencies>
@@ -22,7 +22,7 @@
 		<dependency>
 			<groupId>org.mule.transports</groupId>
 			<artifactId>mule-transport-jcr</artifactId>
-			<version>1.0.0</version>
+			<version>1.1.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.jackrabbit</groupId>

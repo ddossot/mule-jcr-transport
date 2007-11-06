@@ -19,6 +19,12 @@ import org.mule.umo.provider.UMOConnector;
  */
 public class JcrConnectorTestCase extends AbstractConnectorTestCase {
 	public UMOConnector getConnector() throws Exception {
+		return newJcrConnector();
+	}
+
+	static JcrConnector newJcrConnector() throws Exception,
+			InitialisationException {
+
 		JcrConnector c = new JcrConnector();
 		c.setName("Test-Jcr");
 		c.setRepository(RepositoryTestSupport.getRepository());
@@ -27,6 +33,7 @@ public class JcrConnectorTestCase extends AbstractConnectorTestCase {
 		c.setWorkspaceName(null);
 		c.initialise();
 		c.connect();
+
 		return c;
 	}
 
