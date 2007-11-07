@@ -10,6 +10,8 @@
 
 package org.mule.providers.jcr;
 
+import java.util.Map;
+
 import javax.jcr.Node;
 
 import org.mule.impl.RequestContext;
@@ -69,10 +71,10 @@ public class JcrMessageDispatcherTestCase extends AbstractMuleTestCase {
 				JcrConnector.JCR_NODE_UUID_PROPERTY, uuid);
 		RequestContext.setEvent(event);
 
-		assertTrue(messageDispatcher.receive(0).getPayload() instanceof Node);
+		assertTrue(messageDispatcher.receive(0).getPayload() instanceof Map);
 	}
 
 	public void testReceiveByEndpointUri() throws Exception {
-		assertTrue(messageDispatcher.receive(0).getPayload() instanceof Node);
+		assertTrue(messageDispatcher.receive(0).getPayload() instanceof Map);
 	}
 }

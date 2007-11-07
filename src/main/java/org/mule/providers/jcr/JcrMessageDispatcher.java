@@ -80,8 +80,7 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 
 		if ((session != null) && (session.isLive())) {
 			Item targetItem = null;
-
-			// determine the full path to the Item to read
+			boolean eventOverride = false;
 			UMOEvent event = RequestContext.getEvent();
 
 			if (event != null) {
@@ -94,6 +93,8 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 						JcrConnector.JCR_NODE_UUID_PROPERTY, false);
 
 				if (nodeUUID != null) {
+					eventOverride = true;
+
 					try {
 						targetItem = session.getNodeByUUID(nodeUUID);
 					} catch (RepositoryException re) {
@@ -103,18 +104,24 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 					}
 				}
 
-				// TODO check if there is jcr.nodeName override
-				// TODO check if there is jcr.nodeNamePattern override
-			} else {
+				// TODO check if there is jcr.nodeRelpath or jcr.propertyRelPath
+				// override
+
+				// TODO if the targeted item is a node, support filter that
+				// define a propertyNamePattern
+			}
+
+			// no item was targeted by a specific event property override, hence
+			// try to get one from the endpoint configuration
+			if (!eventOverride) {
 				if (logger.isDebugEnabled()) {
 					// TODO i18n message
 					logger.debug("Receiving from JCR for endpoint: "
 							+ getEndpoint());
 				}
 
-				// TODO support a filter that defines nodeNamePattern
-
-				// TODO support relPath defined on endpoint
+				// TODO if the targeted item is a node, support filter that
+				// define a propertyNamePattern
 
 				UMOEndpointURI uri = getEndpoint().getEndpointURI();
 
@@ -123,7 +130,8 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 						+ uri.getPath());
 			}
 
-			return new MuleMessage(targetItem);
+			return new MuleMessage(targetItem != null ? JcrMessageFactory
+					.getItemPayload(targetItem) : null);
 
 		} else {
 			throw new IllegalStateException("Invalid session: " + session);
