@@ -13,9 +13,14 @@ package org.mule.providers.jcr;
 import java.io.ByteArrayOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.jcr.Item;
+import javax.jcr.Node;
 import javax.jcr.Property;
+import javax.jcr.PropertyIterator;
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
@@ -88,8 +93,8 @@ class JcrMessageFactory {
 		return result;
 	}
 
-	private static Serializable outputProperty(String propertyPath,
-			Property property, JcrContentPayloadType contentPayloadType)
+	static Serializable outputProperty(String propertyPath, Property property,
+			JcrContentPayloadType contentPayloadType)
 			throws RepositoryException, ValueFormatException {
 
 		Serializable result;
@@ -127,16 +132,8 @@ class JcrMessageFactory {
 					IOUtils.copy(propertyValue.getStream(), baos);
 					result = baos.toByteArray();
 				}
-			} else if (propertyType == PropertyType.BOOLEAN) {
-				result = Boolean.valueOf(propertyValue.getBoolean());
-			} else if (propertyType == PropertyType.DATE) {
-				result = propertyValue.getDate();
-			} else if (propertyType == PropertyType.DOUBLE) {
-				result = new Double(propertyValue.getDouble());
-			} else if (propertyType == PropertyType.LONG) {
-				result = new Long(propertyValue.getLong());
 			} else {
-				result = propertyValue.getString();
+				result = getNonBinaryPropertyValue(propertyValue, propertyType);
 			}
 		} catch (Exception e) {
 			// log error but do not break message building
@@ -144,6 +141,78 @@ class JcrMessageFactory {
 		}
 
 		return result;
+	}
+
+	static Serializable getNonBinaryPropertyValue(Value propertyValue,
+			int propertyType) throws ValueFormatException, RepositoryException {
+
+		Serializable result;
+
+		if (propertyType == PropertyType.BOOLEAN) {
+			result = Boolean.valueOf(propertyValue.getBoolean());
+		} else if (propertyType == PropertyType.DATE) {
+			result = propertyValue.getDate();
+		} else if (propertyType == PropertyType.DOUBLE) {
+			result = new Double(propertyValue.getDouble());
+		} else if (propertyType == PropertyType.LONG) {
+			result = new Long(propertyValue.getLong());
+		} else {
+			result = propertyValue.getString();
+		}
+
+		return result;
+	}
+
+	static Object getValuePayload(Value value) throws IllegalStateException,
+			RepositoryException {
+
+		int propertyType = value.getType();
+
+		if (propertyType == PropertyType.BINARY) {
+			return value.getStream();
+		} else {
+			return getNonBinaryPropertyValue(value, propertyType);
+		}
+	}
+
+	static Object getPropertyPayload(Property property)
+			throws IllegalStateException, ValueFormatException,
+			RepositoryException {
+
+		if (property.getDefinition().isMultiple()) {
+			List valuePayloads = new ArrayList();
+
+			Value[] propertyValues = property.getValues();
+
+			for (int i = 0; i < propertyValues.length; i++) {
+				valuePayloads.add(getValuePayload(propertyValues[i]));
+			}
+
+			return valuePayloads;
+		} else {
+			return getValuePayload(property.getValue());
+		}
+	}
+
+	static Object getItemPayload(Item item) throws IllegalStateException,
+			ValueFormatException, RepositoryException {
+
+		if (item.isNode()) {
+			Map result = new HashMap();
+
+			Node node = (Node) item;
+
+			for (PropertyIterator propertyIterator = node.getProperties(); propertyIterator
+					.hasNext();) {
+
+				Property property = (Property) propertyIterator.next();
+				result.put(property.getName(), getPropertyPayload(property));
+			}
+
+			return result;
+		} else {
+			return getPropertyPayload((Property) item);
+		}
 	}
 
 	// This should really be in JCR API!
