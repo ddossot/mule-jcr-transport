@@ -33,13 +33,15 @@ import org.apache.commons.logging.LogFactory;
 import org.mule.util.IOUtils;
 
 /**
- * All the necessary goodness for building a <code>JcrMessage</code>.
+ * Utility class that provides methods for "detaching" JCR events and content
+ * from the container so they can be used as payload that survives the closing
+ * of the session.
  * 
  * @author David Dossot (david@dossot.net)
  */
-class JcrMessageFactory {
+class JcrMessageUtils {
 
-	private static final Log LOG = LogFactory.getLog(JcrMessageFactory.class);
+	private static final Log LOG = LogFactory.getLog(JcrMessageUtils.class);
 
 	static JcrMessage newInstance(Event event, Session session,
 			JcrContentPayloadType contentPayloadType)
@@ -198,21 +200,23 @@ class JcrMessageFactory {
 			ValueFormatException, RepositoryException {
 
 		if (item.isNode()) {
-			Map result = new HashMap();
-
-			Node node = (Node) item;
-
-			for (PropertyIterator propertyIterator = node.getProperties(); propertyIterator
-					.hasNext();) {
-
-				Property property = (Property) propertyIterator.next();
-				result.put(property.getName(), getPropertyPayload(property));
-			}
-
-			return result;
+			return getPropertiesPayload(((Node) item).getProperties());
 		} else {
 			return getPropertyPayload((Property) item);
 		}
+	}
+
+	static Map getPropertiesPayload(PropertyIterator propertyIterator)
+			throws RepositoryException, ValueFormatException {
+
+		Map result = new HashMap();
+
+		while (propertyIterator.hasNext()) {
+			Property property = (Property) propertyIterator.next();
+			result.put(property.getName(), getPropertyPayload(property));
+		}
+
+		return result.isEmpty() ? null : result;
 	}
 
 	// This should really be in JCR API!

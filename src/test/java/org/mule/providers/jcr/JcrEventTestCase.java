@@ -59,7 +59,7 @@ public class JcrEventTestCase extends TestCase {
 	}
 
 	public void testGetEventTypeNameFromValueMarginalCases() {
-		assertEquals(JcrMessage.UNKNOWN_EVENT_TYPE, JcrMessageFactory
+		assertEquals(JcrMessage.UNKNOWN_EVENT_TYPE, JcrMessageUtils
 				.getEventTypeNameFromValue(Integer.MIN_VALUE));
 	}
 
@@ -180,7 +180,7 @@ public class JcrEventTestCase extends TestCase {
 	}
 
 	public void testExceptionWhenGettingValue() {
-		assertEquals("", JcrMessageFactory.outputPropertyValue("/foo/bar",
+		assertEquals("", JcrMessageUtils.outputPropertyValue("/foo/bar",
 				null, null));
 	}
 
@@ -195,7 +195,7 @@ public class JcrEventTestCase extends TestCase {
 			JcrContentPayloadType jcrContentPayloadType, String propertyPath,
 			int eventType, Object expectedContent) throws Exception {
 
-		JcrMessage jcrEvent = JcrMessageFactory.newInstance(new DummyEvent(
+		JcrMessage jcrEvent = JcrMessageUtils.newInstance(new DummyEvent(
 				propertyPath, eventType, USER_ID), RepositoryTestSupport
 				.getSession(), jcrContentPayloadType);
 
@@ -205,7 +205,7 @@ public class JcrEventTestCase extends TestCase {
 		assertEquals(propertyPath, jcrEvent.getPath());
 		assertEquals(USER_ID, jcrEvent.getUserID());
 
-		assertEquals(JcrMessageFactory.getEventTypeNameFromValue(eventType),
+		assertEquals(JcrMessageUtils.getEventTypeNameFromValue(eventType),
 				jcrEvent.getTypeAsString());
 
 		if (expectedContent instanceof Collection) {

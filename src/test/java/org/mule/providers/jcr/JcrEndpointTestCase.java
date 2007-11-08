@@ -24,9 +24,8 @@ public class JcrEndpointTestCase extends AbstractMuleTestCase {
 				"jcr://path/to/observedNode?eventTypes=5");
 
 		assertEquals("jcr", uri.getScheme());
-		assertEquals("jcr://path/to/observedNode?eventTypes=5", uri
-				.getAddress());
-		
+		assertEquals("/path/to/observedNode", uri.getAddress());
+
 		assertEquals("path/to/observedNode", uri.getHost() + uri.getPath());
 		assertEquals(1, uri.getParams().size());
 		assertEquals("5", uri.getParams().getProperty("eventTypes"));

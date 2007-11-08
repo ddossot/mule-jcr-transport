@@ -79,10 +79,7 @@ public final class JcrMessageReceiver extends AbstractMessageReceiver implements
 		// the endpoint because it will become possible to specify a full URL to
 		// a repository
 
-		// TODO create a specific endpoint builder for JCR that will build the
-		// following in address
-		absPath = "/" + endpoint.getEndpointURI().getHost()
-				+ endpoint.getEndpointURI().getPath();
+		absPath = endpoint.getEndpointURI().getAddress();
 
 		eventTypes = (Integer) new IntegerConverter(jcrConnector
 				.getEventTypes()).convert(Integer.class, endpoint
@@ -192,7 +189,7 @@ public final class JcrMessageReceiver extends AbstractMessageReceiver implements
 		while (eventIterator.hasNext()) {
 			try {
 
-				eventList.add(JcrMessageFactory.newInstance(eventIterator
+				eventList.add(JcrMessageUtils.newInstance(eventIterator
 						.nextEvent(), jcrConnector.getSession(),
 						contentPayloadType));
 
