@@ -24,11 +24,12 @@ public class JcrConnectorFactoryTestCase extends AbstractMuleTestCase {
 		MuleEndpointURI url = new MuleEndpointURI(getEndpointURI());
 		UMOEndpoint endpoint = TransportFactory.createEndpoint(url,
 				UMOEndpoint.ENDPOINT_TYPE_RECEIVER);
-		
+
 		assertNotNull(endpoint);
 		assertNotNull(endpoint.getConnector());
 		assertTrue(endpoint.getConnector() instanceof JcrConnector);
-		assertEquals(getEndpointURI(), endpoint.getEndpointURI().getAddress());
+		assertEquals("/path/to/observedNode", endpoint.getEndpointURI()
+				.getAddress());
 	}
 
 	public String getEndpointURI() {

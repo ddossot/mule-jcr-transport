@@ -15,6 +15,8 @@ import org.mule.config.i18n.MessageFactory;
 
 /**
  * Provides a Java API to JCR messages bundle.
+ * 
+ * @author David Dossot (david@dossot.net)
  */
 public abstract class JcrMessages extends MessageFactory {
 
@@ -30,5 +32,9 @@ public abstract class JcrMessages extends MessageFactory {
 
 	public static Message canNotGetObservationManager(String workspaceName) {
 		return createMessage(BUNDLE_PATH, 2, workspaceName);
+	}
+
+	public static Message noNodeForUUID(String uuid) {
+		return createMessage(BUNDLE_PATH, 3, uuid);
 	}
 }

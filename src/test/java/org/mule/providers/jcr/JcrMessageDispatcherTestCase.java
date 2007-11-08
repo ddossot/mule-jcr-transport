@@ -17,6 +17,7 @@ import javax.jcr.Node;
 import org.mule.impl.RequestContext;
 import org.mule.impl.endpoint.MuleEndpoint;
 import org.mule.providers.NullPayload;
+import org.mule.providers.jcr.filters.JcrPropertyNameFilter;
 import org.mule.tck.AbstractMuleTestCase;
 import org.mule.umo.UMOEvent;
 import org.mule.umo.provider.UMOMessageDispatcher;
@@ -30,17 +31,23 @@ public class JcrMessageDispatcherTestCase extends AbstractMuleTestCase {
 
 	private UMOMessageDispatcher messageDispatcher;
 
+	private MuleEndpoint endpoint;
+
 	protected void doSetUp() throws Exception {
 		super.doSetUp();
 
 		connector = JcrConnectorTestCase.newJcrConnector();
 
-		MuleEndpoint endpoint = new MuleEndpoint("jcr://"
+		endpoint = new MuleEndpoint("jcr://"
 				+ RepositoryTestSupport.ROOT_NODE_NAME, true);
 
 		endpoint.setConnector(connector);
 
 		messageDispatcher = new JcrMessageDispatcherFactory().create(endpoint);
+
+		RepositoryTestSupport.getTestDataNode().setProperty("foo", Math.PI);
+
+		RepositoryTestSupport.getSession().save();
 	}
 
 	protected void doTearDown() throws Exception {
@@ -50,6 +57,8 @@ public class JcrMessageDispatcherTestCase extends AbstractMuleTestCase {
 		connector.dispose();
 		super.doTearDown();
 	}
+
+	// TODO test inputstream retrieval
 
 	public void testReceiveByUUID() throws Exception {
 		Node targetNode = RepositoryTestSupport.getTestDataNode().addNode(
@@ -74,7 +83,20 @@ public class JcrMessageDispatcherTestCase extends AbstractMuleTestCase {
 		assertTrue(messageDispatcher.receive(0).getPayload() instanceof Map);
 	}
 
-	public void testReceiveByEndpointUri() throws Exception {
+	public void testReceiveByEndpointUriNoFilter() throws Exception {
 		assertTrue(messageDispatcher.receive(0).getPayload() instanceof Map);
+	}
+
+	public void testReceiveByEndpointUriWithFilter() throws Exception {
+		JcrPropertyNameFilter jcrPropertyNameFilter = new JcrPropertyNameFilter();
+		jcrPropertyNameFilter.setPattern("foo");
+		endpoint.setFilter(jcrPropertyNameFilter);
+		assertTrue(messageDispatcher.receive(0).getPayload() instanceof Double);
+
+		jcrPropertyNameFilter = new JcrPropertyNameFilter();
+		jcrPropertyNameFilter.setPattern("bar");
+		endpoint.setFilter(jcrPropertyNameFilter);
+		assertEquals(NullPayload.getInstance(), messageDispatcher.receive(0)
+				.getPayload());
 	}
 }

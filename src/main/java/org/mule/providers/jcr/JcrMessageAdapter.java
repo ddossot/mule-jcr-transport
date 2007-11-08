@@ -10,12 +10,18 @@
 
 package org.mule.providers.jcr;
 
-import java.util.Collection;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 
+import org.mule.config.i18n.CoreMessages;
+import org.mule.impl.ThreadSafeAccess;
 import org.mule.providers.AbstractMessageAdapter;
 import org.mule.umo.MessagingException;
 import org.mule.umo.provider.MessageTypeNotSupportedException;
-import org.mule.util.CollectionUtils;
+import org.mule.umo.transformer.TransformerException;
+import org.mule.util.IOUtils;
 
 /**
  * <code>JcrMessageAdapter</code> allows a <code>MuleEvent</code> to access
@@ -30,23 +36,15 @@ import org.mule.util.CollectionUtils;
 public final class JcrMessageAdapter extends AbstractMessageAdapter {
 	private static final long serialVersionUID = 2337091822007161288L;
 
-	private final Collection payload;
+	private final Object payload;
 
-	private final String payloadAsString;
+	private byte[] contents = null;
 
 	public JcrMessageAdapter(Object message) throws MessagingException {
-		if (message instanceof Collection) {
-			this.payload = (Collection) message;
+		if ((message instanceof Serializable)
+				|| (message instanceof InputStream)) {
 
-			// validate the collection is homogeneous
-			try {
-				CollectionUtils.typedCollection(payload, JcrMessage.class);
-			} catch (IllegalArgumentException iae) {
-				throw new MessageTypeNotSupportedException(message, getClass(),
-						iae);
-			}
-
-			payloadAsString = message.toString();
+			payload = message;
 
 		} else {
 			throw new MessageTypeNotSupportedException(message, getClass());
@@ -54,12 +52,42 @@ public final class JcrMessageAdapter extends AbstractMessageAdapter {
 
 	}
 
-	public String getPayloadAsString(String encoding) throws Exception {
-		return payloadAsString;
+	protected JcrMessageAdapter(JcrMessageAdapter template) {
+		super(template);
+		payload = template.payload;
+		contents = template.contents;
+	}
+
+	public ThreadSafeAccess newThreadCopy() {
+		return new JcrMessageAdapter(this);
+	}
+
+	protected byte[] convertToBytes(Object object) throws TransformerException,
+			UnsupportedEncodingException {
+
+		if (object instanceof InputStream) {
+			try {
+				return IOUtils.toByteArray((InputStream) object);
+			} catch (IOException ioe) {
+				throw new TransformerException(CoreMessages.transformFailed(
+						object.getClass().getName(), "InputStream"), ioe);
+			}
+		} else {
+			return super.convertToBytes(object);
+		}
 	}
 
 	public byte[] getPayloadAsBytes() throws Exception {
-		return convertToBytes(payload);
+		synchronized (this) {
+			contents = convertToBytes(payload);
+			return contents;
+		}
+	}
+
+	public String getPayloadAsString(String encoding) throws Exception {
+		synchronized (this) {
+			return new String(this.getPayloadAsBytes(), encoding);
+		}
 	}
 
 	public Object getPayload() {
