@@ -10,6 +10,8 @@
 
 package org.mule.providers.jcr;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.Map;
 
 import javax.jcr.Node;
@@ -33,6 +35,8 @@ public class JcrMessageDispatcherTestCase extends AbstractMuleTestCase {
 
 	private MuleEndpoint endpoint;
 
+	private String uuid;
+
 	protected void doSetUp() throws Exception {
 		super.doSetUp();
 
@@ -45,7 +49,18 @@ public class JcrMessageDispatcherTestCase extends AbstractMuleTestCase {
 
 		messageDispatcher = new JcrMessageDispatcherFactory().create(endpoint);
 
-		RepositoryTestSupport.getTestDataNode().setProperty("foo", Math.PI);
+		// create some extra test nodes and properties
+		Node testDataNode = RepositoryTestSupport.getTestDataNode();
+		testDataNode.setProperty("foo", Math.PI);
+		testDataNode.setProperty("stream", new ByteArrayInputStream("test"
+				.getBytes()));
+
+		Node target = testDataNode.addNode("noderelpath-target");
+		target.setProperty("proprelpath-target", 123L);
+
+		target = testDataNode.addNode("uuid-target");
+		target.addMixin("mix:referenceable");
+		uuid = target.getUUID();
 
 		RepositoryTestSupport.getSession().save();
 	}
@@ -58,15 +73,15 @@ public class JcrMessageDispatcherTestCase extends AbstractMuleTestCase {
 		super.doTearDown();
 	}
 
-	// TODO test inputstream retrieval
+	public void testReceiveInputStream() throws Exception {
+		JcrPropertyNameFilter jcrPropertyNameFilter = new JcrPropertyNameFilter();
+		jcrPropertyNameFilter.setPattern("stream");
+		endpoint.setFilter(jcrPropertyNameFilter);
 
-	public void testReceiveByUUID() throws Exception {
-		Node targetNode = RepositoryTestSupport.getTestDataNode().addNode(
-				"target");
-		targetNode.addMixin("mix:referenceable");
-		String uuid = targetNode.getUUID();
-		RepositoryTestSupport.getSession().save();
+		assertTrue(messageDispatcher.receive(0).getPayload() instanceof InputStream);
+	}
 
+	public void testReceiveWithEventUUID() throws Exception {
 		UMOEvent event = getTestEvent(null);
 		event.getMessage().setStringProperty(
 				JcrConnector.JCR_NODE_UUID_PROPERTY, "foo");
@@ -81,6 +96,36 @@ public class JcrMessageDispatcherTestCase extends AbstractMuleTestCase {
 		RequestContext.setEvent(event);
 
 		assertTrue(messageDispatcher.receive(0).getPayload() instanceof Map);
+	}
+
+	public void testReceiveWithEventNodeRelpath() throws Exception {
+		UMOEvent event = getTestEvent(null);
+		event.getMessage().setStringProperty(
+				JcrConnector.JCR_NODE_RELPATH_PROPERTY, "noderelpath-target");
+		RequestContext.setEvent(event);
+
+		assertTrue(messageDispatcher.receive(0).getPayload() instanceof Map);
+	}
+
+	public void testReceiveWithEventPropertyRelpath() throws Exception {
+		UMOEvent event = getTestEvent(null);
+		event.getMessage().setStringProperty(
+				JcrConnector.JCR_PROPERTY_REL_PATH_PROPERTY, "foo");
+		RequestContext.setEvent(event);
+
+		assertTrue(messageDispatcher.receive(0).getPayload() instanceof Double);
+	}
+
+	public void testReceiveWithEventNodeAndPropertyRelpath() throws Exception {
+		UMOEvent event = getTestEvent(null);
+		event.getMessage().setStringProperty(
+				JcrConnector.JCR_NODE_RELPATH_PROPERTY, "noderelpath-target");
+		event.getMessage().setStringProperty(
+				JcrConnector.JCR_PROPERTY_REL_PATH_PROPERTY,
+				"proprelpath-target");
+		RequestContext.setEvent(event);
+
+		assertTrue(messageDispatcher.receive(0).getPayload() instanceof Long);
 	}
 
 	public void testReceiveByEndpointUriNoFilter() throws Exception {
@@ -99,4 +144,9 @@ public class JcrMessageDispatcherTestCase extends AbstractMuleTestCase {
 		assertEquals(NullPayload.getInstance(), messageDispatcher.receive(0)
 				.getPayload());
 	}
+
+	// TODO test noderelpath and proprelpath pointing missing items
+
+	// TODO test noderelpath + filter and proprelpath + filter (the filter
+	// should not play in the latter)
 }
