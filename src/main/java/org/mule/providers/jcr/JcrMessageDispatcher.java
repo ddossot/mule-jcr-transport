@@ -26,6 +26,7 @@ import org.mule.umo.UMOEvent;
 import org.mule.umo.UMOFilter;
 import org.mule.umo.UMOMessage;
 import org.mule.umo.endpoint.UMOImmutableEndpoint;
+import org.mule.util.StringUtils;
 
 /**
  * A dispatcher for reading and writing in a JCR container.
@@ -73,8 +74,10 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 
 		if ((session != null) && (session.isLive())) {
 			Item targetItem = null;
-			boolean eventOverride = false;
+			boolean itemFetched = false;
 			UMOEvent event = RequestContext.getEvent();
+			String nodeRelpath = "";
+			String propertyRelPath = "";
 
 			if (event != null) {
 				if (logger.isDebugEnabled()) {
@@ -85,7 +88,7 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 						JcrConnector.JCR_NODE_UUID_PROPERTY, false);
 
 				if (nodeUUID != null) {
-					eventOverride = true;
+					itemFetched = true;
 
 					try {
 						targetItem = session.getNodeByUUID(nodeUUID);
@@ -93,23 +96,43 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 						logger.warn(JcrMessages.noNodeForUUID(nodeUUID)
 								.getMessage());
 					}
-				}
+				} else {
+					nodeRelpath = (String) event.getProperty(
+							JcrConnector.JCR_NODE_RELPATH_PROPERTY, false);
 
-				// TODO check if there is jcr.nodeRelpath or jcr.propertyRelPath
-				// override
+					if (StringUtils.isNotBlank(nodeRelpath)) {
+						nodeRelpath = "/" + nodeRelpath;
+					} else {
+						nodeRelpath = "";
+					}
+
+					propertyRelPath = (String) event.getProperty(
+							JcrConnector.JCR_PROPERTY_REL_PATH_PROPERTY, false);
+
+					if (StringUtils.isNotBlank(propertyRelPath)) {
+						propertyRelPath = "/" + propertyRelPath;
+					} else {
+						propertyRelPath = "";
+					}
+				}
 
 			}
 
 			// no item was targeted by a specific event property override, hence
 			// try to get one from the endpoint configuration
-			if (!eventOverride) {
+			if (!itemFetched) {
 				if (logger.isDebugEnabled()) {
 					logger.debug("Receiving from JCR for endpoint: "
 							+ getEndpoint());
 				}
 
-				targetItem = session.getItem(endpoint.getEndpointURI()
-						.getAddress());
+				String itemAbsolutePath = endpoint.getEndpointURI()
+						.getAddress()
+						+ nodeRelpath + propertyRelPath;
+
+				if (session.itemExists(itemAbsolutePath)) {
+					targetItem = session.getItem(itemAbsolutePath);
+				}
 			}
 
 			Object payload = null;

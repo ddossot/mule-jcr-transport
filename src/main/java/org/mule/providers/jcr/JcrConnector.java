@@ -31,7 +31,7 @@ public final class JcrConnector extends AbstractConnector {
 
 	// TODO add transaction support
 	// TODO add streaming support
-	
+
 	private Repository repository;
 
 	private String workspaceName;
@@ -53,6 +53,18 @@ public final class JcrConnector extends AbstractConnector {
 	private Boolean noLocal;
 
 	private String contentPayloadType;
+
+	/**
+	 * Event property to define a relative path to append at the end of the
+	 * target item path.
+	 */
+	public static final String JCR_PROPERTY_REL_PATH_PROPERTY = "jcr.propertyRelPath";
+
+	/**
+	 * Event property to define a relative path to append after the endpoint
+	 * item path.
+	 */
+	public static final String JCR_NODE_RELPATH_PROPERTY = "jcr.nodeRelpath";
 
 	/**
 	 * Event property to force the lookup of a particular node by UUID.
