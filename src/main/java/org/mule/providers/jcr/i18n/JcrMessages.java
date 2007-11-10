@@ -34,11 +34,15 @@ public abstract class JcrMessages extends MessageFactory {
 		return createMessage(BUNDLE_PATH, 2, workspaceName);
 	}
 
-	public static Message noNodeForUUID(String uuid) {
-		return createMessage(BUNDLE_PATH, 3, uuid);
+	public static Message noNodeFor(String criteria) {
+		return createMessage(BUNDLE_PATH, 3, criteria);
 	}
 
 	public static Message badFilterType(Class clazz) {
 		return createMessage(BUNDLE_PATH, 4, clazz);
+	}
+
+	public static Message moreThanOneNodeFor(String criteria) {
+		return createMessage(BUNDLE_PATH, 5, criteria);
 	}
 }
