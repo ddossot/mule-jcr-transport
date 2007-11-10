@@ -14,6 +14,7 @@ import java.util.Map;
 
 import javax.jcr.Item;
 import javax.jcr.Node;
+import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
@@ -73,6 +74,7 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 	}
 
 	public UMOMessage doReceive(long ignoredTimeout) throws Exception {
+		// TODO extract methods
 		Session session = connector.getSession();
 
 		if ((session != null) && (session.isLive())) {
@@ -96,7 +98,7 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 					try {
 						targetItem = session.getNodeByUUID(nodeUUID);
 					} catch (RepositoryException re) {
-						logger.warn(JcrMessages.noNodeForUUID(nodeUUID)
+						logger.warn(JcrMessages.noNodeFor("UUID=" + nodeUUID)
 								.getMessage());
 					}
 				} else {
@@ -136,7 +138,8 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 				if (session.itemExists(itemAbsolutePath)) {
 					targetItem = session.getItem(itemAbsolutePath);
 				} else {
-					// TODO log warn no item found for path
+					logger.warn(JcrMessages.noNodeFor(itemAbsolutePath)
+							.getMessage());
 				}
 			}
 
@@ -153,10 +156,23 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 									+ nodeNamePatternFilter);
 						}
 
-						// FIXME apply the nodeNamePatternFilter: if more than
-						// one
-						// node returned, select the first and warn, if no node
-						// returned then nullify targetItem and warn
+						NodeIterator nodes = ((Node) targetItem)
+								.getNodes(nodeNamePatternFilter);
+
+						if (nodes.getSize() == 0) {
+							logger.warn(JcrMessages.noNodeFor(
+									nodeNamePatternFilter).getMessage());
+
+							targetItem = null;
+
+						} else {
+							if (nodes.getSize() > 1) {
+								logger.warn(JcrMessages.moreThanOneNodeFor(
+										nodeNamePatternFilter).getMessage());
+							}
+
+							targetItem = nodes.nextNode();
+						}
 					}
 
 					String propertyNamePatternFilter = getPropertyNamePatternFilter();
@@ -180,9 +196,16 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 							// get a single property value
 							if ((propertiesPayload != null)
 									&& (propertiesPayload.size() == 1)) {
+
 								payload = propertiesPayload.values().iterator()
 										.next();
 							} else {
+								if (propertiesPayload != null) {
+									logger.warn(JcrMessages.noNodeFor(
+											propertyNamePatternFilter)
+											.getMessage());
+								}
+
 								payload = propertiesPayload;
 							}
 
