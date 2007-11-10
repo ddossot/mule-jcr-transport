@@ -10,12 +10,30 @@
 
 package org.mule.providers.jcr.filters;
 
+import org.mule.umo.UMOFilter;
+import org.mule.umo.UMOMessage;
+
 /**
- * This filter is used as a property name pattern holder that is passed to the
- * JCR container.
- * 
  * @author David Dossot (david@dossot.net)
  */
-public final class JcrPropertyNameFilter extends AbstractJcrNameFilter {
-	// Empty
+public abstract class AbstractJcrNameFilter implements UMOFilter {
+
+	private String pattern = null;
+
+	public AbstractJcrNameFilter() {
+		super();
+	}
+
+	public boolean accept(UMOMessage message) {
+		return true;
+	}
+
+	public String getPattern() {
+		return pattern;
+	}
+
+	public void setPattern(String pattern) {
+		this.pattern = pattern;
+	}
+
 }

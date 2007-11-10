@@ -37,4 +37,8 @@ public abstract class JcrMessages extends MessageFactory {
 	public static Message noNodeForUUID(String uuid) {
 		return createMessage(BUNDLE_PATH, 3, uuid);
 	}
+
+	public static Message badFilterType(Class clazz) {
+		return createMessage(BUNDLE_PATH, 4, clazz);
+	}
 }

@@ -16,6 +16,6 @@ package org.mule.providers.jcr.filters;
  * 
  * @author David Dossot (david@dossot.net)
  */
-public final class JcrPropertyNameFilter extends AbstractJcrNameFilter {
+public final class JcrNodeNameFilter extends AbstractJcrNameFilter {
 	// Empty
 }

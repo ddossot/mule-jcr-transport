@@ -20,8 +20,11 @@ import javax.jcr.Session;
 import org.mule.impl.MuleMessage;
 import org.mule.impl.RequestContext;
 import org.mule.providers.AbstractMessageDispatcher;
+import org.mule.providers.jcr.filters.AbstractJcrNameFilter;
+import org.mule.providers.jcr.filters.JcrNodeNameFilter;
 import org.mule.providers.jcr.filters.JcrPropertyNameFilter;
 import org.mule.providers.jcr.i18n.JcrMessages;
+import org.mule.routing.filters.logic.AndFilter;
 import org.mule.umo.UMOEvent;
 import org.mule.umo.UMOFilter;
 import org.mule.umo.UMOMessage;
@@ -132,31 +135,74 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 
 				if (session.itemExists(itemAbsolutePath)) {
 					targetItem = session.getItem(itemAbsolutePath);
+				} else {
+					// TODO log warn no item found for path
 				}
 			}
 
 			Object payload = null;
-			UMOFilter filter = getEndpoint().getFilter();
 
 			if (targetItem != null) {
-				if ((targetItem.isNode()) && (filter != null)
-						&& (filter instanceof JcrPropertyNameFilter)) {
 
-					Map propertiesPayload = JcrMessageUtils
-							.getPropertiesPayload(((Node) targetItem)
-									.getProperties(((JcrPropertyNameFilter) filter)
-											.getPattern()));
+				if (targetItem.isNode()) {
+					String nodeNamePatternFilter = getNodeNamePatternFilter();
 
-					// if the map contains only one property, because we have
-					// applied a filter, we assume the intention was to get a
-					// single property value
-					if ((propertiesPayload != null)
-							&& (propertiesPayload.size() == 1)) {
-						payload = propertiesPayload.values().iterator().next();
-					} else {
-						payload = propertiesPayload;
+					if (nodeNamePatternFilter != null) {
+						if (logger.isDebugEnabled()) {
+							logger.debug("Applying node name pattern filter: "
+									+ nodeNamePatternFilter);
+						}
+
+						// FIXME apply the nodeNamePatternFilter: if more than
+						// one
+						// node returned, select the first and warn, if no node
+						// returned then nullify targetItem and warn
+					}
+
+					String propertyNamePatternFilter = getPropertyNamePatternFilter();
+
+					if (targetItem != null) {
+						if (propertyNamePatternFilter != null) {
+
+							if (logger.isDebugEnabled()) {
+								logger
+										.debug("Applying property name pattern filter: "
+												+ propertyNamePatternFilter);
+							}
+
+							Map propertiesPayload = JcrMessageUtils
+									.getPropertiesPayload(((Node) targetItem)
+											.getProperties(propertyNamePatternFilter));
+
+							// if the map contains only one property, because we
+							// have applied a filter, we assume the intention
+							// was to
+							// get a single property value
+							if ((propertiesPayload != null)
+									&& (propertiesPayload.size() == 1)) {
+								payload = propertiesPayload.values().iterator()
+										.next();
+							} else {
+								payload = propertiesPayload;
+							}
+
+						} else {
+							if (logger.isDebugEnabled()) {
+								logger.debug("Getting payload for node: "
+										+ targetItem.getPath());
+							}
+
+							// targetItem is a node
+							payload = JcrMessageUtils
+									.getItemPayload(targetItem);
+						}
 					}
 				} else {
+					if (logger.isDebugEnabled()) {
+						logger.debug("Getting payload for property: "
+								+ targetItem.getPath());
+					}
+					// targetItem is a property
 					payload = JcrMessageUtils.getItemPayload(targetItem);
 				}
 			}
@@ -165,6 +211,44 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 		} else {
 			throw new IllegalStateException("Invalid session: " + session);
 		}
+	}
 
+	private String getNodeNamePatternFilter() {
+		// TODO cache result
+		return getPropertyNamePatternFilter(getEndpoint().getFilter(),
+				JcrNodeNameFilter.class);
+	}
+
+	private String getPropertyNamePatternFilter() {
+		// TODO cache result
+		return getPropertyNamePatternFilter(getEndpoint().getFilter(),
+				JcrPropertyNameFilter.class);
+	}
+
+	private static String getPropertyNamePatternFilter(UMOFilter filter,
+			Class filterClass) {
+
+		String pattern = null;
+
+		if (filter != null) {
+			if (filter instanceof AbstractJcrNameFilter) {
+				if (filter.getClass().equals(filterClass)) {
+					pattern = ((AbstractJcrNameFilter) filter).getPattern();
+				}
+			} else if (filter instanceof AndFilter) {
+				pattern = getPropertyNamePatternFilter(((AndFilter) filter)
+						.getLeftFilter(), filterClass);
+
+				if (pattern == null) {
+					pattern = getPropertyNamePatternFilter(((AndFilter) filter)
+							.getRightFilter(), filterClass);
+				}
+			} else {
+				throw new IllegalArgumentException(JcrMessages.badFilterType(
+						filter.getClass()).getMessage());
+			}
+		}
+
+		return pattern;
 	}
 }
