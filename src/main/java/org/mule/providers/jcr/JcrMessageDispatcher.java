@@ -90,7 +90,53 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 	}
 
 	/**
-	 * TODO explain fetching strategy
+	 * <p>
+	 * Receives JCR content from the configured endpoint, using optional event
+	 * properties to define the target repository item. Unless an exception is
+	 * thrown, a <code>UMOMessage</code> will always be retrieved, possibly
+	 * with a null payload if no content was acessible.
+	 * </p>
+	 * 
+	 * <p>
+	 * The content is extracted from the property or properties that were
+	 * targeted by the endpoint path, filters and event optional parameters.
+	 * </p>
+	 * 
+	 * <p>
+	 * The first step of the content fetching consists in selecting a target
+	 * item from the repository. This item is selected by using the path of the
+	 * endpoint and by appending any optional relative paths that could have
+	 * been specified as event properties for the current <code>UMOEvent</code> (<code>JcrConnector.JCR_NODE_RELPATH_PROPERTY</code>
+	 * and <code>JcrConnector.JCR_PROPERTY_REL_PATH_PROPERTY</code>).
+	 * Alternatively, an event property (<code>JcrConnector.JCR_NODE_UUID_PROPERTY</code>)
+	 * can be used to specify the UUID to use to select the target item: if this
+	 * is done, the endpoint URI will be ignored.
+	 * </p>
+	 * 
+	 * <p>
+	 * The second step consists in applying any <code>JcrNodeNameFilter</code>
+	 * or <code>JcrPropertyNameFilter</code> that could have been defined on
+	 * the endpoint to further narrow the target item from which content will be
+	 * extracted. If more than one node is selected, the first one will be
+	 * arbitrarily used as the target item and a warning will be issued. If no
+	 * item can be selected, a null payload will be used for the returned
+	 * <code>UMOMessage</code>.
+	 * </p>
+	 * 
+	 * <p>
+	 * The final step is the content extraction that will be used as the
+	 * <code>UMOMessage</code> payload. For this, the following rules apply,
+	 * depending on the target item:
+	 * <ul>
+	 * <li>For a single-valued property, the payload will be the property
+	 * value.</li>
+	 * <li>For a multi-valued property, the payload will be a <code>List</code>
+	 * of values.</li>
+	 * <li>For a node, the payload will be a <code>Map</code> of property
+	 * names and property values (for these values, the previous two rules will
+	 * apply).</li>
+	 * </ul>
+	 * </p>
 	 * 
 	 * @param ignoredTimeout
 	 *            ignored timeout parameter.
@@ -261,6 +307,7 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 		} else {
 			logger.warn(JcrMessages.noNodeFor(itemAbsolutePath).getMessage());
 		}
+
 		return targetItem;
 	}
 
