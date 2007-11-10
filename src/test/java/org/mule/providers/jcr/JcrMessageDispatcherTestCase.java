@@ -132,7 +132,8 @@ public class JcrMessageDispatcherTestCase extends AbstractMuleTestCase {
 		assertTrue(messageDispatcher.receive(0).getPayload() instanceof Map);
 	}
 
-	public void testReceiveByEndpointUriWithFilter() throws Exception {
+	public void testReceiveByEndpointUriWithPropertyNameFilter()
+			throws Exception {
 		JcrPropertyNameFilter jcrPropertyNameFilter = new JcrPropertyNameFilter();
 		jcrPropertyNameFilter.setPattern("foo");
 		endpoint.setFilter(jcrPropertyNameFilter);
@@ -144,6 +145,10 @@ public class JcrMessageDispatcherTestCase extends AbstractMuleTestCase {
 		assertEquals(NullPayload.getInstance(), messageDispatcher.receive(0)
 				.getPayload());
 	}
+
+	// TODO test node name filter
+
+	// TODO test both filters
 
 	// TODO test noderelpath and proprelpath pointing missing items
 
