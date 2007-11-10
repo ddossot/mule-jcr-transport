@@ -21,9 +21,10 @@ import org.mule.impl.endpoint.MuleEndpoint;
 import org.mule.providers.NullPayload;
 import org.mule.providers.jcr.filters.JcrNodeNameFilter;
 import org.mule.providers.jcr.filters.JcrPropertyNameFilter;
+import org.mule.routing.filters.logic.AndFilter;
 import org.mule.tck.AbstractMuleTestCase;
 import org.mule.umo.UMOEvent;
-import org.mule.umo.provider.UMOMessageDispatcher;
+import org.mule.umo.UMOFilter;
 
 /**
  * @author David Dossot (david@dossot.net)
@@ -32,7 +33,7 @@ public class JcrMessageDispatcherTestCase extends AbstractMuleTestCase {
 
 	private JcrConnector connector;
 
-	private UMOMessageDispatcher messageDispatcher;
+	private JcrMessageDispatcher messageDispatcher;
 
 	private MuleEndpoint endpoint;
 
@@ -48,7 +49,8 @@ public class JcrMessageDispatcherTestCase extends AbstractMuleTestCase {
 
 		endpoint.setConnector(connector);
 
-		messageDispatcher = new JcrMessageDispatcherFactory().create(endpoint);
+		messageDispatcher = (JcrMessageDispatcher) new JcrMessageDispatcherFactory()
+				.create(endpoint);
 
 		// create some extra test nodes and properties
 		RepositoryTestSupport.resetRepository();
@@ -79,7 +81,7 @@ public class JcrMessageDispatcherTestCase extends AbstractMuleTestCase {
 	public void testReceiveInputStream() throws Exception {
 		JcrPropertyNameFilter jcrPropertyNameFilter = new JcrPropertyNameFilter();
 		jcrPropertyNameFilter.setPattern("stream");
-		endpoint.setFilter(jcrPropertyNameFilter);
+		setFilter(jcrPropertyNameFilter);
 
 		assertTrue(messageDispatcher.receive(0).getPayload() instanceof InputStream);
 	}
@@ -141,13 +143,13 @@ public class JcrMessageDispatcherTestCase extends AbstractMuleTestCase {
 			throws Exception {
 		JcrPropertyNameFilter jcrPropertyNameFilter = new JcrPropertyNameFilter();
 		jcrPropertyNameFilter.setPattern("fo*");
-		endpoint.setFilter(jcrPropertyNameFilter);
+		setFilter(jcrPropertyNameFilter);
 		assertEquals(Double.class, messageDispatcher.receive(0).getPayload()
 				.getClass());
 
 		jcrPropertyNameFilter = new JcrPropertyNameFilter();
 		jcrPropertyNameFilter.setPattern("bar");
-		endpoint.setFilter(jcrPropertyNameFilter);
+		setFilter(jcrPropertyNameFilter);
 		assertEquals(NullPayload.getInstance(), messageDispatcher.receive(0)
 				.getPayload());
 	}
@@ -155,23 +157,42 @@ public class JcrMessageDispatcherTestCase extends AbstractMuleTestCase {
 	public void testReceiveByEndpointUriWithNodeNameFilter() throws Exception {
 		JcrNodeNameFilter jcrNodeNameFilter = new JcrNodeNameFilter();
 		jcrNodeNameFilter.setPattern("*-target");
-		endpoint.setFilter(jcrNodeNameFilter);
+		setFilter(jcrNodeNameFilter);
 		assertFalse(NullPayload.getInstance().equals(
 				messageDispatcher.receive(0).getPayload()));
 
 		jcrNodeNameFilter = new JcrNodeNameFilter();
 		jcrNodeNameFilter.setPattern("noderelpath-*");
-		endpoint.setFilter(jcrNodeNameFilter);
+		setFilter(jcrNodeNameFilter);
 		assertTrue(messageDispatcher.receive(0).getPayload() instanceof Map);
 
 		jcrNodeNameFilter = new JcrNodeNameFilter();
 		jcrNodeNameFilter.setPattern("bar");
-		endpoint.setFilter(jcrNodeNameFilter);
+		setFilter(jcrNodeNameFilter);
 		assertEquals(NullPayload.getInstance(), messageDispatcher.receive(0)
 				.getPayload());
 	}
 
-	// TODO test both filters
+	public void testReceiveByEndpointUriWithBothNameFilters() throws Exception {
+		JcrNodeNameFilter jcrNodeNameFilter = new JcrNodeNameFilter();
+		jcrNodeNameFilter.setPattern("noderelpath-*");
+
+		JcrPropertyNameFilter jcrPropertyNameFilter = new JcrPropertyNameFilter();
+		jcrPropertyNameFilter.setPattern("proprelpath-**");
+
+		AndFilter andFilter = new AndFilter(jcrNodeNameFilter,
+				jcrPropertyNameFilter);
+
+		setFilter(andFilter);
+
+		assertEquals(Long.class, messageDispatcher.receive(0).getPayload()
+				.getClass());
+	}
+
+	private void setFilter(UMOFilter filter) {
+		endpoint.setFilter(filter);
+		messageDispatcher.refreshEndpointFilter();
+	}
 
 	// TODO test noderelpath and proprelpath pointing missing items
 
