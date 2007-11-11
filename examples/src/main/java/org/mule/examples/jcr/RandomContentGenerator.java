@@ -52,14 +52,32 @@ public class RandomContentGenerator extends TimerTask {
 
 		Node repositoryRoot = session.getRootNode();
 
-		if (!repositoryRoot.hasNode(rootNodeName)) {
-			repositoryRoot.addNode(rootNodeName);
-		} else {
-			repositoryRoot.getNode(rootNodeName);
+		if (repositoryRoot.hasNode(rootNodeName)) {
+			repositoryRoot.getNode(rootNodeName).remove();
 		}
+
+		Node rootNode = repositoryRoot.addNode(rootNodeName);
+
+		// add some demo files
+		Node imagesNode = rootNode.addNode("images");
+		storeImage(imagesNode, "mule.gif");
+		storeImage(imagesNode, "jackrabbit.gif");
 
 		session.save();
 		session.logout();
+	}
+
+	private void storeImage(Node imagesNode, String imageName)
+			throws RepositoryException {
+
+		Node imageNode = imagesNode.addNode(imageName, "nt:file");
+		Node contentNode = imageNode.addNode("jcr:content", "nt:resource");
+		contentNode.setProperty("jcr:data", Thread.currentThread()
+				.getContextClassLoader().getResourceAsStream(
+						"images/" + imageName));
+		contentNode.setProperty("jcr:mimeType", "image/gif");
+		contentNode.setProperty("jcr:lastModified", GregorianCalendar
+				.getInstance());
 	}
 
 	private Session newSession() throws LoginException, RepositoryException {
@@ -70,8 +88,7 @@ public class RandomContentGenerator extends TimerTask {
 	public void run() {
 		try {
 			Session session = newSession();
-			Node testContentRoot = session.getRootNode().getNode(
-					rootNodeName);
+			Node testContentRoot = session.getRootNode().getNode(rootNodeName);
 
 			int randomAction = RANDOM.nextInt(3);
 

@@ -2,42 +2,79 @@
 <!DOCTYPE mule-configuration PUBLIC "-//MuleSource //DTD mule-configuration XML V1.0//EN"
                                 "http://mule.mulesource.org/dtds/mule-configuration.dtd">
 <mule-configuration id="JCR_Example" version="1.0">
-	
+
+	<mule-environment-properties synchronous="false" />
+
 	<container-context className="org.mule.extras.spring.SpringContainerContext">
 		<properties>
-			<property name="configFile" value="../conf/jcr-example-beans.xml"/>
+			<property name="configFile" value="../conf/jcr-example-beans.xml" />
 		</properties>
 	</container-context>
-	
+
 	<connector name="JcrConnector" className="org.mule.providers.jcr.JcrConnector">
 		<properties>
-			<container-property name="repository" reference="jcrRepository" required="true"/>
-			<property name="username" value="admin"/>
-			<property name="password" value="admin"/>
-			<property name="eventTypes" value="31"/>
-			<property name="deep" value="true"/>
-			<property name="noLocal" value="true"/>
+			<container-property name="repository" reference="jcrRepository" required="true" />
+			<property name="username" value="admin" />
+			<property name="password" value="admin" />
+			<property name="eventTypes" value="31" />
+			<property name="deep" value="true" />
+			<property name="noLocal" value="true" />
 		</properties>
 	</connector>
-	
+
 	<transformers>
-		<transformer name="ObjectToXml" className="org.mule.transformers.xml.ObjectToXml"/>
+		<transformer name="ObjectToXml" className="org.mule.transformers.xml.ObjectToXml" />
 	</transformers>
-	
+
+	<global-endpoints>
+		<endpoint name="jcrImages" address="jcr://example/images">
+			<filter className="org.mule.routing.filters.logic.AndFilter">
+				<left-filter className="org.mule.providers.jcr.filters.JcrNodeNameFilter" pattern="jcr:content" />
+				<right-filter className="org.mule.providers.jcr.filters.JcrPropertyNameFilter" pattern="jcr:data" />
+			</filter>
+		</endpoint>
+	</global-endpoints>
+
 	<model name="jcrExample">
-		<mule-descriptor name="JcrBridgeUMO" implementation="org.mule.components.simple.EchoComponent">
+		<!-- 
+			Example of an inbound endpoint that listens to JCR events.
+			
+			The event objects are then transformed to XML and sent to the console.
+		-->
+		<mule-descriptor name="jcrEventDumper" implementation="org.mule.components.simple.EchoComponent">
 			<inbound-router>
 				<endpoint address="jcr://example" connector="JcrConnector">
 					<properties>
-						<property name="contentPayloadType" value="full"/>
+						<property name="contentPayloadType" value="full" />
 					</properties>
 				</endpoint>
 			</inbound-router>
 			<outbound-router>
 				<router className="org.mule.routing.outbound.OutboundPassThroughRouter">
-					<endpoint address="stream://System.out" transformers="ObjectToXml"/>
+					<endpoint address="stream://System.out" transformers="ObjectToXml" />
 				</router>
 			</outbound-router>
+		</mule-descriptor>
+
+		<!-- 
+			Example of an HTTP endpoint that fetches data from a JCR container.
+			
+			Browsing http://localhost:8080/images/mule.gif or http://localhost:8080/images?get=jackrabbit.gif
+			should return a gif image.
+		-->
+		<mule-descriptor name="jcrHttpContentFetcher" implementation="org.mule.components.script.jsr223.ScriptComponent">
+			<inbound-router>
+				<endpoint address="http://localhost:8080/images" synchronous="true" />
+			</inbound-router>
+			<properties>
+				<property name="scriptEngineName" value="groovy" />
+				<text-property name="scriptText">
+					def imageName = message.getPayload().substring(8);
+					message.setStringProperty("jcr.nodeRelpath", imageName);
+					message.setStringProperty("Content-Type", "image/gif");
+					return managementContext.lookupEndpoint("jcrImages").receive(0);
+				</text-property>
+			</properties>
 		</mule-descriptor>
 	</model>
 </mule-configuration>
