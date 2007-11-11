@@ -89,18 +89,18 @@ public class JcrMessageDispatcherTestCase extends AbstractMuleTestCase {
 	public void testReceiveWithEventUUID() throws Exception {
 		UMOEvent event = getTestEvent(null);
 		event.getMessage().setStringProperty(
+				JcrConnector.JCR_NODE_UUID_PROPERTY, uuid);
+		RequestContext.setEvent(event);
+
+		assertTrue(messageDispatcher.receive(0).getPayload() instanceof Map);
+
+		event = getTestEvent(null);
+		event.getMessage().setStringProperty(
 				JcrConnector.JCR_NODE_UUID_PROPERTY, "foo");
 		RequestContext.setEvent(event);
 
 		assertEquals(NullPayload.getInstance(), messageDispatcher.receive(0)
 				.getPayload());
-
-		event = getTestEvent(null);
-		event.getMessage().setStringProperty(
-				JcrConnector.JCR_NODE_UUID_PROPERTY, uuid);
-		RequestContext.setEvent(event);
-
-		assertTrue(messageDispatcher.receive(0).getPayload() instanceof Map);
 	}
 
 	public void testReceiveWithEventNodeRelpath() throws Exception {
@@ -110,6 +110,14 @@ public class JcrMessageDispatcherTestCase extends AbstractMuleTestCase {
 		RequestContext.setEvent(event);
 
 		assertTrue(messageDispatcher.receive(0).getPayload() instanceof Map);
+
+		event = getTestEvent(null);
+		event.getMessage().setStringProperty(
+				JcrConnector.JCR_NODE_RELPATH_PROPERTY, "bar");
+		RequestContext.setEvent(event);
+
+		assertEquals(NullPayload.getInstance(), messageDispatcher.receive(0)
+				.getPayload());
 	}
 
 	public void testReceiveWithEventPropertyRelpath() throws Exception {
@@ -120,6 +128,14 @@ public class JcrMessageDispatcherTestCase extends AbstractMuleTestCase {
 
 		assertEquals(Double.class, messageDispatcher.receive(0).getPayload()
 				.getClass());
+
+		event = getTestEvent(null);
+		event.getMessage().setStringProperty(
+				JcrConnector.JCR_PROPERTY_REL_PATH_PROPERTY, "bar");
+		RequestContext.setEvent(event);
+
+		assertEquals(NullPayload.getInstance(), messageDispatcher.receive(0)
+				.getPayload());
 	}
 
 	public void testReceiveWithEventNodeAndPropertyRelpath() throws Exception {
@@ -189,13 +205,23 @@ public class JcrMessageDispatcherTestCase extends AbstractMuleTestCase {
 				.getClass());
 	}
 
+	public void testReceiveWithEventNodeRelpathAndPropertyFilter()
+			throws Exception {
+		UMOEvent event = getTestEvent(null);
+		event.getMessage().setStringProperty(
+				JcrConnector.JCR_NODE_RELPATH_PROPERTY, "noderelpath-target");
+		RequestContext.setEvent(event);
+
+		JcrPropertyNameFilter jcrPropertyNameFilter = new JcrPropertyNameFilter();
+		jcrPropertyNameFilter.setPattern("proprelpath-**");
+		setFilter(jcrPropertyNameFilter);
+
+		assertEquals(Long.class, messageDispatcher.receive(0).getPayload()
+				.getClass());
+	}
+
 	private void setFilter(UMOFilter filter) {
 		endpoint.setFilter(filter);
 		messageDispatcher.refreshEndpointFilter();
 	}
-
-	// TODO test noderelpath and proprelpath pointing missing items
-
-	// TODO test noderelpath + filter and proprelpath + filter (the filter
-	// should not play in the latter)
 }
