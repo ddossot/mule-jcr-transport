@@ -146,43 +146,37 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 	public UMOMessage doReceive(long ignoredTimeout) throws Exception {
 		Session session = connector.getSession();
 
-		if ((session != null) && (session.isLive())) {
-			Item targetItem = null;
-			UMOEvent event = RequestContext.getEvent();
-			String nodeUUID = null;
-			String nodeRelpath = "";
-			String propertyRelPath = "";
+		Item targetItem = null;
+		UMOEvent event = RequestContext.getEvent();
+		String nodeUUID = null;
+		String nodeRelpath = "";
+		String propertyRelPath = "";
 
-			if (event != null) {
-				if (logger.isDebugEnabled()) {
-					logger.debug("Receiving from JCR with event: " + event);
-				}
-
-				nodeUUID = (String) event.getProperty(
-						JcrConnector.JCR_NODE_UUID_PROPERTY, false);
-
-				if (nodeUUID == null) {
-					nodeRelpath = getNodeRelpathFromEvent(event);
-					propertyRelPath = getPropertyRelpathFromEvent(event);
-				}
-
+		if (event != null) {
+			if (logger.isDebugEnabled()) {
+				logger.debug("Receiving from JCR with event: " + event);
 			}
 
-			if (nodeUUID != null) {
-				targetItem = getTargetItemFromUUID(session, targetItem,
-						nodeUUID);
-			} else {
-				targetItem = getTargetItemFromPath(session, targetItem,
-						nodeRelpath, propertyRelPath);
+			nodeUUID = (String) event.getProperty(
+					JcrConnector.JCR_NODE_UUID_PROPERTY, false);
+
+			if (nodeUUID == null) {
+				nodeRelpath = getNodeRelpathFromEvent(event);
+				propertyRelPath = getPropertyRelpathFromEvent(event);
 			}
 
-			return new MuleMessage(connector
-					.getMessageAdapter(targetItem == null ? null
-							: extractPayloadFromTargetItem(targetItem)));
-
-		} else {
-			throw new IllegalStateException("Invalid session: " + session);
 		}
+
+		if (nodeUUID != null) {
+			targetItem = getTargetItemFromUUID(session, targetItem, nodeUUID);
+		} else {
+			targetItem = getTargetItemFromPath(session, targetItem,
+					nodeRelpath, propertyRelPath);
+		}
+
+		return new MuleMessage(connector
+				.getMessageAdapter(targetItem == null ? null
+						: extractPayloadFromTargetItem(targetItem)));
 	}
 
 	// --- Private Methods ---

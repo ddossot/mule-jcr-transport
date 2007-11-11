@@ -17,8 +17,11 @@ import javax.jcr.Repository;
 import javax.jcr.Session;
 import javax.jcr.SimpleCredentials;
 
+import org.apache.commons.lang.UnhandledException;
 import org.mule.providers.AbstractConnector;
+import org.mule.providers.FatalConnectException;
 import org.mule.providers.jcr.i18n.JcrMessages;
+import org.mule.umo.UMOException;
 import org.mule.umo.lifecycle.InitialisationException;
 
 /**
@@ -114,6 +117,43 @@ public final class JcrConnector extends AbstractConnector {
 		// NOOP
 	}
 
+	public Session getSession() {
+		if ((session != null) && (session.isLive())) {
+			return session;
+		} else {
+			if (connectionStrategy != null) {
+				logger.info("JCR session is invalid and will be recycled.");
+
+				initialised.set(false);
+
+				try {
+					stopConnector();
+				} catch (UMOException umoe) {
+					logger.warn(umoe.getMessage(), umoe);
+				}
+
+				try {
+					connectionStrategy.connect(this);
+					initialise();
+					startConnector();
+					return session;
+
+				} catch (FatalConnectException fce) {
+					throw new IllegalStateException(
+							"Failed to reconnect to JCR server. I'm giving up.");
+				} catch (UMOException umoe) {
+					throw new UnhandledException(
+							"Failed to recover a connector.", umoe);
+				}
+
+			} else {
+				throw new IllegalStateException(
+						"Connection to the JCR container has been lost "
+								+ "and no connection strategy has been defined on the connector!");
+			}
+		}
+	}
+
 	private void setDefaultEndpointValues() {
 		// any change here must be reflected in the documentation
 		setContentPayloadType(JcrContentPayloadType.NONE.toString());
@@ -122,13 +162,6 @@ public final class JcrConnector extends AbstractConnector {
 		setNoLocal(Boolean.TRUE);
 		setUuid(null);
 		setNodeTypeName(null);
-	}
-
-	/**
-	 * @return the session
-	 */
-	public Session getSession() {
-		return session;
 	}
 
 	public String getProtocol() {
