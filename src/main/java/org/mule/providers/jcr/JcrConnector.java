@@ -61,18 +61,18 @@ public final class JcrConnector extends AbstractConnector {
 	 * Event property to define a relative path to append at the end of the
 	 * target item path.
 	 */
-	public static final String JCR_PROPERTY_REL_PATH_PROPERTY = "jcr.propertyRelPath";
+	public static final String JCR_PROPERTY_REL_PATH_PROPERTY = "propertyRelPath";
 
 	/**
 	 * Event property to define a relative path to append after the endpoint
 	 * item path.
 	 */
-	public static final String JCR_NODE_RELPATH_PROPERTY = "jcr.nodeRelpath";
+	public static final String JCR_NODE_RELPATH_PROPERTY = "nodeRelpath";
 
 	/**
 	 * Event property to force the lookup of a particular node by UUID.
 	 */
-	public static final String JCR_NODE_UUID_PROPERTY = "jcr.nodeUUID";
+	public static final String JCR_NODE_UUID_PROPERTY = "nodeUUID";
 
 	public JcrConnector() {
 		super();

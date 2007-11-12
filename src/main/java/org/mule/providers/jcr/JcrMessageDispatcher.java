@@ -158,7 +158,7 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 			}
 
 			nodeUUID = (String) event.getProperty(
-					JcrConnector.JCR_NODE_UUID_PROPERTY, false);
+					JcrConnector.JCR_NODE_UUID_PROPERTY, true);
 
 			if (nodeUUID == null) {
 				nodeRelpath = getNodeRelpathFromEvent(event);
@@ -318,7 +318,7 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 	private String getPropertyRelpathFromEvent(UMOEvent event) {
 		String propertyRelPath;
 		propertyRelPath = (String) event.getProperty(
-				JcrConnector.JCR_PROPERTY_REL_PATH_PROPERTY, false);
+				JcrConnector.JCR_PROPERTY_REL_PATH_PROPERTY, true);
 
 		if (StringUtils.isNotBlank(propertyRelPath)) {
 			propertyRelPath = "/" + propertyRelPath;
@@ -331,7 +331,7 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 	private String getNodeRelpathFromEvent(UMOEvent event) {
 		String nodeRelpath;
 		nodeRelpath = (String) event.getProperty(
-				JcrConnector.JCR_NODE_RELPATH_PROPERTY, false);
+				JcrConnector.JCR_NODE_RELPATH_PROPERTY, true);
 
 		if (StringUtils.isNotBlank(nodeRelpath)) {
 			nodeRelpath = "/" + nodeRelpath;
