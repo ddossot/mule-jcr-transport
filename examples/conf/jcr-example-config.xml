@@ -20,6 +20,12 @@
 			<property name="deep" value="true" />
 			<property name="noLocal" value="true" />
 		</properties>
+		<connection-strategy className="org.mule.providers.SimpleRetryConnectionStrategy">
+			<properties>
+				<property name="retryCount" value="-1" />
+				<property name="frequency" value="2000" />
+			</properties>
+		</connection-strategy>
 	</connector>
 
 	<transformers>
@@ -27,7 +33,7 @@
 	</transformers>
 
 	<global-endpoints>
-		<endpoint name="jcrImages" address="jcr://example/images">
+		<endpoint name="jcrImages" address="jcr://example/images" streaming="true">
 			<filter className="org.mule.routing.filters.logic.AndFilter">
 				<left-filter className="org.mule.providers.jcr.filters.JcrNodeNameFilter" pattern="jcr:content" />
 				<right-filter className="org.mule.providers.jcr.filters.JcrPropertyNameFilter" pattern="jcr:data" />
@@ -43,7 +49,7 @@
 		-->
 		<mule-descriptor name="jcrEventDumper" implementation="org.mule.components.simple.EchoComponent">
 			<inbound-router>
-				<endpoint address="jcr://example" connector="JcrConnector">
+				<endpoint address="jcr://example">
 					<properties>
 						<property name="contentPayloadType" value="full" />
 					</properties>
@@ -55,7 +61,7 @@
 				</router>
 			</outbound-router>
 		</mule-descriptor>
-
+		
 		<!-- 
 			Example of an HTTP endpoint that fetches data from a JCR container.
 			
@@ -68,13 +74,28 @@
 			</inbound-router>
 			<properties>
 				<property name="scriptEngineName" value="groovy" />
-				<text-property name="scriptText">
+				<text-property name="scriptText"><![CDATA[
 					def imageName = message.getPayload().substring(8);
-					message.setStringProperty("jcr.nodeRelpath", imageName);
+					message.setStringProperty("nodeRelpath", imageName);
 					message.setStringProperty("Content-Type", "image/gif");
 					return managementContext.lookupEndpoint("jcrImages").receive(0);
+					]]>
 				</text-property>
 			</properties>
 		</mule-descriptor>
+
+		<!--
+			TODO
+			Example of a streaming endpoint that receives data and saves it in the JCR container.
+			<mule-descriptor name="jcrWriter" implementation="org.mule.components.simple.BridgeComponent"
+			inboundEndpoint="stream://System.in">
+			<outbound-router>
+			<router className="org.mule.routing.outbound.OutboundPassThroughRouter">
+			<endpoint address="jcr://example/written" />
+			</router>
+			</outbound-router>
+			</mule-descriptor>
+		-->
+
 	</model>
 </mule-configuration>
