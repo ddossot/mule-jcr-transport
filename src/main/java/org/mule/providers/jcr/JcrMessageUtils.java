@@ -39,7 +39,7 @@ import org.mule.util.IOUtils;
  * 
  * @author David Dossot (david@dossot.net)
  */
-class JcrMessageUtils {
+public class JcrMessageUtils {
 
 	private static final Log LOG = LogFactory.getLog(JcrMessageUtils.class);
 
@@ -196,8 +196,9 @@ class JcrMessageUtils {
 		}
 	}
 
-	static Object getItemPayload(Item item) throws IllegalStateException,
-			ValueFormatException, RepositoryException {
+	public static Object getItemPayload(Item item)
+			throws IllegalStateException, ValueFormatException,
+			RepositoryException {
 
 		if (item.isNode()) {
 			return getPropertiesPayload(((Node) item).getProperties());
@@ -206,7 +207,7 @@ class JcrMessageUtils {
 		}
 	}
 
-	static Map getPropertiesPayload(PropertyIterator propertyIterator)
+	public static Map getPropertiesPayload(PropertyIterator propertyIterator)
 			throws RepositoryException, ValueFormatException {
 
 		Map result = new HashMap();
