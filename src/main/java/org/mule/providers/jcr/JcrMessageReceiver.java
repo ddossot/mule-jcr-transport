@@ -184,6 +184,7 @@ public final class JcrMessageReceiver extends AbstractMessageReceiver implements
 			logger.debug("JCR events received");
 		}
 
+		// TODO extract the following in a default inbound transformer
 		List eventList = new ArrayList();
 
 		while (eventIterator.hasNext()) {

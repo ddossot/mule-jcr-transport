@@ -10,15 +10,13 @@
 
 package org.mule.providers.jcr;
 
-import java.util.Map;
-
 import javax.jcr.Item;
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.PathNotFoundException;
+import javax.jcr.PropertyIterator;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
-import javax.jcr.ValueFormatException;
 
 import org.mule.impl.MuleMessage;
 import org.mule.impl.RequestContext;
@@ -146,6 +144,7 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 	public UMOMessage doReceive(long ignoredTimeout) throws Exception {
 		Session session = connector.getSession();
 
+		Object rawJcrContent = null;
 		Item targetItem = null;
 		UMOEvent event = RequestContext.getEvent();
 		String nodeUUID = null;
@@ -164,7 +163,6 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 				nodeRelpath = getNodeRelpathFromEvent(event);
 				propertyRelPath = getPropertyRelpathFromEvent(event);
 			}
-
 		}
 
 		if (nodeUUID != null) {
@@ -174,87 +172,81 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 					nodeRelpath, propertyRelPath);
 		}
 
+		if (targetItem != null) {
+			if (targetItem.isNode()) {
+				rawJcrContent = getRawContentFromNode(rawJcrContent, targetItem);
+			} else {
+				rawJcrContent = getRawContentFromProperty(targetItem);
+			}
+		}
+
 		return new MuleMessage(connector
-				.getMessageAdapter(targetItem == null ? null
-						: extractPayloadFromTargetItem(targetItem)));
+				.getMessageAdapter(rawJcrContent == null ? null : connector
+						.getDefaultResponseTransformer().transform(
+								rawJcrContent)));
 	}
 
 	// --- Private Methods ---
 
-	private Object extractPayloadFromTargetItem(Item targetItem)
-			throws RepositoryException, ValueFormatException {
-
-		Object payload = null;
-
-		if (targetItem.isNode()) {
-			String nodeNamePatternFilter = (String) nodeNamePatternFilterRef
-					.get();
-
-			if (nodeNamePatternFilter != null) {
-				targetItem = getTargetItemByNodeNamePatternFilter(targetItem,
-						nodeNamePatternFilter);
-			}
-
-			String propertyNamePatternFilter = (String) propertyNamePatternFilterRef
-					.get();
-
-			if (targetItem != null) {
-				if (propertyNamePatternFilter != null) {
-
-					payload = getTargetItemByPropertyNamePatternFilter(
-							targetItem, propertyNamePatternFilter);
-
-				} else {
-					if (logger.isDebugEnabled()) {
-						logger.debug("Getting payload for node: "
-								+ targetItem.getPath());
-					}
-
-					// targetItem is a node
-					payload = JcrMessageUtils.getItemPayload(targetItem);
-				}
-			}
-		} else {
-			if (logger.isDebugEnabled()) {
-				logger.debug("Getting payload for property: "
-						+ targetItem.getPath());
-			}
-			// targetItem is a property
-			payload = JcrMessageUtils.getItemPayload(targetItem);
-		}
-		return payload;
-	}
-
-	private Object getTargetItemByPropertyNamePatternFilter(Item targetItem,
-			String propertyNamePatternFilter) throws RepositoryException,
-			ValueFormatException {
-
-		Object payload;
+	private Object getRawContentFromProperty(Item targetItem)
+			throws RepositoryException {
 
 		if (logger.isDebugEnabled()) {
-			logger.debug("Applying property name pattern filter: "
-					+ propertyNamePatternFilter);
+			logger.debug("Getting payload for property: "
+					+ targetItem.getPath());
 		}
 
-		Map propertiesPayload = JcrMessageUtils
-				.getPropertiesPayload(((Node) targetItem)
-						.getProperties(propertyNamePatternFilter));
+		return targetItem;
+	}
 
-		// if the map contains only one property, because we have applied a
-		// filter, we assume the intention was to get a single property value
-		if ((propertiesPayload != null) && (propertiesPayload.size() == 1)) {
+	private Object getRawContentFromNode(Object rawJcrContent, Item targetItem)
+			throws RepositoryException {
 
-			payload = propertiesPayload.values().iterator().next();
-		} else {
-			if (propertiesPayload != null) {
-				logger.warn(JcrMessages.noNodeFor(propertyNamePatternFilter)
-						.getMessage());
+		String nodeNamePatternFilter = (String) nodeNamePatternFilterRef.get();
+
+		if (nodeNamePatternFilter != null) {
+			targetItem = getTargetItemByNodeNamePatternFilter(targetItem,
+					nodeNamePatternFilter);
+		}
+
+		String propertyNamePatternFilter = (String) propertyNamePatternFilterRef
+				.get();
+
+		if (targetItem != null) {
+			if (propertyNamePatternFilter != null) {
+
+				if (logger.isDebugEnabled()) {
+					logger.debug("Applying property name pattern filter: "
+							+ propertyNamePatternFilter);
+				}
+
+				PropertyIterator properties = ((Node) targetItem)
+						.getProperties(propertyNamePatternFilter);
+
+				// if the map contains only one property, because we
+				// have applied a filter, we assume the intention was to
+				// get a single property value
+				if (properties.getSize() == 0) {
+					logger.warn(JcrMessages
+							.noNodeFor(propertyNamePatternFilter).getMessage());
+					rawJcrContent = null;
+				} else if (properties.getSize() == 1) {
+					rawJcrContent = properties.next();
+				} else {
+					rawJcrContent = properties;
+				}
+
+			} else {
+				if (logger.isDebugEnabled()) {
+					logger.debug("Getting payload for node: "
+							+ targetItem.getPath());
+				}
+
+				// targetItem is a node
+				rawJcrContent = targetItem;
 			}
-
-			payload = propertiesPayload;
 		}
-
-		return payload;
+		return rawJcrContent;
 	}
 
 	private Item getTargetItemByNodeNamePatternFilter(Item targetItem,

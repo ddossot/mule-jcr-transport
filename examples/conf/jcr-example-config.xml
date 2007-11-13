@@ -33,7 +33,7 @@
 	</transformers>
 
 	<global-endpoints>
-		<endpoint name="jcrImages" address="jcr://example/images" streaming="true">
+		<endpoint name="jcrImages" address="jcr://example/images">
 			<filter className="org.mule.routing.filters.logic.AndFilter">
 				<left-filter className="org.mule.providers.jcr.filters.JcrNodeNameFilter" pattern="jcr:content" />
 				<right-filter className="org.mule.providers.jcr.filters.JcrPropertyNameFilter" pattern="jcr:data" />
@@ -61,7 +61,7 @@
 				</router>
 			</outbound-router>
 		</mule-descriptor>
-		
+
 		<!-- 
 			Example of an HTTP endpoint that fetches data from a JCR container.
 			
@@ -76,16 +76,17 @@
 				<property name="scriptEngineName" value="groovy" />
 				<text-property name="scriptText"><![CDATA[
 					def imageName = message.getPayload().substring(8);
+					message.clearProperties();
 					message.setStringProperty("nodeRelpath", imageName);
 					message.setStringProperty("Content-Type", "image/gif");
-					return managementContext.lookupEndpoint("jcrImages").receive(0);
+					return managementContext.lookupEndpoint("jcrImages").receive(0).getPayload();
 					]]>
 				</text-property>
 			</properties>
 		</mule-descriptor>
 
 		<!--
-			TODO
+			TODO implement dispatch/send and finalize this sample
 			Example of a streaming endpoint that receives data and saves it in the JCR container.
 			<mule-descriptor name="jcrWriter" implementation="org.mule.components.simple.BridgeComponent"
 			inboundEndpoint="stream://System.in">
