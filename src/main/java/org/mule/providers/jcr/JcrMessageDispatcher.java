@@ -40,7 +40,7 @@ import edu.emory.mathcs.backport.java.util.concurrent.atomic.AtomicReference;
  * @author David Dossot (david@dossot.net)
  */
 public class JcrMessageDispatcher extends AbstractMessageDispatcher {
-	private final JcrConnector connector;
+	private final JcrConnector jcrConnector;
 
 	private AtomicReference nodeNamePatternFilterRef = new AtomicReference();
 
@@ -48,7 +48,7 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 
 	public JcrMessageDispatcher(UMOImmutableEndpoint endpoint) {
 		super(endpoint);
-		connector = (JcrConnector) endpoint.getConnector();
+		jcrConnector = (JcrConnector) endpoint.getConnector();
 	}
 
 	public void doConnect() throws Exception {
@@ -142,7 +142,7 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 	 * @return the message fetched from this dispatcher.
 	 */
 	public UMOMessage doReceive(long ignoredTimeout) throws Exception {
-		Session session = connector.getSession();
+		Session session = jcrConnector.getSession();
 
 		Object rawJcrContent = null;
 		Item targetItem = null;
@@ -180,8 +180,8 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 			}
 		}
 
-		return new MuleMessage(connector
-				.getMessageAdapter(rawJcrContent == null ? null : connector
+		return new MuleMessage(jcrConnector
+				.getMessageAdapter(rawJcrContent == null ? null : jcrConnector
 						.getDefaultResponseTransformer().transform(
 								rawJcrContent)));
 	}

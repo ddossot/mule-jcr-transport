@@ -10,11 +10,11 @@
 
 package org.mule.providers.jcr;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.jcr.Repository;
 import javax.jcr.RepositoryException;
+import javax.jcr.Session;
 import javax.jcr.observation.EventIterator;
 import javax.jcr.observation.EventListener;
 import javax.jcr.observation.ObservationManager;
@@ -32,7 +32,8 @@ import org.mule.umo.endpoint.UMOEndpoint;
 import org.mule.umo.lifecycle.InitialisationException;
 import org.mule.umo.lifecycle.LifecycleException;
 import org.mule.umo.provider.UMOConnector;
-import org.mule.umo.provider.UMOMessageAdapter;
+
+import edu.emory.mathcs.backport.java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Registers a JCR <code>javax.jcr.observation.EventListener</code> to the
@@ -62,6 +63,14 @@ public final class JcrMessageReceiver extends AbstractMessageReceiver implements
 	private final JcrContentPayloadType contentPayloadType;
 
 	private ObservationManager observationManager;
+
+	private Session observingSession;
+
+	private static final AtomicReference jcrMessageReceiverContext = new AtomicReference();
+
+	public static JcrMessageReceiverContext getJcrMessageReceiverContext() {
+		return (JcrMessageReceiverContext) jcrMessageReceiverContext.get();
+	}
 
 	public JcrMessageReceiver(UMOConnector connector, UMOComponent component,
 			UMOEndpoint endpoint) throws InitialisationException {
@@ -131,8 +140,20 @@ public final class JcrMessageReceiver extends AbstractMessageReceiver implements
 		}
 
 		try {
-			observationManager = jcrConnector.getSession().getWorkspace()
+			observingSession = jcrConnector.getSession();
+			observationManager = observingSession.getWorkspace()
 					.getObservationManager();
+
+			jcrMessageReceiverContext.set(new JcrMessageReceiverContext() {
+				public JcrContentPayloadType getContentPayloadType() {
+					return contentPayloadType;
+				}
+
+				public Session getObservingSession() {
+					return observingSession;
+				}
+			});
+
 		} catch (Exception e) {
 			throw new ConnectException(JcrMessages
 					.canNotGetObservationManager(jcrConnector
@@ -184,26 +205,9 @@ public final class JcrMessageReceiver extends AbstractMessageReceiver implements
 			logger.debug("JCR events received");
 		}
 
-		// TODO extract the following in a default inbound transformer
-		List eventList = new ArrayList();
-
-		while (eventIterator.hasNext()) {
-			try {
-
-				eventList.add(JcrMessageUtils.newInstance(eventIterator
-						.nextEvent(), jcrConnector.getSession(),
-						contentPayloadType));
-
-			} catch (RepositoryException re) {
-				logger.error("Can not process JCR event", re);
-			}
-		}
-
 		try {
-			UMOMessageAdapter adapter = jcrConnector
-					.getMessageAdapter(eventList);
-
-			routeMessage(new MuleMessage(adapter));
+			routeMessage(new MuleMessage(jcrConnector
+					.getMessageAdapter(eventIterator)));
 
 		} catch (MessagingException me) {
 			handleException(me);

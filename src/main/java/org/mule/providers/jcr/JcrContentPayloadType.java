@@ -16,7 +16,7 @@ package org.mule.providers.jcr;
  * 
  * @author David Dossot (david@dossot.net)
  */
-final class JcrContentPayloadType {
+public final class JcrContentPayloadType {
 
 	/**
 	 * No content will be fetched from JCR: the payload will be limited to the
