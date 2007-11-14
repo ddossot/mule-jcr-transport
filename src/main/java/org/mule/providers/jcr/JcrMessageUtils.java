@@ -43,7 +43,7 @@ public class JcrMessageUtils {
 
 	private static final Log LOG = LogFactory.getLog(JcrMessageUtils.class);
 
-	static JcrMessage newInstance(Event event, Session session,
+	public static JcrMessage newInstance(Event event, Session session,
 			JcrContentPayloadType contentPayloadType)
 			throws RepositoryException {
 

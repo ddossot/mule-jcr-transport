@@ -19,8 +19,8 @@ import org.mule.transformers.AbstractTransformer;
 import org.mule.umo.transformer.TransformerException;
 
 /**
- * Transforms an JCR <code>Item</code> into an object that can be used as a
- * payload.
+ * Transforms a JCR <code>Item</code> or <code>PropertyIterator</code> into
+ * an object that can be used as a payload.
  * 
  * @author David Dossot (david@dossot.net)
  */
@@ -36,9 +36,7 @@ public class JcrItemToObject extends AbstractTransformer {
 			throws TransformerException {
 
 		try {
-			if (src == null) {
-				return null;
-			} else if (src instanceof Item) {
+			if (src instanceof Item) {
 				return JcrMessageUtils.getItemPayload((Item) src);
 			} else if (src instanceof PropertyIterator) {
 				return JcrMessageUtils

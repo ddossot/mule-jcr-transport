@@ -30,6 +30,7 @@
 
 	<transformers>
 		<transformer name="ObjectToXml" className="org.mule.transformers.xml.ObjectToXml" />
+		<transformer name="NoActionTransformer" className="org.mule.transformers.NoActionTransformer" />
 	</transformers>
 
 	<global-endpoints>

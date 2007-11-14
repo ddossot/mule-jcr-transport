@@ -15,6 +15,8 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 
+import javax.jcr.observation.EventIterator;
+
 import org.mule.config.i18n.CoreMessages;
 import org.mule.impl.ThreadSafeAccess;
 import org.mule.providers.AbstractMessageAdapter;
@@ -42,7 +44,8 @@ public final class JcrMessageAdapter extends AbstractMessageAdapter {
 
 	public JcrMessageAdapter(Object message) throws MessagingException {
 		if ((message instanceof Serializable)
-				|| (message instanceof InputStream)) {
+				|| (message instanceof InputStream)
+				|| (message instanceof EventIterator)) {
 
 			payload = message;
 
@@ -72,6 +75,9 @@ public final class JcrMessageAdapter extends AbstractMessageAdapter {
 				throw new TransformerException(CoreMessages.transformFailed(
 						object.getClass().getName(), "InputStream"), ioe);
 			}
+		} else if (object instanceof EventIterator) {
+			// trying to get a bytes representation of the iterator is an error
+			return super.convertToBytes(EventIterator.class.getName());
 		} else {
 			return super.convertToBytes(object);
 		}
