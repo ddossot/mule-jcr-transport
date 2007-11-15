@@ -10,6 +10,9 @@
 
 package org.mule.providers.jcr;
 
+import java.util.List;
+import java.util.Map;
+
 import javax.jcr.Item;
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
@@ -52,6 +55,16 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 	}
 
 	public void doConnect() throws Exception {
+		// check the endpoint URI points to an existing node (even if this node
+		// can be removed later, it is good to fail fast if it does not exist at
+		// start time)
+		String endpointURI = endpoint.getEndpointURI().getAddress();
+
+		if (jcrConnector.getSession().itemExists(endpointURI)) {
+			new IllegalStateException("The dispatcher endpoint URI ("
+					+ endpointURI + ") does not point to an existing item!");
+		}
+
 		refreshEndpointFilter();
 	}
 
@@ -76,15 +89,38 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 	}
 
 	public UMOMessage doSend(UMOEvent event) throws Exception {
-		/*
-		 * IMPLEMENTATION NOTE: Should send the event payload over the
-		 * transport. If there is a response from the transport it shuold be
-		 * returned from this method. The sendEvent method is called when the
-		 * endpoint is running synchronously and any response returned will
-		 * ultimately be passed back to the callee. This method is executed in
-		 * the same thread as the request thread.
-		 */
-		throw new UnsupportedOperationException("doSend");
+		String nodeRelpath = getNodeRelpathFromEvent(event);
+		String propertyRelPath = getPropertyRelpathFromEvent(event);
+		Item targetItem = getTargetItemFromPath(jcrConnector.getSession(),
+				nodeRelpath, propertyRelPath);
+
+		if (targetItem != null) {
+			Object payload = event.getTransformedMessage();
+
+			if (payload == null) {
+				// TODO throw exception
+			}
+
+			if (targetItem.isNode()) {
+				if ((payload instanceof Map)) {
+					// TODO store several properties
+				} else {
+					// TODO throw exception
+				}
+			} else {
+				if ((payload instanceof List)) {
+					// TODO store a multi valued property
+				} else {
+					// TODO store a single value property
+				}
+			}
+
+		} else {
+			// TODO throw exception
+		}
+
+		// TODO return something sensible, or not?
+		return null;
 	}
 
 	/**
@@ -142,8 +178,6 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 	 * @return the message fetched from this dispatcher.
 	 */
 	public UMOMessage doReceive(long ignoredTimeout) throws Exception {
-		Session session = jcrConnector.getSession();
-
 		Object rawJcrContent = null;
 		Item targetItem = null;
 		UMOEvent event = RequestContext.getEvent();
@@ -166,9 +200,10 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 		}
 
 		if (nodeUUID != null) {
-			targetItem = getTargetItemFromUUID(session, targetItem, nodeUUID);
+			targetItem = getTargetItemFromUUID(jcrConnector.getSession(),
+					nodeUUID);
 		} else {
-			targetItem = getTargetItemFromPath(session, targetItem,
+			targetItem = getTargetItemFromPath(jcrConnector.getSession(),
 					nodeRelpath, propertyRelPath);
 		}
 
@@ -277,9 +312,9 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 		return targetItem;
 	}
 
-	private Item getTargetItemFromPath(Session session, Item targetItem,
-			String nodeRelpath, String propertyRelPath)
-			throws RepositoryException, PathNotFoundException {
+	private Item getTargetItemFromPath(Session session, String nodeRelpath,
+			String propertyRelPath) throws RepositoryException,
+			PathNotFoundException {
 
 		if (logger.isDebugEnabled()) {
 			logger.debug("Receiving from JCR for endpoint: " + getEndpoint());
@@ -289,22 +324,20 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 				+ nodeRelpath + propertyRelPath;
 
 		if (session.itemExists(itemAbsolutePath)) {
-			targetItem = session.getItem(itemAbsolutePath);
+			return session.getItem(itemAbsolutePath);
 		} else {
 			logger.warn(JcrMessages.noNodeFor(itemAbsolutePath).getMessage());
+			return null;
 		}
-
-		return targetItem;
 	}
 
-	private Item getTargetItemFromUUID(Session session, Item targetItem,
-			String nodeUUID) {
+	private Item getTargetItemFromUUID(Session session, String nodeUUID) {
 		try {
-			targetItem = session.getNodeByUUID(nodeUUID);
+			return session.getNodeByUUID(nodeUUID);
 		} catch (RepositoryException re) {
 			logger.warn(JcrMessages.noNodeFor("UUID=" + nodeUUID).getMessage());
 		}
-		return targetItem;
+		return null;
 	}
 
 	private String getPropertyRelpathFromEvent(UMOEvent event) {
