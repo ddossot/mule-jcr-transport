@@ -18,7 +18,7 @@
 			<property name="password" value="admin" />
 			<property name="eventTypes" value="31" />
 			<property name="deep" value="true" />
-			<property name="noLocal" value="true" />
+			<property name="noLocal" value="false" />
 		</properties>
 		<connection-strategy className="org.mule.providers.SimpleRetryConnectionStrategy">
 			<properties>
@@ -87,17 +87,18 @@
 		</mule-descriptor>
 
 		<!--
-			TODO implement dispatch/send and finalize this sample
 			Example of a streaming endpoint that receives data and saves it in the JCR container.
-			<mule-descriptor name="jcrWriter" implementation="org.mule.components.simple.BridgeComponent"
+			
+			Type text in the console followed by enter should store data in JCR and trigger the listener of "jcrEventDumper" above.
+		-->
+		<mule-descriptor name="jcrWriter" implementation="org.mule.components.simple.BridgeComponent"
 			inboundEndpoint="stream://System.in">
 			<outbound-router>
-			<router className="org.mule.routing.outbound.OutboundPassThroughRouter">
-			<endpoint address="jcr://example/written" />
-			</router>
+				<router className="org.mule.routing.outbound.OutboundPassThroughRouter">
+					<endpoint address="jcr://example/written" />
+				</router>
 			</outbound-router>
-			</mule-descriptor>
-		-->
+		</mule-descriptor>
 
 	</model>
 </mule-configuration>

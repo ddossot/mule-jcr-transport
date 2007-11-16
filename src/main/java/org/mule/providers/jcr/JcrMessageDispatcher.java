@@ -17,6 +17,7 @@ import javax.jcr.Item;
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.PathNotFoundException;
+import javax.jcr.Property;
 import javax.jcr.PropertyIterator;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
@@ -91,14 +92,23 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 	public UMOMessage doSend(UMOEvent event) throws Exception {
 		String nodeRelpath = getNodeRelpathFromEvent(event);
 		String propertyRelPath = getPropertyRelpathFromEvent(event);
-		Item targetItem = getTargetItemFromPath(jcrConnector.getSession(),
-				nodeRelpath, propertyRelPath);
+
+		Session session = jcrConnector.getSession();
+
+		// TODO the following should create the missing path items
+		Item targetItem = getTargetItemFromPath(session, nodeRelpath,
+				propertyRelPath);
 
 		if (targetItem != null) {
 			Object payload = event.getTransformedMessage();
 
 			if (payload == null) {
 				// TODO throw exception
+			}
+
+			if (logger.isDebugEnabled()) {
+				logger.debug("Writing '" + payload + "' to item: "
+						+ targetItem.getPath());
 			}
 
 			if (targetItem.isNode()) {
@@ -108,12 +118,17 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 					// TODO throw exception
 				}
 			} else {
+				Property targetProperty = (Property) targetItem;
+
 				if ((payload instanceof List)) {
 					// TODO store a multi valued property
 				} else {
-					// TODO store a single value property
+					targetProperty.setValue(JcrMessageUtils.newPropertyValue(
+							session, payload));
 				}
 			}
+
+			session.save();
 
 		} else {
 			// TODO throw exception

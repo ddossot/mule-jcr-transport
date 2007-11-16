@@ -10,9 +10,14 @@
 
 package org.mule.providers.jcr;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -194,6 +199,60 @@ public class JcrMessageUtils {
 		} else {
 			return getValuePayload(property.getValue());
 		}
+	}
+
+	static Value newPropertyValue(Session session, Object value)
+			throws RepositoryException, IOException {
+
+		// TODO unit test
+
+		if (value == null) {
+			// TODO check if this is valid in JCR
+			return null;
+
+		} else if (value instanceof Boolean) {
+			return session.getValueFactory().createValue(
+					((Boolean) value).booleanValue());
+
+		} else if (value instanceof Calendar) {
+			return session.getValueFactory().createValue((Calendar) value);
+
+		} else if (value instanceof Double) {
+			return session.getValueFactory().createValue(
+					((Double) value).doubleValue());
+
+		} else if (value instanceof InputStream) {
+			return session.getValueFactory().createValue((InputStream) value);
+
+		} else if (value instanceof byte[]) {
+			return session.getValueFactory().createValue(
+					new ByteArrayInputStream((byte[]) value));
+
+		} else if (value instanceof Long) {
+			return session.getValueFactory().createValue(
+					((Long) value).longValue());
+
+		} else if (value instanceof Node) {
+			return session.getValueFactory().createValue((Node) value);
+
+		} else if (value instanceof String) {
+			return session.getValueFactory().createValue((String) value);
+
+		} else if (value instanceof Serializable) {
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			ObjectOutputStream oos = new ObjectOutputStream(baos);
+			oos.writeObject(value);
+			oos.flush();
+			oos.close();
+
+			return session.getValueFactory().createValue(
+					new ByteArrayInputStream(baos.toByteArray()));
+		} else {
+			throw new IllegalArgumentException(
+					"Impossible to store object of type: " + value.getClass());
+
+		}
+
 	}
 
 	public static Object getItemPayload(Item item)

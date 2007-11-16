@@ -17,10 +17,9 @@
 			<value>example</value>
 		</property>
 	</bean>
+	<!-- 
 	<bean id="scheduledTask" lazy-init="false" class="org.springframework.scheduling.timer.ScheduledTimerTask">
-		<!-- wait 10 seconds before starting repeated execution -->
 		<property name="delay" value="10000" />
-		<!-- run every 3 seconds -->
 		<property name="period" value="3000" />
 		<property name="timerTask" ref="contentGenerator" />
 	</bean>
@@ -31,5 +30,6 @@
 			</list>
 		</property>
 	</bean>
+	 -->
 </beans>
 
