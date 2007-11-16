@@ -58,6 +58,10 @@ public class RandomContentGenerator extends TimerTask {
 
 		Node rootNode = repositoryRoot.addNode(rootNodeName);
 
+		// setup a target for writing
+		// TODO remove when the dispatcher can auto-create
+		rootNode.setProperty("written", "");
+
 		// add some demo files
 		Node imagesNode = rootNode.addNode("images");
 		storeImage(imagesNode, "mule.gif");
