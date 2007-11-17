@@ -74,6 +74,11 @@ public final class JcrConnector extends AbstractConnector {
 	 */
 	public static final String JCR_NODE_UUID_PROPERTY = "nodeUUID";
 
+	/**
+	 * Event property to force a particular node type name.
+	 */
+	public static final String JCR_NODE_TYPE_NAME = "nodeTypeName";
+
 	public JcrConnector() {
 		super();
 

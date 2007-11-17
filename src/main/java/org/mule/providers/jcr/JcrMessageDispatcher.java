@@ -90,8 +90,19 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 	}
 
 	public UMOMessage doSend(UMOEvent event) throws Exception {
-		String nodeRelpath = getNodeRelpathFromEvent(event);
-		String propertyRelPath = getPropertyRelpathFromEvent(event);
+		String propertyRelPath = (String) event.getProperty(
+				JcrConnector.JCR_PROPERTY_REL_PATH_PROPERTY, true);
+
+		String nodeRelpath = (String) event.getProperty(
+				JcrConnector.JCR_NODE_RELPATH_PROPERTY, true);
+
+		String nodeTypeName = (String) event.getProperty(
+				JcrConnector.JCR_NODE_TYPE_NAME, true);
+
+		if ((StringUtils.isNotEmpty(nodeTypeName)) && (propertyRelPath != null)) {
+			// TODO throw exception stating that if a node type is provided, it
+			// is not possible to target a property
+		}
 
 		Session session = jcrConnector.getSession();
 
@@ -197,8 +208,8 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 		Item targetItem = null;
 		UMOEvent event = RequestContext.getEvent();
 		String nodeUUID = null;
-		String nodeRelpath = "";
-		String propertyRelPath = "";
+		String nodeRelpath = null;
+		String propertyRelPath = null;
 
 		if (event != null) {
 			if (logger.isDebugEnabled()) {
@@ -209,8 +220,11 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 					JcrConnector.JCR_NODE_UUID_PROPERTY, true);
 
 			if (nodeUUID == null) {
-				nodeRelpath = getNodeRelpathFromEvent(event);
-				propertyRelPath = getPropertyRelpathFromEvent(event);
+				nodeRelpath = (String) event.getProperty(
+						JcrConnector.JCR_NODE_RELPATH_PROPERTY, true);
+
+				propertyRelPath = (String) event.getProperty(
+						JcrConnector.JCR_PROPERTY_REL_PATH_PROPERTY, true);
 			}
 		}
 
@@ -335,15 +349,61 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 			logger.debug("Receiving from JCR for endpoint: " + getEndpoint());
 		}
 
-		String itemAbsolutePath = endpoint.getEndpointURI().getAddress()
-				+ nodeRelpath + propertyRelPath;
+		Item item = null;
+		String itemAbsolutePath = endpoint.getEndpointURI().getAddress();
 
 		if (session.itemExists(itemAbsolutePath)) {
-			return session.getItem(itemAbsolutePath);
-		} else {
-			logger.warn(JcrMessages.noNodeFor(itemAbsolutePath).getMessage());
-			return null;
+			item = session.getItem(itemAbsolutePath);
+
+			if (nodeRelpath != null) {
+				Node node = item.isNode() ? (Node) item : null;
+
+				if (node != null) {
+					itemAbsolutePath = itemAbsolutePath + "/" + nodeRelpath;
+
+					if (node.hasNode(nodeRelpath)) {
+						item = node.getNode(nodeRelpath);
+					} else {
+						item = null;
+					}
+				} else {
+					throw new IllegalArgumentException(
+							"The node relative path "
+									+ nodeRelpath
+									+ " has been specified though the target item path "
+									+ itemAbsolutePath
+									+ " did not refer to a node!");
+				}
+			}
+
+			if (propertyRelPath != null) {
+				Node node = item.isNode() ? (Node) item : null;
+
+				if (node != null) {
+					itemAbsolutePath = itemAbsolutePath + "/" + propertyRelPath;
+
+					if (node.hasProperty(propertyRelPath)) {
+						item = node.getProperty(propertyRelPath);
+					} else {
+						item = null;
+					}
+				} else {
+					throw new IllegalArgumentException(
+							"The property relative path "
+									+ propertyRelPath
+									+ " has been specified though the target item path "
+									+ itemAbsolutePath
+									+ " did not refer to a node!");
+				}
+			}
+
 		}
+
+		if (item == null) {
+			logger.warn(JcrMessages.noNodeFor(itemAbsolutePath).getMessage());
+		}
+
+		return item;
 	}
 
 	private Item getTargetItemFromUUID(Session session, String nodeUUID) {
@@ -353,32 +413,6 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 			logger.warn(JcrMessages.noNodeFor("UUID=" + nodeUUID).getMessage());
 		}
 		return null;
-	}
-
-	private String getPropertyRelpathFromEvent(UMOEvent event) {
-		String propertyRelPath;
-		propertyRelPath = (String) event.getProperty(
-				JcrConnector.JCR_PROPERTY_REL_PATH_PROPERTY, true);
-
-		if (StringUtils.isNotBlank(propertyRelPath)) {
-			propertyRelPath = "/" + propertyRelPath;
-		} else {
-			propertyRelPath = "";
-		}
-		return propertyRelPath;
-	}
-
-	private String getNodeRelpathFromEvent(UMOEvent event) {
-		String nodeRelpath;
-		nodeRelpath = (String) event.getProperty(
-				JcrConnector.JCR_NODE_RELPATH_PROPERTY, true);
-
-		if (StringUtils.isNotBlank(nodeRelpath)) {
-			nodeRelpath = "/" + nodeRelpath;
-		} else {
-			nodeRelpath = "";
-		}
-		return nodeRelpath;
 	}
 
 	private static String getPropertyNamePatternFilter(UMOFilter filter,
