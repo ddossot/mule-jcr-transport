@@ -96,26 +96,15 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 		String nodeRelpath = (String) event.getProperty(
 				JcrConnector.JCR_NODE_RELPATH_PROPERTY, true);
 
-		String nodeTypeName = (String) event.getProperty(
-				JcrConnector.JCR_NODE_TYPE_NAME, true);
-
-		if ((StringUtils.isNotEmpty(nodeTypeName)) && (propertyRelPath != null)) {
-			// TODO throw exception stating that if a node type is provided, it
-			// is not possible to target a property
-		}
-
 		Session session = jcrConnector.getSession();
 
-		// TODO the following should create the missing path items
+		Object payload = event.getTransformedMessage();
+
 		Item targetItem = getTargetItemFromPath(session, nodeRelpath,
 				propertyRelPath);
 
 		if (targetItem != null) {
-			Object payload = event.getTransformedMessage();
-
-			if (payload == null) {
-				// TODO throw exception
-			}
+			// write payload to node or property
 
 			if (logger.isDebugEnabled()) {
 				logger.debug("Writing '" + payload + "' to item: "
@@ -139,11 +128,26 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 				}
 			}
 
-			session.save();
-
 		} else {
-			// TODO throw exception
+			// create the target node, based on its type and relpath
+			String nodeTypeName = (String) event.getProperty(
+					JcrConnector.JCR_NODE_TYPE_NAME, true);
+
+			if (StringUtils.isEmpty(nodeTypeName)) {
+				nodeTypeName = "nt:base";
+
+				if (logger.isDebugEnabled()) {
+					logger
+							.debug("No node type name has been specified, using: "
+									+ nodeTypeName);
+				}
+			}
+
+			// TODO create the node using a node type handler
+
 		}
+
+		session.save();
 
 		// TODO return something sensible, or not?
 		return null;
