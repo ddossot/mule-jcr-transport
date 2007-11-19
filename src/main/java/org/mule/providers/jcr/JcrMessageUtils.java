@@ -204,11 +204,11 @@ public class JcrMessageUtils {
 	static Value newPropertyValue(Session session, Object value)
 			throws RepositoryException, IOException {
 
-		// TODO unit test
+		// TODO increase test coverage
 
 		if (value == null) {
-			// TODO check if this is valid in JCR
-			return null;
+			return session.getValueFactory().createValue(null,
+					PropertyType.UNDEFINED);
 
 		} else if (value instanceof Boolean) {
 			return session.getValueFactory().createValue(
