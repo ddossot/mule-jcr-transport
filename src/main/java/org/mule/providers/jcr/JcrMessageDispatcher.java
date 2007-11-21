@@ -10,7 +10,7 @@
 
 package org.mule.providers.jcr;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.Map;
 
 import javax.jcr.Item;
@@ -34,7 +34,6 @@ import org.mule.umo.UMOEvent;
 import org.mule.umo.UMOFilter;
 import org.mule.umo.UMOMessage;
 import org.mule.umo.endpoint.UMOImmutableEndpoint;
-import org.mule.util.StringUtils;
 
 import edu.emory.mathcs.backport.java.util.concurrent.atomic.AtomicReference;
 
@@ -111,17 +110,25 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 						+ targetItem.getPath());
 			}
 
+			// TODO unit test 4 branches
 			if (targetItem.isNode()) {
+				Node targetNode = (Node) targetItem;
+
 				if ((payload instanceof Map)) {
-					// TODO store several properties
+					JcrMessageUtils.storeProperties(session, targetNode,
+							(Map) payload);
 				} else {
-					// TODO throw exception
+					throw new IllegalArgumentException(
+							"The payload type to write properties to target node "
+									+ targetNode + " should be a Map and not: "
+									+ payload);
 				}
 			} else {
 				Property targetProperty = (Property) targetItem;
 
-				if ((payload instanceof List)) {
-					// TODO store a multi valued property
+				if ((payload instanceof Collection)) {
+					targetProperty.setValue(JcrMessageUtils.newPropertyValues(
+							session, (Collection) payload));
 				} else {
 					targetProperty.setValue(JcrMessageUtils.newPropertyValue(
 							session, payload));
@@ -133,24 +140,13 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 			String nodeTypeName = (String) event.getProperty(
 					JcrConnector.JCR_NODE_TYPE_NAME, true);
 
-			if (StringUtils.isEmpty(nodeTypeName)) {
-				nodeTypeName = "nt:base";
-
-				if (logger.isDebugEnabled()) {
-					logger
-							.debug("No node type name has been specified, using: "
-									+ nodeTypeName);
-				}
-			}
-
 			// TODO create the node using a node type handler
 
 		}
 
 		session.save();
 
-		// TODO return something sensible, or not?
-		return null;
+		return event.getMessage();
 	}
 
 	/**
