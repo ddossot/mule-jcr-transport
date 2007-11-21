@@ -18,9 +18,12 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.jcr.Item;
 import javax.jcr.Node;
@@ -199,6 +202,43 @@ public class JcrMessageUtils {
 		} else {
 			return getValuePayload(property.getValue());
 		}
+	}
+
+	static void storeProperties(Session session, Node targetNode,
+			Map propertyNamesAndValues) throws RepositoryException, IOException {
+
+		for (Iterator i = propertyNamesAndValues.entrySet().iterator(); i
+				.hasNext();) {
+
+			Map.Entry propertyNameAndValue = (Entry) i.next();
+
+			String propertyName = (String) propertyNameAndValue.getKey();
+			Object propertyValue = propertyNameAndValue.getValue();
+
+			if ((propertyValue instanceof Collection)) {
+				targetNode
+						.setProperty(propertyName, JcrMessageUtils
+								.newPropertyValues(session,
+										(Collection) propertyValue));
+			} else {
+				targetNode.setProperty(propertyName, JcrMessageUtils
+						.newPropertyValue(session, propertyValue));
+			}
+		}
+	}
+
+	static Value[] newPropertyValues(Session session, Collection objects)
+			throws RepositoryException, IOException {
+
+		Value[] values = new Value[objects.size()];
+
+		int i = 0;
+
+		for (Iterator j = objects.iterator(); j.hasNext();) {
+			values[i++] = newPropertyValue(session, j.next());
+		}
+
+		return values;
 	}
 
 	static Value newPropertyValue(Session session, Object value)
