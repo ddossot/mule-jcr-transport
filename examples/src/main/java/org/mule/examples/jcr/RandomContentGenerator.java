@@ -58,8 +58,7 @@ public class RandomContentGenerator extends TimerTask {
 
 		Node rootNode = repositoryRoot.addNode(rootNodeName);
 
-		// setup a target for writing
-		// TODO remove when the dispatcher can auto-create
+		// setup a target node for writing a single property
 		rootNode.setProperty("written", "");
 
 		// add some demo files
