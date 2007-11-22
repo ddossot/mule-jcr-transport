@@ -110,7 +110,6 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 						+ targetItem.getPath());
 			}
 
-			// TODO unit test 4 branches
 			if (targetItem.isNode()) {
 				Node targetNode = (Node) targetItem;
 

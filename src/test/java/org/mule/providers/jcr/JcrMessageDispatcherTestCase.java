@@ -12,9 +12,14 @@ package org.mule.providers.jcr;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.jcr.Node;
+import javax.jcr.PropertyType;
 
 import org.mule.impl.RequestContext;
 import org.mule.impl.endpoint.MuleEndpoint;
@@ -207,6 +212,7 @@ public class JcrMessageDispatcherTestCase extends AbstractMuleTestCase {
 
 	public void testReceiveWithEventNodeRelpathAndPropertyFilter()
 			throws Exception {
+
 		UMOEvent event = getTestEvent(null);
 		event.getMessage().setStringProperty(
 				JcrConnector.JCR_NODE_RELPATH_PROPERTY, "noderelpath-target");
@@ -218,6 +224,82 @@ public class JcrMessageDispatcherTestCase extends AbstractMuleTestCase {
 
 		assertEquals(Long.class, messageDispatcher.receive(0).getPayload()
 				.getClass());
+	}
+
+	public void testStoreMapInNode() throws Exception {
+		Map propertyNameAndValues = new HashMap();
+		propertyNameAndValues.put("longProperty", new Long(1234));
+		Calendar now = Calendar.getInstance();
+		propertyNameAndValues.put("dateProperty", now);
+
+		UMOEvent event = getTestEvent(propertyNameAndValues);
+		event.getMessage().setStringProperty(
+				JcrConnector.JCR_NODE_RELPATH_PROPERTY, "noderelpath-target");
+		RequestContext.setEvent(event);
+
+		assertSame(propertyNameAndValues, messageDispatcher.doSend(event)
+				.getPayload());
+
+		Node node = RepositoryTestSupport.getTestDataNode().getNode(
+				"noderelpath-target");
+
+		assertEquals(1234L, node.getProperty("longProperty").getLong());
+		assertEquals(now, RepositoryTestSupport.getTestDataNode().getNode(
+				"noderelpath-target").getProperty("dateProperty").getDate());
+	}
+
+	public void testFailedStoreInNode() throws Exception {
+		UMOEvent event = getTestEvent(new Object());
+		event.getMessage().setStringProperty(
+				JcrConnector.JCR_NODE_RELPATH_PROPERTY, "noderelpath-target");
+
+		RequestContext.setEvent(event);
+
+		try {
+			messageDispatcher.doSend(event);
+		} catch (IllegalArgumentException iae) {
+			return;
+		}
+
+		fail("Should have got an IAE!");
+	}
+
+	public void testStoreCollectionInNode() throws Exception {
+		Node node = RepositoryTestSupport.getTestDataNode().getNode(
+				"noderelpath-target");
+
+		node.setProperty("multiLongs", new String[] { "0" }, PropertyType.LONG);
+		RepositoryTestSupport.getSession().save();
+
+		List propertyValues = new ArrayList();
+		propertyValues.add(new Long(1234));
+		propertyValues.add(new Long(5678));
+
+		UMOEvent event = getTestEvent(propertyValues);
+		event.getMessage().setStringProperty(
+				JcrConnector.JCR_NODE_RELPATH_PROPERTY, "noderelpath-target");
+		event.getMessage().setStringProperty(
+				JcrConnector.JCR_PROPERTY_REL_PATH_PROPERTY, "multiLongs");
+		RequestContext.setEvent(event);
+
+		assertSame(propertyValues, messageDispatcher.doSend(event).getPayload());
+		assertEquals(2, node.getProperty("multiLongs").getValues().length);
+	}
+
+	public void testStoreSingleValueInNode() throws Exception {
+		Long value = new Long(13579);
+		UMOEvent event = getTestEvent(value);
+		event.getMessage().setStringProperty(
+				JcrConnector.JCR_NODE_RELPATH_PROPERTY, "noderelpath-target");
+		event.getMessage().setStringProperty(
+				JcrConnector.JCR_PROPERTY_REL_PATH_PROPERTY,
+				"proprelpath-target");
+		RequestContext.setEvent(event);
+
+		assertSame(value, messageDispatcher.doSend(event).getPayload());
+		assertEquals(value.longValue(), RepositoryTestSupport.getTestDataNode()
+				.getNode("noderelpath-target")
+				.getProperty("proprelpath-target").getLong());
 	}
 
 	private void setFilter(UMOFilter filter) {
