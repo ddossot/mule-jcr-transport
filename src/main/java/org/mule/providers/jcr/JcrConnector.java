@@ -20,9 +20,12 @@ import javax.jcr.SimpleCredentials;
 import org.apache.commons.lang.UnhandledException;
 import org.mule.providers.AbstractConnector;
 import org.mule.providers.FatalConnectException;
+import org.mule.providers.jcr.handlers.NodeTypeHandler;
+import org.mule.providers.jcr.handlers.NodeTypeHandlerManager;
 import org.mule.providers.jcr.i18n.JcrMessages;
 import org.mule.umo.UMOException;
 import org.mule.umo.lifecycle.InitialisationException;
+import org.mule.util.ClassUtils;
 
 /**
  * <code>JcrConnector</code> is a transport that connects to JCR 1.0 (aka JSR
@@ -57,6 +60,8 @@ public final class JcrConnector extends AbstractConnector {
 
 	private String contentPayloadType;
 
+	private final NodeTypeHandlerManager nodeTypeHandlerManager;
+
 	/**
 	 * Event property to define a relative path to append at the end of the
 	 * target item path.
@@ -67,7 +72,7 @@ public final class JcrConnector extends AbstractConnector {
 	 * Event property to define a relative path to append after the endpoint
 	 * item path.
 	 */
-	public static final String JCR_NODE_RELPATH_PROPERTY = "nodeRelpath";
+	public static final String JCR_NODE_RELPATH_PROPERTY = "nodeRelPath";
 
 	/**
 	 * Event property to force the lookup of a particular node by UUID.
@@ -83,6 +88,8 @@ public final class JcrConnector extends AbstractConnector {
 		super();
 
 		setDefaultEndpointValues();
+
+		nodeTypeHandlerManager = new NodeTypeHandlerManager();
 	}
 
 	public void doInitialise() throws InitialisationException {
@@ -171,6 +178,40 @@ public final class JcrConnector extends AbstractConnector {
 
 	public String getProtocol() {
 		return "jcr";
+	}
+
+	/**
+	 * Sets an optional list of <code>NodeTypeHandlers</code> class names.
+	 * 
+	 * @param customNodeTypeHandlers
+	 */
+	public void setCustomNodeTypeHandlers(List customNodeTypeHandlers) {
+		// TODO create test case
+		if (customNodeTypeHandlers != null) {
+			for (int i = 0; i < customNodeTypeHandlers.size(); i++) {
+				String customNodeTypeHandlerClassName = customNodeTypeHandlers
+						.get(i).toString();
+
+				try {
+					NodeTypeHandler handler = (NodeTypeHandler) ClassUtils
+							.instanciateClass(customNodeTypeHandlerClassName,
+									ClassUtils.NO_ARGS, this.getClass());
+
+					getNodeTypeHandlerManager().registerHandler(handler);
+				} catch (Exception e) {
+					logger.error("Can not load custom type handler: "
+							+ customNodeTypeHandlerClassName, e);
+				}
+			}
+		}
+
+	}
+
+	/**
+	 * @return the nodeTypeHandlerManager
+	 */
+	public NodeTypeHandlerManager getNodeTypeHandlerManager() {
+		return nodeTypeHandlerManager;
 	}
 
 	/**
