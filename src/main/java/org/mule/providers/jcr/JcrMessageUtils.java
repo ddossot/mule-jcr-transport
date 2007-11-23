@@ -204,7 +204,7 @@ public class JcrMessageUtils {
 		}
 	}
 
-	static void storeProperties(Session session, Node targetNode,
+	public static void storeProperties(Session session, Node targetNode,
 			Map propertyNamesAndValues) throws RepositoryException, IOException {
 
 		for (Iterator i = propertyNamesAndValues.entrySet().iterator(); i
@@ -227,7 +227,7 @@ public class JcrMessageUtils {
 		}
 	}
 
-	static Value[] newPropertyValues(Session session, Collection objects)
+	public static Value[] newPropertyValues(Session session, Collection objects)
 			throws RepositoryException, IOException {
 
 		Value[] values = new Value[objects.size()];
@@ -241,7 +241,7 @@ public class JcrMessageUtils {
 		return values;
 	}
 
-	static Value newPropertyValue(Session session, Object value)
+	public static Value newPropertyValue(Session session, Object value)
 			throws RepositoryException, IOException {
 
 		// TODO increase test coverage

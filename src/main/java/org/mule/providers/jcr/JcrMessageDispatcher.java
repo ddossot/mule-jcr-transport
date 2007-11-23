@@ -28,12 +28,14 @@ import org.mule.providers.AbstractMessageDispatcher;
 import org.mule.providers.jcr.filters.AbstractJcrNameFilter;
 import org.mule.providers.jcr.filters.JcrNodeNameFilter;
 import org.mule.providers.jcr.filters.JcrPropertyNameFilter;
+import org.mule.providers.jcr.handlers.NodeTypeHandler;
 import org.mule.providers.jcr.i18n.JcrMessages;
 import org.mule.routing.filters.logic.AndFilter;
 import org.mule.umo.UMOEvent;
 import org.mule.umo.UMOFilter;
 import org.mule.umo.UMOMessage;
 import org.mule.umo.endpoint.UMOImmutableEndpoint;
+import org.mule.util.StringUtils;
 
 import edu.emory.mathcs.backport.java.util.concurrent.atomic.AtomicReference;
 
@@ -92,18 +94,17 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 		String propertyRelPath = (String) event.getProperty(
 				JcrConnector.JCR_PROPERTY_REL_PATH_PROPERTY, true);
 
-		String nodeRelpath = (String) event.getProperty(
+		String nodeRelPath = (String) event.getProperty(
 				JcrConnector.JCR_NODE_RELPATH_PROPERTY, true);
 
 		Session session = jcrConnector.getSession();
 
-		Object payload = event.getTransformedMessage();
-
-		Item targetItem = getTargetItemFromPath(session, nodeRelpath,
+		Item targetItem = getTargetItemFromPath(session, nodeRelPath,
 				propertyRelPath);
 
 		if (targetItem != null) {
 			// write payload to node or property
+			Object payload = event.getTransformedMessage();
 
 			if (logger.isDebugEnabled()) {
 				logger.debug("Writing '" + payload + "' to item: "
@@ -135,11 +136,32 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 			}
 
 		} else {
-			// create the target node, based on its type and relpath
-			String nodeTypeName = (String) event.getProperty(
-					JcrConnector.JCR_NODE_TYPE_NAME, true);
+			// TODO increase test case coverage
+			targetItem = session
+					.getItem(endpoint.getEndpointURI().getAddress());
 
-			// TODO create the node using a node type handler
+			if (targetItem.isNode()) {
+				Node targetParentNode = (Node) targetItem;
+
+				// create the target node, based on its type and relpath
+				String nodeTypeName = (String) event.getProperty(
+						JcrConnector.JCR_NODE_TYPE_NAME, true);
+
+				NodeTypeHandler nodeTypeHandler;
+
+				if (StringUtils.isNotBlank(nodeTypeName)) {
+					nodeTypeHandler = jcrConnector.getNodeTypeHandlerManager()
+							.getNodeTypeHandler(nodeTypeName);
+				} else {
+					nodeTypeHandler = jcrConnector.getNodeTypeHandlerManager()
+							.getNodeTypeHandler(targetParentNode);
+				}
+
+				nodeTypeHandler.newNode(session, targetParentNode, nodeRelPath,
+						event.getMessage());
+			} else {
+				// TODO throw ex
+			}
 
 		}
 
