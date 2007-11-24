@@ -28,6 +28,10 @@ abstract class AbstractNodeTypeHandler implements NodeTypeHandler {
 
 	private final NodeTypeHandlerManager nodeTypeManager;
 
+	protected NodeTypeHandlerManager getNodeTypeManager() {
+		return nodeTypeManager;
+	}
+
 	public AbstractNodeTypeHandler(NodeTypeHandlerManager nodeTypeManager) {
 		this.nodeTypeManager = nodeTypeManager;
 	}
@@ -37,16 +41,12 @@ abstract class AbstractNodeTypeHandler implements NodeTypeHandler {
 			IOException {
 
 		Node node = targetNode.addNode(nodeRelPath, getNodeTypeName());
+		createChildren(node);
 		storeContent(session, node, message);
-		createChildren(nodeTypeManager, session, node, message);
 		return node;
 	}
 
-	protected abstract void storeContent(Session session, Node node,
-			UMOMessage message) throws RepositoryException, IOException;
-
-	protected abstract void createChildren(
-			NodeTypeHandlerManager nodeTypeManager, Session session, Node node,
-			UMOMessage message) throws RepositoryException, IOException;
+	protected abstract void createChildren(Node node)
+			throws RepositoryException;
 
 }

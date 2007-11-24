@@ -11,7 +11,6 @@
 package org.mule.providers.jcr;
 
 import java.util.Collection;
-import java.util.Map;
 
 import javax.jcr.Item;
 import javax.jcr.Node;
@@ -102,6 +101,7 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 		Item targetItem = getTargetItemFromPath(session, nodeRelPath,
 				propertyRelPath);
 
+		// TODO add support for "force create"
 		if (targetItem != null) {
 			// write payload to node or property
 			Object payload = event.getTransformedMessage();
@@ -114,15 +114,9 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 			if (targetItem.isNode()) {
 				Node targetNode = (Node) targetItem;
 
-				if ((payload instanceof Map)) {
-					JcrMessageUtils.storeProperties(session, targetNode,
-							(Map) payload);
-				} else {
-					throw new IllegalArgumentException(
-							"The payload type to write properties to target node "
-									+ targetNode + " should be a Map and not: "
-									+ payload);
-				}
+				jcrConnector.getNodeTypeHandlerManager().getNodeTypeHandler(
+						targetNode).storeContent(session, targetNode,
+						event.getMessage());
 			} else {
 				Property targetProperty = (Property) targetItem;
 
@@ -154,13 +148,19 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 							.getNodeTypeHandler(nodeTypeName);
 				} else {
 					nodeTypeHandler = jcrConnector.getNodeTypeHandlerManager()
-							.getNodeTypeHandler(targetParentNode);
+							.getChildNodeTypeHandler(targetParentNode);
 				}
 
 				nodeTypeHandler.newNode(session, targetParentNode, nodeRelPath,
 						event.getMessage());
 			} else {
-				// TODO throw ex
+				throw new IllegalArgumentException(
+						"The provided nodeRelPath ("
+								+ nodeRelPath
+								+ ") and propertyRelPath ("
+								+ propertyRelPath
+								+ ") point to a missing item, hence the connector tries to create a new node "
+								+ "but the endpoint URI, used as a parent node, refers to a JCR property.");
 			}
 
 		}
@@ -312,8 +312,10 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 				// have applied a filter, we assume the intention was to
 				// get a single property value
 				if (properties.getSize() == 0) {
-					logger.warn(JcrMessages
-							.noNodeFor(propertyNamePatternFilter).getMessage());
+					logger.warn(JcrMessages.noNodeFor(
+							targetItem.getPath() + "["
+									+ propertyNamePatternFilter + "]")
+							.getMessage());
 					rawJcrContent = null;
 				} else if (properties.getSize() == 1) {
 					rawJcrContent = properties.next();
@@ -346,7 +348,8 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 				.getNodes(nodeNamePatternFilter);
 
 		if (nodes.getSize() == 0) {
-			logger.warn(JcrMessages.noNodeFor(nodeNamePatternFilter)
+			logger.warn(JcrMessages.noNodeFor(
+					targetItem.getPath() + "[" + nodeNamePatternFilter + "]")
 					.getMessage());
 
 			targetItem = null;
@@ -354,7 +357,8 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 		} else {
 			if (nodes.getSize() > 1) {
 				logger.warn(JcrMessages.moreThanOneNodeFor(
-						nodeNamePatternFilter).getMessage());
+						targetItem.getPath() + "[" + nodeNamePatternFilter
+								+ "]").getMessage());
 			}
 
 			targetItem = nodes.nextNode();
@@ -420,8 +424,8 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 
 		}
 
-		if (item == null) {
-			logger.warn(JcrMessages.noNodeFor(itemAbsolutePath).getMessage());
+		if ((item == null) && (logger.isDebugEnabled())) {
+			logger.debug(JcrMessages.noNodeFor(itemAbsolutePath).getMessage());
 		}
 
 		return item;

@@ -32,4 +32,7 @@ public interface NodeTypeHandler {
 	Node newNode(Session session, Node targetNode, String nodeRelPath,
 			UMOMessage message) throws RepositoryException, IOException;
 
+	void storeContent(Session session, Node node, UMOMessage message)
+			throws RepositoryException, IOException;
+
 }

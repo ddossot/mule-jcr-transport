@@ -36,13 +36,11 @@ final class NtUnstructuredHandler extends AbstractNodeTypeHandler {
 		return "nt:unstructured";
 	}
 
-	protected void createChildren(NodeTypeHandlerManager nodeTypeManager,
-			Session session, Node node, UMOMessage message)
-			throws RepositoryException {
+	protected void createChildren(Node node) throws RepositoryException {
 		// no children to create
 	}
 
-	protected void storeContent(Session session, Node node, UMOMessage message)
+	public void storeContent(Session session, Node node, UMOMessage message)
 			throws RepositoryException, IOException {
 
 		node.setProperty(NtResourceHandler.JCR_DATA_PROPERTY_NAME, message
