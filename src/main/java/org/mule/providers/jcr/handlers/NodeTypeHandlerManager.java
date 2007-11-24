@@ -39,21 +39,32 @@ public class NodeTypeHandlerManager {
 		registeredHandlers.put(handler.getNodeTypeName(), handler);
 	}
 
-	public NodeTypeHandler getNodeTypeHandler(Node targetNode) {
+	public NodeTypeHandler getChildNodeTypeHandler(Node parentNode) {
 		try {
-			NodeType defaultPrimaryType = targetNode.getDefinition()
+			NodeType defaultPrimaryType = parentNode.getDefinition()
 					.getDefaultPrimaryType();
 
 			if (defaultPrimaryType == null) {
 				throw new IllegalArgumentException(
-						"The targeted node does not define a default primary type, "
+						"The parent node does not define a default primary type, "
 								+ "hence requires a child node type to be specified.");
 			}
 
 			return getNodeTypeHandler(defaultPrimaryType.getName());
 		} catch (RepositoryException re) {
 			throw new RuntimeException(
-					"Can not retrieve the default primary type of the targeted node!"
+					"Can not retrieve the default primary type of the parent node!"
+							+ "Either specify one or resolve the error condition.",
+					re);
+		}
+	}
+
+	public NodeTypeHandler getNodeTypeHandler(Node node) {
+		try {
+			return getNodeTypeHandler(node.getPrimaryNodeType().getName());
+		} catch (RepositoryException re) {
+			throw new RuntimeException(
+					"Can not retrieve the primary type of the targeted node!"
 							+ "Either specify one or resolve the error condition.",
 					re);
 		}

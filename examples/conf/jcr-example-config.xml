@@ -3,8 +3,6 @@
                                 "http://mule.mulesource.org/dtds/mule-configuration.dtd">
 <mule-configuration id="JCR_Example" version="1.0">
 
-	<mule-environment-properties synchronous="false" />
-
 	<container-context className="org.mule.extras.spring.SpringContainerContext">
 		<properties>
 			<property name="configFile" value="../conf/jcr-example-beans.xml" />
@@ -43,6 +41,69 @@
 	</global-endpoints>
 
 	<model name="jcrExample">
+		<!--
+			Simple bridge used to send content to different JCR outbound endpoints, demonstrating different persistence strategies.
+			
+			Type text in the console followed by enter should store data in JCR and trigger the listener of "jcrEventDumper" above.
+		-->
+		<mule-descriptor name="systemInMulticaster" implementation="org.mule.components.simple.BridgeComponent"
+			inboundEndpoint="stream://System.in">
+			<outbound-router>
+				<router className="org.mule.routing.outbound.MulticastingRouter">
+					<endpoint address="vm://storeInProperty" />
+					<endpoint address="vm://storeInSingleNode" />
+				</router>
+			</outbound-router>
+		</mule-descriptor>
+
+		<!-- 
+			Example of an HTTP endpoint that fetches data from a JCR container, turning Mule into an HTTP picture server.
+			
+			Browsing http://localhost:8080/images/mule.gif or http://localhost:8080/images?get=jackrabbit.gif
+			should return a gif image.
+		-->
+		<mule-descriptor name="jcrHttpContentFetcher" implementation="org.mule.components.script.jsr223.ScriptComponent">
+			<inbound-router>
+				<endpoint address="http://localhost:8080/images" synchronous="true" />
+			</inbound-router>
+			<properties>
+				<property name="scriptEngineName" value="groovy" />
+				<text-property name="scriptText"><![CDATA[
+					def imageName = message.getPayload().substring(8);
+					message.clearProperties();
+					message.setStringProperty("nodeRelPath", imageName);
+					message.setStringProperty("Content-Type", "image/gif");
+					eventContext.setStopFurtherProcessing(true);
+					return managementContext.lookupEndpoint("jcrImages").receive(0).getPayload();
+					]]>
+				</text-property>
+			</properties>
+		</mule-descriptor>
+
+		<!--
+			Example of a endpoint that receives data and saves it in an existing property of the JCR container.
+		-->
+		<mule-descriptor name="jcrStoreToProperty" implementation="org.mule.components.simple.BridgeComponent"
+			inboundEndpoint="vm://storeInProperty" outboundEndpoint="jcr://example/targetProperty" />
+
+		<!--
+			Example of a endpoint that receives data and saves it as a node of type nt:resource if a node that is auto-created the first time, then updated.
+		-->
+		<mule-descriptor name="jcrStoreToSingleNode" implementation="org.mule.components.simple.BridgeComponent"
+			inboundEndpoint="vm://storeInSingleNode">
+			<outbound-router>
+				<router className="org.mule.routing.outbound.OutboundPassThroughRouter">
+					<endpoint address="jcr://example">
+						<properties>
+							<property name="nodeRelPath" value="targetSingleNtResourceNode" />
+							<property name="nodeTypeName" value="nt:resource" />
+							<property name="jcr:mimeType" value="text/plain" />
+						</properties>
+					</endpoint>
+				</router>
+			</outbound-router>
+		</mule-descriptor>
+
 		<!-- 
 			Example of an inbound endpoint that listens to JCR events.
 			
@@ -59,43 +120,6 @@
 			<outbound-router>
 				<router className="org.mule.routing.outbound.OutboundPassThroughRouter">
 					<endpoint address="stream://System.out" transformers="ObjectToXml" />
-				</router>
-			</outbound-router>
-		</mule-descriptor>
-
-		<!-- 
-			Example of an HTTP endpoint that fetches data from a JCR container.
-			
-			Browsing http://localhost:8080/images/mule.gif or http://localhost:8080/images?get=jackrabbit.gif
-			should return a gif image.
-		-->
-		<mule-descriptor name="jcrHttpContentFetcher" implementation="org.mule.components.script.jsr223.ScriptComponent">
-			<inbound-router>
-				<endpoint address="http://localhost:8080/images" synchronous="true" />
-			</inbound-router>
-			<properties>
-				<property name="scriptEngineName" value="groovy" />
-				<text-property name="scriptText"><![CDATA[
-					def imageName = message.getPayload().substring(8);
-					message.clearProperties();
-					message.setStringProperty("nodeRelpath", imageName);
-					message.setStringProperty("Content-Type", "image/gif");
-					return managementContext.lookupEndpoint("jcrImages").receive(0).getPayload();
-					]]>
-				</text-property>
-			</properties>
-		</mule-descriptor>
-
-		<!--
-			Example of a streaming endpoint that receives data and saves it in the JCR container.
-			
-			Type text in the console followed by enter should store data in JCR and trigger the listener of "jcrEventDumper" above.
-		-->
-		<mule-descriptor name="jcrWriter" implementation="org.mule.components.simple.BridgeComponent"
-			inboundEndpoint="stream://System.in">
-			<outbound-router>
-				<router className="org.mule.routing.outbound.OutboundPassThroughRouter">
-					<endpoint address="jcr://example/written" />
 				</router>
 			</outbound-router>
 		</mule-descriptor>

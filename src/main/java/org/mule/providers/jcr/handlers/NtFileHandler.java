@@ -26,6 +26,8 @@ import org.mule.umo.UMOMessage;
  */
 final class NtFileHandler extends AbstractNodeTypeHandler {
 
+	static final String JCR_CONTENT_NODE_NAME = "jcr:content";
+
 	public NtFileHandler(NodeTypeHandlerManager nodeTypeManager) {
 		super(nodeTypeManager);
 	}
@@ -34,17 +36,18 @@ final class NtFileHandler extends AbstractNodeTypeHandler {
 		return "nt:file";
 	}
 
-	protected void createChildren(NodeTypeHandlerManager nodeTypeManager,
-			Session session, Node node, UMOMessage message)
+	protected void createChildren(Node node) throws RepositoryException {
+		node.addNode(JCR_CONTENT_NODE_NAME,
+				NtResourceHandler.NT_RESOURCE_NODE_TYPE);
+	}
+
+	public void storeContent(Session session, Node node, UMOMessage message)
 			throws RepositoryException, IOException {
 
-		nodeTypeManager.getNodeTypeHandler("nt:resource").newNode(session,
-				node, "jcr:content", message);
-	}
+		Node contentNode = node.getNode(JCR_CONTENT_NODE_NAME);
 
-	protected void storeContent(Session session, Node node, UMOMessage message)
-			throws RepositoryException {
-		// No content is stored in that type of node
+		getNodeTypeManager().getNodeTypeHandler(
+				NtResourceHandler.NT_RESOURCE_NODE_TYPE).storeContent(session,
+				contentNode, message);
 	}
-
 }

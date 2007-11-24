@@ -29,6 +29,8 @@ import org.mule.umo.UMOMessage;
  */
 final class NtResourceHandler extends AbstractNodeTypeHandler {
 
+	static final String NT_RESOURCE_NODE_TYPE = "nt:resource";
+
 	static final String JCR_LAST_MODIFIED_PROPERTY_NAME = "jcr:lastModified";
 
 	static final String JCR_DATA_PROPERTY_NAME = "jcr:data";
@@ -42,16 +44,14 @@ final class NtResourceHandler extends AbstractNodeTypeHandler {
 	}
 
 	public String getNodeTypeName() {
-		return "nt:resource";
+		return NT_RESOURCE_NODE_TYPE;
 	}
 
-	protected void createChildren(NodeTypeHandlerManager nodeTypeManager,
-			Session session, Node node, UMOMessage message)
-			throws RepositoryException {
+	protected void createChildren(Node node) throws RepositoryException {
 		// no children to create
 	}
 
-	protected void storeContent(Session session, Node node, UMOMessage message)
+	public void storeContent(Session session, Node node, UMOMessage message)
 			throws RepositoryException, IOException {
 
 		Object payload = message.getPayload();

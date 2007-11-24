@@ -17,19 +17,5 @@
 			<value>example</value>
 		</property>
 	</bean>
-	<!-- 
-	<bean id="scheduledTask" lazy-init="false" class="org.springframework.scheduling.timer.ScheduledTimerTask">
-		<property name="delay" value="10000" />
-		<property name="period" value="3000" />
-		<property name="timerTask" ref="contentGenerator" />
-	</bean>
-	<bean id="timerFactory" class="org.springframework.scheduling.timer.TimerFactoryBean">
-		<property name="scheduledTimerTasks">
-			<list>
-				<ref bean="scheduledTask" />
-			</list>
-		</property>
-	</bean>
-	 -->
 </beans>
 
