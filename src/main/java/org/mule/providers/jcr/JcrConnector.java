@@ -14,6 +14,7 @@ import java.util.List;
 
 import javax.jcr.Credentials;
 import javax.jcr.Repository;
+import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.SimpleCredentials;
 
@@ -46,8 +47,6 @@ public final class JcrConnector extends AbstractConnector {
 
 	private String password;
 
-	private Session session;
-
 	private Integer eventTypes;
 
 	private Boolean deep;
@@ -63,26 +62,32 @@ public final class JcrConnector extends AbstractConnector {
 	private final NodeTypeHandlerManager nodeTypeHandlerManager;
 
 	/**
-	 * Event property to define a relative path to append at the end of the
-	 * target item path.
+	 * Property that defines a relative path to append at the end of the target
+	 * item path.
 	 */
 	public static final String JCR_PROPERTY_REL_PATH_PROPERTY = "propertyRelPath";
 
 	/**
-	 * Event property to define a relative path to append after the endpoint
-	 * item path.
+	 * Property that defines a relative path to append after the endpoint item
+	 * path.
 	 */
 	public static final String JCR_NODE_RELPATH_PROPERTY = "nodeRelPath";
 
 	/**
-	 * Event property to force the lookup of a particular node by UUID.
+	 * Property that forces the creation of a child node under the node target
+	 * by the endpoint URI, instead of trying first to locate an existing one.
 	 */
-	public static final String JCR_NODE_UUID_PROPERTY = "nodeUUID";
+	public static final String JCR_ALWAYS_CREATE_CHILD_NODE = "alwaysCreate";
 
 	/**
-	 * Event property to force a particular node type name.
+	 * Property that defines a particular node type name.
 	 */
 	public static final String JCR_NODE_TYPE_NAME = "nodeTypeName";
+
+	/**
+	 * Property that forces the lookup of a particular node by UUID.
+	 */
+	public static final String JCR_NODE_UUID_PROPERTY = "nodeUUID";
 
 	public JcrConnector() {
 		super();
@@ -104,11 +109,7 @@ public final class JcrConnector extends AbstractConnector {
 	}
 
 	public void doConnect() throws Exception {
-		Credentials credentials = ((getUsername() != null) && (getPassword() != null)) ? new SimpleCredentials(
-				getUsername(), getPassword().toCharArray())
-				: null;
-
-		session = getRepository().login(credentials, getWorkspaceName());
+		// NOOP
 	}
 
 	public void doStart() throws org.mule.umo.UMOException {
@@ -120,48 +121,79 @@ public final class JcrConnector extends AbstractConnector {
 	}
 
 	public void doDisconnect() throws Exception {
-		if (session != null) {
-			session.logout();
-		}
+		// NOOP
 	}
 
 	public void doDispose() {
 		// NOOP
 	}
 
-	public Session getSession() {
+	public Session newSession() throws RepositoryException {
+		if (logger.isDebugEnabled()) {
+			logger.debug("Opening new JCR session.");
+		}
+
+		Credentials credentials = ((getUsername() != null) && (getPassword() != null)) ? new SimpleCredentials(
+				getUsername(), getPassword().toCharArray())
+				: null;
+
+		return getRepository().login(credentials, getWorkspaceName());
+	}
+
+	public void terminateSession(Session session) {
+		if ((session != null) && (session.isLive())) {
+			if (logger.isDebugEnabled()) {
+				logger.debug("Terminating JCR session");
+			}
+
+			session.logout();
+		} else {
+			if (logger.isDebugEnabled()) {
+				logger.debug("Can not terminate session: " + session);
+			}
+		}
+	}
+
+	public Session validateSession(Session session) {
 		if ((session != null) && (session.isLive())) {
 			return session;
 		} else {
-			if (connectionStrategy != null) {
-				logger.info("JCR session is invalid and will be recycled.");
+			logger.info("JCR session is invalid: a new one will be created.");
 
-				initialised.set(false);
+			try {
+				return newSession();
+			} catch (RepositoryException re) {
+				logger.error("Impossible to reconnect to the JCR container!",
+						re);
 
-				try {
-					stopConnector();
-				} catch (UMOException umoe) {
-					logger.warn(umoe.getMessage(), umoe);
-				}
+				if (connectionStrategy != null) {
+					initialised.set(false);
 
-				try {
-					connectionStrategy.connect(this);
-					initialise();
-					startConnector();
-					return session;
+					try {
+						stopConnector();
+					} catch (UMOException umoe) {
+						logger.warn(umoe.getMessage(), umoe);
+					}
 
-				} catch (FatalConnectException fce) {
+					try {
+						connectionStrategy.connect(this);
+						initialise();
+						startConnector();
+						return session;
+
+					} catch (FatalConnectException fce) {
+						throw new IllegalStateException(
+								"Failed to reconnect to JCR server. I'm giving up.");
+					} catch (UMOException umoe) {
+						throw new UnhandledException(
+								"Failed to recover a connector.", umoe);
+					}
+
+				} else {
 					throw new IllegalStateException(
-							"Failed to reconnect to JCR server. I'm giving up.");
-				} catch (UMOException umoe) {
-					throw new UnhandledException(
-							"Failed to recover a connector.", umoe);
+							"Connection to the JCR container has been lost "
+									+ "and no connection strategy has been defined on the connector!");
 				}
-
-			} else {
-				throw new IllegalStateException(
-						"Connection to the JCR container has been lost "
-								+ "and no connection strategy has been defined on the connector!");
 			}
 		}
 	}

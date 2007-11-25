@@ -57,7 +57,6 @@ public class JcrConnectorTestCase extends AbstractConnectorTestCase {
 	public void testProperties() throws Exception {
 		JcrConnector jcrConnector = (JcrConnector) connector;
 
-		assertNotNull(jcrConnector.getSession());
 		assertEquals(RepositoryTestSupport.USERNAME, jcrConnector.getUsername());
 		assertEquals(RepositoryTestSupport.PASSWORD, jcrConnector.getPassword());
 		assertNull(jcrConnector.getWorkspaceName());

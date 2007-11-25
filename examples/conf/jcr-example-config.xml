@@ -52,6 +52,7 @@
 				<router className="org.mule.routing.outbound.MulticastingRouter">
 					<endpoint address="vm://storeInProperty" />
 					<endpoint address="vm://storeInSingleNode" />
+					<endpoint address="vm://storeInNewChildNodeEachTime" />
 				</router>
 			</outbound-router>
 		</mule-descriptor>
@@ -87,17 +88,35 @@
 			inboundEndpoint="vm://storeInProperty" outboundEndpoint="jcr://example/targetProperty" />
 
 		<!--
-			Example of a endpoint that receives data and saves it as a node of type nt:resource if a node that is auto-created the first time, then updated.
-		-->
-		<mule-descriptor name="jcrStoreToSingleNode" implementation="org.mule.components.simple.BridgeComponent"
+			Example of a endpoint that receives data and saves it as a node of type nt:resource that is auto-created the first time, then updated.
+		-->			
+			<mule-descriptor name="jcrStoreToSingleNode" implementation="org.mule.components.simple.BridgeComponent"
 			inboundEndpoint="vm://storeInSingleNode">
+			<outbound-router>
+			<router className="org.mule.routing.outbound.OutboundPassThroughRouter">
+			<endpoint address="jcr://example">
+			<properties>
+			<property name="nodeRelPath" value="targetSingleNtResourceNode" />
+			<property name="nodeTypeName" value="nt:resource" />
+			<property name="jcr:mimeType" value="text/plain" />
+			</properties>
+			</endpoint>
+			</router>
+			</outbound-router>
+			</mule-descriptor>
+
+		<!--
+			Example of a endpoint that receives data and saves it as a new child node of type nt:unstructured.
+		-->			
+		<mule-descriptor name="jcrStoreToNewChildNode" implementation="org.mule.components.simple.BridgeComponent"
+			inboundEndpoint="vm://storeInNewChildNodeEachTime">
 			<outbound-router>
 				<router className="org.mule.routing.outbound.OutboundPassThroughRouter">
 					<endpoint address="jcr://example">
 						<properties>
-							<property name="nodeRelPath" value="targetSingleNtResourceNode" />
-							<property name="nodeTypeName" value="nt:resource" />
-							<property name="jcr:mimeType" value="text/plain" />
+							<property name="alwaysCreate" value="true" />
+							<property name="nodeRelPath" value="targetMultipleUnstructuredNode" />
+							<property name="nodeTypeName" value="nt:unstructured" />
 						</properties>
 					</endpoint>
 				</router>
