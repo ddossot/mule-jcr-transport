@@ -46,9 +46,11 @@ import edu.emory.mathcs.backport.java.util.concurrent.atomic.AtomicReference;
 public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 	private final JcrConnector jcrConnector;
 
-	private AtomicReference nodeNamePatternFilterRef = new AtomicReference();
+	private final AtomicReference nodeNamePatternFilterRef = new AtomicReference();
 
-	private AtomicReference propertyNamePatternFilterRef = new AtomicReference();
+	private final AtomicReference propertyNamePatternFilterRef = new AtomicReference();
+
+	private Session dispatcherSession;
 
 	public JcrMessageDispatcher(UMOImmutableEndpoint endpoint) {
 		super(endpoint);
@@ -61,7 +63,9 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 		// start time)
 		String endpointURI = endpoint.getEndpointURI().getAddress();
 
-		if (jcrConnector.getSession().itemExists(endpointURI)) {
+		dispatcherSession = jcrConnector.newSession();
+
+		if (dispatcherSession.itemExists(endpointURI)) {
 			new IllegalStateException("The dispatcher endpoint URI ("
 					+ endpointURI + ") does not point to an existing item!");
 		}
@@ -69,16 +73,9 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 		refreshEndpointFilter();
 	}
 
-	public synchronized void refreshEndpointFilter() {
-		nodeNamePatternFilterRef.set(getPropertyNamePatternFilter(getEndpoint()
-				.getFilter(), JcrNodeNameFilter.class));
-
-		propertyNamePatternFilterRef.set(getPropertyNamePatternFilter(
-				getEndpoint().getFilter(), JcrPropertyNameFilter.class));
-	}
-
 	public void doDisconnect() throws Exception {
-		// NOOP
+		jcrConnector.terminateSession(dispatcherSession);
+		dispatcherSession = null;
 	}
 
 	public void doDispose() {
@@ -90,18 +87,22 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 	}
 
 	public UMOMessage doSend(UMOEvent event) throws Exception {
+		boolean alwaysCreate = Boolean.valueOf(
+				(String) event.getProperty(
+						JcrConnector.JCR_ALWAYS_CREATE_CHILD_NODE, true))
+				.booleanValue();
+
 		String propertyRelPath = (String) event.getProperty(
 				JcrConnector.JCR_PROPERTY_REL_PATH_PROPERTY, true);
 
 		String nodeRelPath = (String) event.getProperty(
 				JcrConnector.JCR_NODE_RELPATH_PROPERTY, true);
 
-		Session session = jcrConnector.getSession();
+		Session session = getSession();
 
-		Item targetItem = getTargetItemFromPath(session, nodeRelPath,
-				propertyRelPath);
+		Item targetItem = alwaysCreate ? null : getTargetItemFromPath(session,
+				nodeRelPath, propertyRelPath);
 
-		// TODO add support for "force create"
 		if (targetItem != null) {
 			// write payload to node or property
 			Object payload = event.getTransformedMessage();
@@ -250,11 +251,10 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 		}
 
 		if (nodeUUID != null) {
-			targetItem = getTargetItemFromUUID(jcrConnector.getSession(),
-					nodeUUID);
+			targetItem = getTargetItemFromUUID(getSession(), nodeUUID);
 		} else {
-			targetItem = getTargetItemFromPath(jcrConnector.getSession(),
-					nodeRelpath, propertyRelPath);
+			targetItem = getTargetItemFromPath(getSession(), nodeRelpath,
+					propertyRelPath);
 		}
 
 		if (targetItem != null) {
@@ -269,6 +269,14 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 				.getMessageAdapter(rawJcrContent == null ? null : jcrConnector
 						.getDefaultResponseTransformer().transform(
 								rawJcrContent)));
+	}
+
+	public synchronized void refreshEndpointFilter() {
+		nodeNamePatternFilterRef.set(getPropertyNamePatternFilter(getEndpoint()
+				.getFilter(), JcrNodeNameFilter.class));
+
+		propertyNamePatternFilterRef.set(getPropertyNamePatternFilter(
+				getEndpoint().getFilter(), JcrPropertyNameFilter.class));
 	}
 
 	// --- Private Methods ---
@@ -466,4 +474,9 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 
 		return pattern;
 	}
+
+	public Session getSession() {
+		return jcrConnector.validateSession(dispatcherSession);
+	}
+
 }

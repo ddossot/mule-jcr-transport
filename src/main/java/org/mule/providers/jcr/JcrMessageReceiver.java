@@ -64,7 +64,7 @@ public final class JcrMessageReceiver extends AbstractMessageReceiver implements
 
 	private ObservationManager observationManager;
 
-	private Session observingSession;
+	private Session receiverSession;
 
 	private static final AtomicReference jcrMessageReceiverContext = new AtomicReference();
 
@@ -140,9 +140,8 @@ public final class JcrMessageReceiver extends AbstractMessageReceiver implements
 		}
 
 		try {
-			observingSession = jcrConnector.getSession();
-			observationManager = observingSession.getWorkspace()
-					.getObservationManager();
+			receiverSession = jcrConnector.newSession();
+			observationManager = receiverSession.getWorkspace().getObservationManager();
 
 			jcrMessageReceiverContext.set(new JcrMessageReceiverContext() {
 				public JcrContentPayloadType getContentPayloadType() {
@@ -150,7 +149,7 @@ public final class JcrMessageReceiver extends AbstractMessageReceiver implements
 				}
 
 				public Session getObservingSession() {
-					return observingSession;
+					return receiverSession;
 				}
 			});
 
@@ -193,7 +192,9 @@ public final class JcrMessageReceiver extends AbstractMessageReceiver implements
 	}
 
 	public void doDisconnect() throws ConnectException {
-		// NOOP
+		jcrConnector.terminateSession(receiverSession);
+
+		receiverSession = null;
 	}
 
 	public void doDispose() {
