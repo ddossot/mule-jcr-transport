@@ -22,7 +22,7 @@ import org.mule.providers.jcr.JcrMessageUtils;
 import org.mule.umo.UMOMessage;
 
 /**
- * TODO comment
+ * A handler for nt:unstructured types of nodes.
  * 
  * @author David Dossot (david@dossot.net)
  */

@@ -290,7 +290,6 @@ public class JcrMessageUtils {
 		} else {
 			throw new IllegalArgumentException(
 					"Impossible to store object of type: " + value.getClass());
-
 		}
 
 	}

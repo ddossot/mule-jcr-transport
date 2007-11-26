@@ -19,7 +19,7 @@ import org.mule.util.StringUtils;
 import edu.emory.mathcs.backport.java.util.concurrent.ConcurrentHashMap;
 
 /**
- * TODO comment
+ * The manager for all JCR node type handlers.
  * 
  * @author David Dossot (david@dossot.net)
  */
@@ -35,11 +35,35 @@ public class NodeTypeHandlerManager {
 		registerHandler(new NtUnstructuredHandler(this));
 	}
 
+	/**
+	 * Registers a new <code>NodeTypeHandler</code>.
+	 * 
+	 * @param handler
+	 *            the new handler.
+	 */
 	public void registerHandler(NodeTypeHandler handler) {
+		if (handler == null) {
+			throw new IllegalArgumentException(
+					"A new type handler can not be null!");
+		}
+
 		registeredHandlers.put(handler.getNodeTypeName(), handler);
 	}
 
+	/**
+	 * Get the default type handler for child nodes of the passed parent node.
+	 * 
+	 * @param parentNode
+	 *            the node whose default child node type will be used to get an
+	 *            handler.
+	 * 
+	 * @return the default child type handler.
+	 */
 	public NodeTypeHandler getChildNodeTypeHandler(Node parentNode) {
+		if (parentNode == null) {
+			throw new IllegalArgumentException("A parent node can not be null!");
+		}
+
 		try {
 			NodeType defaultPrimaryType = parentNode.getDefinition()
 					.getDefaultPrimaryType();
@@ -59,6 +83,15 @@ public class NodeTypeHandlerManager {
 		}
 	}
 
+	/**
+	 * Gets the node type handler for a particular node.
+	 * 
+	 * @param node
+	 *            the node for which the appropriate type handler will be
+	 *            returned.
+	 * 
+	 * @return the node type handler.
+	 */
 	public NodeTypeHandler getNodeTypeHandler(Node node) {
 		try {
 			return getNodeTypeHandler(node.getPrimaryNodeType().getName());
@@ -70,6 +103,15 @@ public class NodeTypeHandlerManager {
 		}
 	}
 
+	/**
+	 * Gets the node type handler for a particular node type name.
+	 * 
+	 * @param nodeTypeName
+	 *            the node type name for which the appropriate type handler will
+	 *            be returned.
+	 * 
+	 * @return the node type handler.
+	 */
 	public NodeTypeHandler getNodeTypeHandler(String nodeTypeName) {
 
 		if (StringUtils.isEmpty(nodeTypeName)) {

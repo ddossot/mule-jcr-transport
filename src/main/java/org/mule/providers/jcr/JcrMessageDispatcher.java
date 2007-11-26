@@ -82,14 +82,62 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 		// NOOP
 	}
 
+	/**
+	 * @see org.mule.providers.jcr.JcrMessageDispatcher#doSend(UMOEvent) doSend
+	 */
 	public void doDispatch(UMOEvent event) throws Exception {
 		doSend(event);
 	}
 
+	/**
+	 * <p>
+	 * Sends content to the configured JCR endpoint, using optional event
+	 * properties to define the target repository item and the node type name to
+	 * use.
+	 * </p>
+	 * 
+	 * <p>
+	 * Unless the creation of child nodes is forced by an event or endpoint
+	 * property (<code>JcrConnector.JCR_ALWAYS_CREATE_CHILD_NODE</code>),
+	 * the target item where content will be stored will determined by
+	 * navigating from the endpoint URI item to the item defined by optional
+	 * event properties (JcrConnector.JCR_NODE_RELPATH_PROPERTY and
+	 * JcrConnector.JCR_PROPERTY_REL_PATH_PROPERTY). If none of these properties
+	 * is defined, the item refered to by the endpoint URI will be used.
+	 * </p>
+	 * 
+	 * <p>
+	 * If an existing target item is found and is a node, the appropriate
+	 * {@link org.mule.providers.jcr.handlers.NodeTypeHandler NodeTypeHandler}
+	 * will be used to convert the <code>UMOMessage</code> payload into valid
+	 * JCR content (nodes and properties).
+	 * </p>
+	 * 
+	 * <p>
+	 * If an existing target item is found and is a property, the
+	 * <code>UMOMessage</code> payload will be directly written to it, using a
+	 * simple conversion mechanism. Note that if the payload is a
+	 * <code>Collection</code>, the property will be multi-valued.
+	 * </p>
+	 * 
+	 * <p>
+	 * If no existing target item is found or if the creation of a new node is
+	 * forced (see first paragraph), a new node will be created, under the
+	 * absolute path defined by the endpoint URI, with a content extracted from
+	 * the <code>UMOMessage</code> payload and stored according to the type
+	 * defined in the event or connector property (<code>JcrConnector.JCR_NODE_TYPE_NAME</code>).
+	 * If the endpoint URI points to a property and not a node, an exception
+	 * will be raised.
+	 * </p>
+	 * 
+	 * @see org.mule.providers.jcr.JcrConnector Property names constants
+	 * 
+	 * @return the source <code>UMOMessage</code>.
+	 */
 	public UMOMessage doSend(UMOEvent event) throws Exception {
 		boolean alwaysCreate = Boolean.valueOf(
 				(String) event.getProperty(
-						JcrConnector.JCR_ALWAYS_CREATE_CHILD_NODE, true))
+						JcrConnector.JCR_ALWAYS_CREATE_CHILD_NODE_PROPERTY, true))
 				.booleanValue();
 
 		String propertyRelPath = (String) event.getProperty(
@@ -131,7 +179,6 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 			}
 
 		} else {
-			// TODO increase test case coverage
 			targetItem = session
 					.getItem(endpoint.getEndpointURI().getAddress());
 
@@ -140,7 +187,7 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 
 				// create the target node, based on its type and relpath
 				String nodeTypeName = (String) event.getProperty(
-						JcrConnector.JCR_NODE_TYPE_NAME, true);
+						JcrConnector.JCR_NODE_TYPE_NAME_PROPERTY, true);
 
 				NodeTypeHandler nodeTypeHandler;
 
@@ -219,6 +266,8 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 	 * apply).</li>
 	 * </ul>
 	 * </p>
+	 * 
+	 * @see org.mule.providers.jcr.JcrConnector Property names constants
 	 * 
 	 * @param ignoredTimeout
 	 *            ignored timeout parameter.

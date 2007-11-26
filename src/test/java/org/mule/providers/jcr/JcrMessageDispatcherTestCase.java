@@ -302,6 +302,66 @@ public class JcrMessageDispatcherTestCase extends AbstractMuleTestCase {
 				.getProperty("proprelpath-target").getLong());
 	}
 
+	public void testStoreInNewNode() throws Exception {
+		UMOEvent event = getTestEvent("bar");
+
+		event.getMessage().setStringProperty(
+				JcrConnector.JCR_NODE_RELPATH_PROPERTY, "new-node");
+
+		event.getMessage().setStringProperty(JcrConnector.JCR_NODE_TYPE_NAME_PROPERTY,
+				"nt:resource");
+
+		event.getMessage().setStringProperty("jcr:mimeType", "text/plain");
+
+		RequestContext.setEvent(event);
+
+		assertNotNull(messageDispatcher.doSend(event).getPayload());
+
+		assertEquals("nt:resource", RepositoryTestSupport.getTestDataNode()
+				.getNode("new-node").getPrimaryNodeType().getName());
+	}
+
+	public void testStoreInForcedNewNode() throws Exception {
+		UMOEvent event = getTestEvent("bar");
+
+		event.getMessage().setStringProperty(
+				JcrConnector.JCR_NODE_RELPATH_PROPERTY, "new-forced-node");
+
+		event.getMessage().setStringProperty(
+				JcrConnector.JCR_ALWAYS_CREATE_CHILD_NODE_PROPERTY, "true");
+
+		RequestContext.setEvent(event);
+
+		assertNotNull(messageDispatcher.doSend(event).getPayload());
+		assertNotNull(messageDispatcher.doSend(event).getPayload());
+
+		assertEquals(2, RepositoryTestSupport.getTestDataNode().getNodes(
+				"new-forced-node").getSize());
+	}
+
+	public void testFailedStoreUnderProperty() throws Exception {
+		endpoint = new MuleEndpoint("jcr://"
+				+ RepositoryTestSupport.ROOT_NODE_NAME + "/foo", true);
+
+		endpoint.setConnector(connector);
+
+		messageDispatcher = (JcrMessageDispatcher) new JcrMessageDispatcherFactory()
+				.create(endpoint);
+
+		UMOEvent event = getTestEvent("bar");
+		event.getMessage().setStringProperty(
+				JcrConnector.JCR_ALWAYS_CREATE_CHILD_NODE_PROPERTY, "true");
+		RequestContext.setEvent(event);
+
+		try {
+			messageDispatcher.doSend(event).getPayload();
+		} catch (IllegalArgumentException iae) {
+			return;
+		}
+
+		fail("Should have got an IAE");
+	}
+
 	private void setFilter(UMOFilter filter) {
 		endpoint.setFilter(filter);
 		messageDispatcher.refreshEndpointFilter();
