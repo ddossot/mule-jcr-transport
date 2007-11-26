@@ -77,12 +77,12 @@ public final class JcrConnector extends AbstractConnector {
 	 * Property that forces the creation of a child node under the node target
 	 * by the endpoint URI, instead of trying first to locate an existing one.
 	 */
-	public static final String JCR_ALWAYS_CREATE_CHILD_NODE = "alwaysCreate";
+	public static final String JCR_ALWAYS_CREATE_CHILD_NODE_PROPERTY = "alwaysCreate";
 
 	/**
 	 * Property that defines a particular node type name.
 	 */
-	public static final String JCR_NODE_TYPE_NAME = "nodeTypeName";
+	public static final String JCR_NODE_TYPE_NAME_PROPERTY = "nodeTypeName";
 
 	/**
 	 * Property that forces the lookup of a particular node by UUID.

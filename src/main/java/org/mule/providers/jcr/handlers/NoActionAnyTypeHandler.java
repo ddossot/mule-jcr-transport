@@ -20,7 +20,7 @@ import org.mule.providers.NullPayload;
 import org.mule.umo.UMOMessage;
 
 /**
- * TODO comment
+ * A type handler that becomes assigned to any type and performs no action.
  * 
  * @author David Dossot (david@dossot.net)
  */
@@ -32,6 +32,7 @@ final class NoActionAnyTypeHandler extends AbstractNodeTypeHandler {
 
 	public NoActionAnyTypeHandler(NodeTypeHandlerManager nodeTypeManager,
 			String nodeTypeName) {
+
 		super(nodeTypeManager);
 		this.nodeTypeName = nodeTypeName;
 	}

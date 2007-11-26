@@ -23,7 +23,7 @@ import javax.jcr.Session;
 import org.mule.umo.UMOMessage;
 
 /**
- * TODO comment
+ * A handler for nt:resource types of nodes.
  * 
  * @author David Dossot (david@dossot.net)
  */
