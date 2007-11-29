@@ -173,8 +173,8 @@ public class JcrMessageUtils {
 		return result;
 	}
 
-	static Object getValuePayload(Value value) throws IllegalStateException,
-			RepositoryException {
+	public static Object getValuePayload(Value value)
+			throws IllegalStateException, RepositoryException {
 
 		int propertyType = value.getType();
 
@@ -244,11 +244,9 @@ public class JcrMessageUtils {
 	public static Value newPropertyValue(Session session, Object value)
 			throws RepositoryException, IOException {
 
-		// TODO increase test coverage
-
 		if (value == null) {
-			return session.getValueFactory().createValue(null,
-					PropertyType.UNDEFINED);
+			throw new IllegalArgumentException(
+					"Impossible to store a null value in JCR!");
 
 		} else if (value instanceof Boolean) {
 			return session.getValueFactory().createValue(

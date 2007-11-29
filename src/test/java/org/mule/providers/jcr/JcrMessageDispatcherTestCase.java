@@ -11,6 +11,7 @@
 package org.mule.providers.jcr;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -20,16 +21,21 @@ import java.util.Map;
 
 import javax.jcr.Node;
 import javax.jcr.PropertyType;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+import javax.jcr.query.Query;
 
 import org.mule.impl.RequestContext;
 import org.mule.impl.endpoint.MuleEndpoint;
 import org.mule.providers.NullPayload;
 import org.mule.providers.jcr.filters.JcrNodeNameFilter;
 import org.mule.providers.jcr.filters.JcrPropertyNameFilter;
+import org.mule.providers.jcr.handlers.NodeTypeHandler;
 import org.mule.routing.filters.logic.AndFilter;
 import org.mule.tck.AbstractMuleTestCase;
 import org.mule.umo.UMOEvent;
 import org.mule.umo.UMOFilter;
+import org.mule.umo.UMOMessage;
 
 /**
  * @author David Dossot (david@dossot.net)
@@ -308,8 +314,8 @@ public class JcrMessageDispatcherTestCase extends AbstractMuleTestCase {
 		event.getMessage().setStringProperty(
 				JcrConnector.JCR_NODE_RELPATH_PROPERTY, "new-node");
 
-		event.getMessage().setStringProperty(JcrConnector.JCR_NODE_TYPE_NAME_PROPERTY,
-				"nt:resource");
+		event.getMessage().setStringProperty(
+				JcrConnector.JCR_NODE_TYPE_NAME_PROPERTY, "nt:resource");
 
 		event.getMessage().setStringProperty("jcr:mimeType", "text/plain");
 
@@ -319,6 +325,56 @@ public class JcrMessageDispatcherTestCase extends AbstractMuleTestCase {
 
 		assertEquals("nt:resource", RepositoryTestSupport.getTestDataNode()
 				.getNode("new-node").getPrimaryNodeType().getName());
+	}
+
+	public void testStoreCustomTypeHandler() throws Exception {
+		connector.getNodeTypeHandlerManager().registerHandler(
+				new NodeTypeHandler() {
+					public String getNodeTypeName() {
+						return "nt:query";
+					}
+
+					public Node newNode(Session session, Node targetNode,
+							String nodeRelPath, UMOMessage message)
+							throws RepositoryException, IOException {
+
+						Node node = targetNode.addNode(nodeRelPath,
+								getNodeTypeName());
+						storeContent(session, node, message);
+						return node;
+					}
+
+					public void storeContent(Session session, Node node,
+							UMOMessage message) throws RepositoryException,
+							IOException {
+						node.setProperty("jcr:statement", message
+								.getStringProperty("jcr:statement", null));
+						node.setProperty("jcr:language", message
+								.getStringProperty("jcr:language", null));
+					}
+				});
+
+		UMOEvent event = getTestEvent(null);
+
+		event.getMessage().setStringProperty(
+				JcrConnector.JCR_NODE_RELPATH_PROPERTY, "nt-query-node");
+
+		event.getMessage().setStringProperty(
+				JcrConnector.JCR_NODE_TYPE_NAME_PROPERTY, "nt:query");
+
+		event.getMessage().setStringProperty("jcr:statement", "/foo/bar");
+		event.getMessage().setStringProperty("jcr:language", Query.XPATH);
+
+		RequestContext.setEvent(event);
+
+		assertNotNull(messageDispatcher.doSend(event).getPayload());
+
+		Node node = RepositoryTestSupport.getTestDataNode().getNode(
+				"nt-query-node");
+
+		assertEquals("nt:query", node.getPrimaryNodeType().getName());
+		assertEquals(Query.XPATH, node.getProperty("jcr:language").getString());
+		assertEquals("/foo/bar", node.getProperty("jcr:statement").getString());
 	}
 
 	public void testStoreInForcedNewNode() throws Exception {

@@ -218,7 +218,6 @@ public final class JcrConnector extends AbstractConnector {
 	 * @param customNodeTypeHandlers
 	 */
 	public void setCustomNodeTypeHandlers(List customNodeTypeHandlers) {
-		// TODO create test case
 		if (customNodeTypeHandlers != null) {
 			for (int i = 0; i < customNodeTypeHandlers.size(); i++) {
 				String customNodeTypeHandlerClassName = customNodeTypeHandlers
@@ -236,7 +235,6 @@ public final class JcrConnector extends AbstractConnector {
 				}
 			}
 		}
-
 	}
 
 	/**
