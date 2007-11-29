@@ -1,6 +1,5 @@
 package org.mule.providers.jcr;
 
-import java.awt.datatransfer.DataFlavor;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -9,8 +8,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 
 import javax.jcr.Session;
-import javax.jcr.nodetype.NodeType;
-import javax.jcr.nodetype.NodeTypeIterator;
+import javax.naming.CompositeName;
 
 import junit.framework.TestCase;
 
@@ -34,13 +32,6 @@ public class JcrMessageUtilsTestCase extends TestCase {
 	}
 
 	public void testNewPropertyNullValue() throws Exception {
-
-		for (NodeTypeIterator allNodeTypes = session.getWorkspace()
-				.getNodeTypeManager().getAllNodeTypes(); allNodeTypes.hasNext();) {
-			NodeType nt = allNodeTypes.nextNodeType();
-			System.out.println(nt.getName());
-		}
-
 		try {
 			JcrMessageUtils.newPropertyValue(session, null);
 		} catch (IllegalArgumentException iae) {
@@ -73,18 +64,16 @@ public class JcrMessageUtilsTestCase extends TestCase {
 	}
 
 	public void testSerializablePropertyValues() throws Exception {
-		Serializable textPlainUnicodeFlavor = DataFlavor
-				.getTextPlainUnicodeFlavor();
+		Serializable s = new CompositeName("a/b");
 
 		InputStream retrievedValue = (InputStream) JcrMessageUtils
-				.getValuePayload(JcrMessageUtils.newPropertyValue(session,
-						textPlainUnicodeFlavor));
+				.getValuePayload(JcrMessageUtils.newPropertyValue(session, s));
 
 		ObjectInputStream ois = new ObjectInputStream(retrievedValue);
 		Object deserializedValue = ois.readObject();
 		ois.close();
 
-		assertEquals(textPlainUnicodeFlavor, deserializedValue);
+		assertEquals(s, deserializedValue);
 	}
 
 	private boolean areEqual(final Object l, final Object r) throws Exception {
