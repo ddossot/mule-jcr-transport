@@ -1,11 +1,10 @@
 <?xml version="1.0"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.mule.transports</groupId>
 	<artifactId>mule-transport-jcr</artifactId>
 	<name>Mule JCR Transport</name>
-	<version>1.1.0-M1-SNAPSHOT</version>
+	<version>1.1.0-M1</version>
 	<description>Provides connectivity to JCR repositories.</description>
 
 	<properties>
@@ -18,9 +17,9 @@
 	</issueManagement>
 
 	<scm>
-		<connection>scm:svn:http://svn.muleforge.org/${artifactId}/trunk</connection>
-		<developerConnection>scm:svn:https://svn.muleforge.org/${artifactId}/trunk</developerConnection>
-		<url>http://svn.${artifactId}.muleforge.org/</url>
+		<connection>scm:svn:http://svn.muleforge.org/mule-transport-jcr/tags/mule-transport-jcr-1.1.0-M1</connection>
+		<developerConnection>scm:svn:https://svn.muleforge.org/mule-transport-jcr/tags/mule-transport-jcr-1.1.0-M1</developerConnection>
+		<url>http://svn.mule-transport-jcr.muleforge.org/tags/mule-transport-jcr-1.1.0-M1</url>
 	</scm>
 
 	<ciManagement>
