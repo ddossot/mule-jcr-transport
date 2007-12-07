@@ -46,8 +46,14 @@
 			
 			Type text in the console followed by enter should store data in JCR and trigger the listener of "jcrEventDumper" above.
 		-->
-		<mule-descriptor name="systemInMulticaster" implementation="org.mule.components.simple.BridgeComponent"
-			inboundEndpoint="stream://System.in">
+		<mule-descriptor name="systemInMulticaster" implementation="org.mule.components.simple.BridgeComponent">
+			<inbound-router>
+				<endpoint address="stream://System.in">
+					<properties>
+						<property name="promptMessage" value="Type content to store in JCR: " />
+					</properties>
+				</endpoint>
+			</inbound-router>
 			<outbound-router>
 				<router className="org.mule.routing.outbound.MulticastingRouter">
 					<endpoint address="vm://storeInProperty" />
@@ -89,25 +95,25 @@
 
 		<!--
 			Example of a endpoint that receives data and saves it as a node of type nt:resource that is auto-created the first time, then updated.
-		-->			
-			<mule-descriptor name="jcrStoreToSingleNode" implementation="org.mule.components.simple.BridgeComponent"
+		-->
+		<mule-descriptor name="jcrStoreToSingleNode" implementation="org.mule.components.simple.BridgeComponent"
 			inboundEndpoint="vm://storeInSingleNode">
 			<outbound-router>
-			<router className="org.mule.routing.outbound.OutboundPassThroughRouter">
-			<endpoint address="jcr://example">
-			<properties>
-			<property name="nodeRelPath" value="targetSingleNtResourceNode" />
-			<property name="nodeTypeName" value="nt:resource" />
-			<property name="jcr:mimeType" value="text/plain" />
-			</properties>
-			</endpoint>
-			</router>
+				<router className="org.mule.routing.outbound.OutboundPassThroughRouter">
+					<endpoint address="jcr://example">
+						<properties>
+							<property name="nodeRelPath" value="targetSingleNtResourceNode" />
+							<property name="nodeTypeName" value="nt:resource" />
+							<property name="jcr:mimeType" value="text/plain" />
+						</properties>
+					</endpoint>
+				</router>
 			</outbound-router>
-			</mule-descriptor>
+		</mule-descriptor>
 
 		<!--
 			Example of a endpoint that receives data and saves it as a new child node of type nt:unstructured.
-		-->			
+		-->
 		<mule-descriptor name="jcrStoreToNewChildNode" implementation="org.mule.components.simple.BridgeComponent"
 			inboundEndpoint="vm://storeInNewChildNodeEachTime">
 			<outbound-router>
