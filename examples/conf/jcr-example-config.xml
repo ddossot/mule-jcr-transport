@@ -32,7 +32,7 @@
 	</transformers>
 
 	<global-endpoints>
-		<endpoint name="jcrImages" address="jcr://example/images">
+		<endpoint name="jcrImages" address="jcr://example/images" streaming="true">
 			<filter className="org.mule.routing.filters.logic.AndFilter">
 				<left-filter className="org.mule.providers.jcr.filters.JcrNodeNameFilter" pattern="jcr:content" />
 				<right-filter className="org.mule.providers.jcr.filters.JcrPropertyNameFilter" pattern="jcr:data" />
@@ -71,7 +71,7 @@
 		-->
 		<mule-descriptor name="jcrHttpContentFetcher" implementation="org.mule.components.script.jsr223.ScriptComponent">
 			<inbound-router>
-				<endpoint address="http://localhost:8080/images" synchronous="true" />
+				<endpoint address="http://localhost:8080/images" synchronous="true" streaming="true" />
 			</inbound-router>
 			<properties>
 				<property name="scriptEngineName" value="groovy" />
@@ -88,13 +88,13 @@
 		</mule-descriptor>
 
 		<!--
-			Example of a endpoint that receives data and saves it in an existing property of the JCR container.
+			Example of an endpoint that receives data and saves it in an existing property of the JCR container.
 		-->
 		<mule-descriptor name="jcrStoreToProperty" implementation="org.mule.components.simple.BridgeComponent"
 			inboundEndpoint="vm://storeInProperty" outboundEndpoint="jcr://example/targetProperty" />
 
 		<!--
-			Example of a endpoint that receives data and saves it as a node of type nt:resource that is auto-created the first time, then updated.
+			Example of an endpoint that receives data and saves it as a node of type nt:resource that is auto-created the first time, then updated.
 		-->
 		<mule-descriptor name="jcrStoreToSingleNode" implementation="org.mule.components.simple.BridgeComponent"
 			inboundEndpoint="vm://storeInSingleNode">
@@ -112,7 +112,7 @@
 		</mule-descriptor>
 
 		<!--
-			Example of a endpoint that receives data and saves it as a new child node of type nt:unstructured.
+			Example of an endpoint that receives data and saves it as a new child node of type nt:unstructured.
 		-->
 		<mule-descriptor name="jcrStoreToNewChildNode" implementation="org.mule.components.simple.BridgeComponent"
 			inboundEndpoint="vm://storeInNewChildNodeEachTime">

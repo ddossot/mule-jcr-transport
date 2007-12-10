@@ -10,6 +10,7 @@
 
 package org.mule.providers.jcr;
 
+import java.io.InputStream;
 import java.util.Collection;
 
 import javax.jcr.Item;
@@ -137,8 +138,8 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 	public UMOMessage doSend(UMOEvent event) throws Exception {
 		boolean alwaysCreate = Boolean.valueOf(
 				(String) event.getProperty(
-						JcrConnector.JCR_ALWAYS_CREATE_CHILD_NODE_PROPERTY, true))
-				.booleanValue();
+						JcrConnector.JCR_ALWAYS_CREATE_CHILD_NODE_PROPERTY,
+						true)).booleanValue();
 
 		String propertyRelPath = (String) event.getProperty(
 				JcrConnector.JCR_PROPERTY_REL_PATH_PROPERTY, true);
@@ -314,10 +315,19 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 			}
 		}
 
-		return new MuleMessage(jcrConnector
-				.getMessageAdapter(rawJcrContent == null ? null : jcrConnector
-						.getDefaultResponseTransformer().transform(
-								rawJcrContent)));
+		Object transformedContent = rawJcrContent == null ? null : jcrConnector
+				.getDefaultResponseTransformer().transform(rawJcrContent);
+
+		if ((transformedContent != null)
+				&& (transformedContent instanceof InputStream)
+				&& (getEndpoint().isStreaming())) {
+
+			return new MuleMessage(jcrConnector.getStreamMessageAdapter(
+					(InputStream) transformedContent, null));
+		} else {
+			return new MuleMessage(jcrConnector
+					.getMessageAdapter(transformedContent));
+		}
 	}
 
 	public synchronized void refreshEndpointFilter() {
