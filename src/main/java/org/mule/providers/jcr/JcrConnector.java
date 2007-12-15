@@ -37,7 +37,6 @@ import org.mule.util.ClassUtils;
 public final class JcrConnector extends AbstractConnector {
 
 	// TODO add transaction support
-	// TODO add streaming support
 
 	private Repository repository;
 

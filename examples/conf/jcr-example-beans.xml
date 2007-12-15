@@ -3,7 +3,7 @@
     "http://www.springframework.org/dtd/spring-beans-2.0.dtd">
 <beans>
 	<bean id="jcrRepository" class="org.apache.jackrabbit.core.TransientRepository" />
-	<bean id="contentGenerator" class="org.mule.examples.jcr.RandomContentGenerator" init-method="initialize">
+	<bean id="contentGenerator" class="org.mule.examples.jcr.JcrContentLoader" init-method="initialize">
 		<property name="repository">
 			<ref bean="jcrRepository" />
 		</property>

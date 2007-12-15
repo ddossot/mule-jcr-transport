@@ -10,6 +10,7 @@
 
 package org.mule.providers.jcr;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.Collection;
 
@@ -35,6 +36,7 @@ import org.mule.umo.UMOEvent;
 import org.mule.umo.UMOFilter;
 import org.mule.umo.UMOMessage;
 import org.mule.umo.endpoint.UMOImmutableEndpoint;
+import org.mule.umo.provider.UMOMessageAdapter;
 import org.mule.util.StringUtils;
 
 import edu.emory.mathcs.backport.java.util.concurrent.atomic.AtomicReference;
@@ -318,16 +320,24 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 		Object transformedContent = rawJcrContent == null ? null : jcrConnector
 				.getDefaultResponseTransformer().transform(rawJcrContent);
 
-		if ((transformedContent != null)
-				&& (transformedContent instanceof InputStream)
-				&& (getEndpoint().isStreaming())) {
+		UMOMessageAdapter messageAdapter;
 
-			return new MuleMessage(jcrConnector.getStreamMessageAdapter(
-					(InputStream) transformedContent, null));
+		if ((transformedContent != null) && (getEndpoint().isStreaming())) {
+
+			if (transformedContent instanceof InputStream) {
+				messageAdapter = jcrConnector.getStreamMessageAdapter(
+						(InputStream) transformedContent, null);
+			} else {
+				messageAdapter = jcrConnector.getStreamMessageAdapter(
+						new ByteArrayInputStream(jcrConnector
+								.getMessageAdapter(transformedContent)
+								.getPayloadAsBytes()), null);
+			}
 		} else {
-			return new MuleMessage(jcrConnector
-					.getMessageAdapter(transformedContent));
+			messageAdapter = jcrConnector.getMessageAdapter(transformedContent);
 		}
+
+		return new MuleMessage(messageAdapter);
 	}
 
 	public synchronized void refreshEndpointFilter() {
