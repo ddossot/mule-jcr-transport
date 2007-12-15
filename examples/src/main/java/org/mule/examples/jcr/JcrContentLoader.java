@@ -20,11 +20,11 @@ import javax.jcr.Session;
 import javax.jcr.SimpleCredentials;
 
 /**
- * Generate random content in a JCR repository.
+ * Load test content in a JCR repository.
  * 
  * @author David Dossot
  */
-public class RandomContentGenerator {
+public class JcrContentLoader {
 	private Repository repository;
 
 	private String username;

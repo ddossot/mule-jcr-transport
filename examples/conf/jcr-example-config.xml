@@ -26,6 +26,12 @@
 		</connection-strategy>
 	</connector>
 
+	<connector name="tcpConnector" className="org.mule.providers.tcp.TcpConnector">
+		<properties>
+			<container-property name="tcpProtocol" reference="org.mule.providers.tcp.protocols.EOFProtocol" />
+		</properties>
+	</connector>
+
 	<transformers>
 		<transformer name="ObjectToXml" className="org.mule.transformers.xml.ObjectToXml" />
 		<transformer name="NoActionTransformer" className="org.mule.transformers.NoActionTransformer" />
@@ -40,7 +46,7 @@
 		</endpoint>
 	</global-endpoints>
 
-	<model name="jcrExample">
+	<model name="jcrNonStreamingExample" type="seda">
 		<!--
 			Simple bridge used to send content to different JCR outbound endpoints, demonstrating different persistence strategies.
 			
@@ -61,30 +67,6 @@
 					<endpoint address="vm://storeInNewChildNodeEachTime" />
 				</router>
 			</outbound-router>
-		</mule-descriptor>
-
-		<!-- 
-			Example of an HTTP endpoint that fetches data from a JCR container, turning Mule into an HTTP picture server.
-			
-			Browsing http://localhost:8080/images/mule.gif or http://localhost:8080/images?get=jackrabbit.gif
-			should return a gif image.
-		-->
-		<mule-descriptor name="jcrHttpContentFetcher" implementation="org.mule.components.script.jsr223.ScriptComponent">
-			<inbound-router>
-				<endpoint address="http://localhost:8080/images" synchronous="true" streaming="true" />
-			</inbound-router>
-			<properties>
-				<property name="scriptEngineName" value="groovy" />
-				<text-property name="scriptText"><![CDATA[
-					def imageName = message.getPayload().substring(8);
-					message.clearProperties();
-					message.setStringProperty("nodeRelPath", imageName);
-					message.setStringProperty("Content-Type", "image/gif");
-					eventContext.setStopFurtherProcessing(true);
-					return managementContext.lookupEndpoint("jcrImages").receive(0).getPayload();
-					]]>
-				</text-property>
-			</properties>
 		</mule-descriptor>
 
 		<!--
@@ -149,5 +131,36 @@
 			</outbound-router>
 		</mule-descriptor>
 
+		<!-- 
+			Example of an HTTP endpoint that fetches data from a JCR container, turning Mule into an HTTP picture server.
+			
+			Browsing http://localhost:8080/images/mule.gif or http://localhost:8080/images?get=jackrabbit.gif
+			should return a gif image.
+		-->
+		<mule-descriptor name="jcrHttpContentFetcher" implementation="org.mule.components.script.jsr223.ScriptComponent">
+			<inbound-router>
+				<endpoint address="http://localhost:8080/images" synchronous="true" />
+			</inbound-router>
+			<properties>
+				<property name="scriptEngineName" value="groovy" />
+				<text-property name="scriptText"><![CDATA[
+					def imageName = message.getPayload().substring(8);
+					message.clearProperties();
+					message.setStringProperty("nodeRelPath", imageName);
+					message.setStringProperty("Content-Type", "image/gif");
+					eventContext.setStopFurtherProcessing(true);
+					return managementContext.lookupEndpoint("jcrImages").receive(0).getPayload();
+			]]>
+				</text-property>
+			</properties>
+		</mule-descriptor>
+	</model>
+
+	<model name="jcrStreamingExample" type="streaming">
+		<mule-descriptor name="jcrHttpContentFetcher" implementation="org.mule.examples.jcr.JcrImageStreamComponent">
+			<inbound-router>
+				<endpoint address="tcp://localhost:9999" synchronous="true" streaming="true" connector="tcpConnector" />
+			</inbound-router>
+		</mule-descriptor>
 	</model>
 </mule-configuration>

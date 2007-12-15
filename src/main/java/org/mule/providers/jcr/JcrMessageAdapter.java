@@ -68,6 +68,8 @@ public final class JcrMessageAdapter extends AbstractMessageAdapter {
 	protected byte[] convertToBytes(Object object) throws TransformerException,
 			UnsupportedEncodingException {
 
+		assertAccess(READ);
+
 		if (object instanceof InputStream) {
 			try {
 				return IOUtils.toByteArray((InputStream) object);
@@ -84,6 +86,8 @@ public final class JcrMessageAdapter extends AbstractMessageAdapter {
 	}
 
 	public byte[] getPayloadAsBytes() throws Exception {
+		assertAccess(READ);
+
 		synchronized (this) {
 			contents = convertToBytes(payload);
 			return contents;
@@ -91,12 +95,15 @@ public final class JcrMessageAdapter extends AbstractMessageAdapter {
 	}
 
 	public String getPayloadAsString(String encoding) throws Exception {
+		assertAccess(READ);
+
 		synchronized (this) {
 			return new String(this.getPayloadAsBytes(), encoding);
 		}
 	}
 
 	public Object getPayload() {
+		assertAccess(READ);
 		return payload;
 	}
 
