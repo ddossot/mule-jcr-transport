@@ -25,9 +25,9 @@ import org.mule.umo.endpoint.UMOEndpoint;
 import org.mule.util.IOUtils;
 
 /**
- * Since the scripting component does not support streaming, this component has
- * been created. It performs the same functions as the scripted one visible in
- * the non streaming model of the example configuration.
+ * Since the scripting component does not (yet?) support streaming, this
+ * component has been created. It performs the same functions as the scripted
+ * one visible in the non streaming model of the example configuration.
  * 
  * @author David Dossot (david@dossot.net)
  */
@@ -43,7 +43,10 @@ public final class JcrImageStreamComponent implements StreamingService {
 				.toByteArray(in)));
 		message.setStringProperty("Content-Type", "image/gif");
 
-		UMOEndpoint ep = MuleManager.getInstance().lookupEndpoint("jcrImages");
+		UMOEndpoint ep = MuleManager.getInstance().lookupEndpoint(
+				"jcrImageStreams");
+
+		// ensures the endpoint will be streaming its content
 		ep.setStreaming(true);
 
 		IOUtils.copyLarge(((StreamMessageAdapter) ep.receive(0).getAdapter())
@@ -65,10 +68,12 @@ public final class JcrImageStreamComponent implements StreamingService {
 		socket.shutdownOutput();
 
 		InputStream inputStream = socket.getInputStream();
-		IOUtils.copy(inputStream, new FileOutputStream(System
-				.getProperty("user.home")
-				+ File.separatorChar + imageName));
+		String imagePath = System.getProperty("user.home") + File.separatorChar
+				+ imageName;
+		IOUtils.copy(inputStream, new FileOutputStream(imagePath));
 		inputStream.close();
 		socket.close();
+
+		System.out.println("Saved: " + imageName);
 	}
 }
