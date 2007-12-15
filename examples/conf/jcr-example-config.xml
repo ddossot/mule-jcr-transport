@@ -38,7 +38,14 @@
 	</transformers>
 
 	<global-endpoints>
-		<endpoint name="jcrImages" address="jcr://example/images" streaming="true">
+		<endpoint name="jcrImages" address="jcr://example/images">
+			<filter className="org.mule.routing.filters.logic.AndFilter">
+				<left-filter className="org.mule.providers.jcr.filters.JcrNodeNameFilter" pattern="jcr:content" />
+				<right-filter className="org.mule.providers.jcr.filters.JcrPropertyNameFilter" pattern="jcr:data" />
+			</filter>
+		</endpoint>
+		
+		<endpoint name="jcrImageStreams" address="jcr://example/images" streaming="true">
 			<filter className="org.mule.routing.filters.logic.AndFilter">
 				<left-filter className="org.mule.providers.jcr.filters.JcrNodeNameFilter" pattern="jcr:content" />
 				<right-filter className="org.mule.providers.jcr.filters.JcrPropertyNameFilter" pattern="jcr:data" />
