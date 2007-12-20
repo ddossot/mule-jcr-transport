@@ -39,8 +39,7 @@ public final class JcrImageStreamComponent implements StreamingService {
 		context.setStopFurtherProcessing(true);
 		UMOMessage message = context.getMessage();
 		message.clearProperties();
-		message.setStringProperty("nodeRelPath", new String(IOUtils
-				.toByteArray(in)));
+		message.setStringProperty("nodeRelPath", IOUtils.toString(in));
 		message.setStringProperty("Content-Type", "image/gif");
 
 		UMOEndpoint ep = MuleManager.getInstance().lookupEndpoint(
@@ -70,10 +69,19 @@ public final class JcrImageStreamComponent implements StreamingService {
 		InputStream inputStream = socket.getInputStream();
 		String imagePath = System.getProperty("user.home") + File.separatorChar
 				+ imageName;
-		IOUtils.copy(inputStream, new FileOutputStream(imagePath));
+		IOUtils.copy(inputStream, new FileOutputStream(imagePath, false));
 		inputStream.close();
 		socket.close();
 
 		System.out.println("Saved: " + imageName);
+
+		socket = new Socket("localhost", 9998);
+		outputStream = socket.getOutputStream();
+		outputStream.write("streamed content to store".getBytes());
+		outputStream.flush();
+		socket.shutdownOutput();
+		socket.close();
+
+		System.out.println("Done!");
 	}
 }

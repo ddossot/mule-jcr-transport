@@ -17,7 +17,9 @@ import org.mule.providers.streaming.StreamMessageAdapter;
 import org.mule.umo.provider.OutputHandler;
 
 /**
- * <code>Jcr</code> TODO document
+ * TODO document
+ * 
+ * TODO unit test
  */
 public class JcrStreamingMessageAdapter extends StreamMessageAdapter {
 

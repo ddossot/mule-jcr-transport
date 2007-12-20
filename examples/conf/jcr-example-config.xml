@@ -44,7 +44,7 @@
 				<right-filter className="org.mule.providers.jcr.filters.JcrPropertyNameFilter" pattern="jcr:data" />
 			</filter>
 		</endpoint>
-		
+
 		<endpoint name="jcrImageStreams" address="jcr://example/images" streaming="true">
 			<filter className="org.mule.routing.filters.logic.AndFilter">
 				<left-filter className="org.mule.providers.jcr.filters.JcrNodeNameFilter" pattern="jcr:content" />
@@ -164,10 +164,28 @@
 	</model>
 
 	<model name="jcrStreamingExample" type="streaming">
-		<mule-descriptor name="jcrHttpContentFetcher" implementation="org.mule.examples.jcr.JcrImageStreamComponent">
+		<mule-descriptor name="jcrStreamingHttpContentFetcher" implementation="org.mule.examples.jcr.JcrImageStreamComponent">
 			<inbound-router>
 				<endpoint address="tcp://localhost:9999" synchronous="true" streaming="true" connector="tcpConnector" />
 			</inbound-router>
+		</mule-descriptor>
+
+		<mule-descriptor name="jcrStreamingStoreToNewChildNode" implementation="org.mule.components.simple.StreamingBridgeComponent">
+			<inbound-router>
+				<endpoint address="tcp://localhost:9998" synchronous="true" streaming="true" connector="tcpConnector" />
+			</inbound-router>
+			<outbound-router>
+				<router className="org.mule.routing.outbound.OutboundPassThroughRouter">
+					<endpoint address="jcr://example">
+						<properties>
+							<property name="alwaysCreate" value="true" />
+							<property name="nodeRelPath" value="streamedData" />
+							<property name="nodeTypeName" value="nt:resource" />
+							<property name="jcr:mimeType" value="text/plain" />
+						</properties>
+					</endpoint>
+				</router>
+			</outbound-router>
 		</mule-descriptor>
 	</model>
 </mule-configuration>
