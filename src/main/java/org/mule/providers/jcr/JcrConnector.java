@@ -10,7 +10,14 @@
 
 package org.mule.providers.jcr;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.jcr.Credentials;
 import javax.jcr.Repository;
@@ -19,13 +26,20 @@ import javax.jcr.Session;
 import javax.jcr.SimpleCredentials;
 
 import org.apache.commons.lang.UnhandledException;
+import org.mule.config.i18n.CoreMessages;
+import org.mule.impl.MuleEvent;
+import org.mule.impl.MuleMessage;
+import org.mule.impl.RequestContext;
 import org.mule.providers.AbstractConnector;
 import org.mule.providers.FatalConnectException;
 import org.mule.providers.jcr.handlers.NodeTypeHandler;
 import org.mule.providers.jcr.handlers.NodeTypeHandlerManager;
 import org.mule.providers.jcr.i18n.JcrMessages;
 import org.mule.umo.UMOException;
+import org.mule.umo.UMOMessage;
+import org.mule.umo.endpoint.UMOImmutableEndpoint;
 import org.mule.umo.lifecycle.InitialisationException;
+import org.mule.umo.provider.ConnectorException;
 import org.mule.util.ClassUtils;
 
 /**
@@ -125,6 +139,35 @@ public final class JcrConnector extends AbstractConnector {
 
 	public void doDispose() {
 		// NOOP
+	}
+
+	public OutputStream getOutputStream(UMOImmutableEndpoint endpoint,
+			UMOMessage message) throws UMOException {
+
+		// TODO unit test
+		PipedInputStream pipedInputStream = new PipedInputStream();
+		PipedOutputStream pipedOutputStream;
+
+		try {
+			pipedOutputStream = new PipedOutputStream(pipedInputStream);
+		} catch (IOException ioe) {
+			throw new ConnectorException(CoreMessages
+					.streamingFailedForEndpoint(endpoint.toString()), this, ioe);
+		}
+
+		Map properties = new HashMap();
+		for (Iterator i = message.getPropertyNames().iterator(); i.hasNext();) {
+			String propertyName = (String) i.next();
+			properties.put(propertyName, message.getProperty(propertyName));
+		}
+
+		// TODO review potential piped streams deadlock if the same thread is
+		// used when dispatching (pool exhausted)
+		endpoint.dispatch(new MuleEvent(new MuleMessage(pipedInputStream,
+				properties), endpoint, RequestContext.getEvent().getSession(),
+				true));
+
+		return pipedOutputStream;
 	}
 
 	public Session newSession() throws RepositoryException {
