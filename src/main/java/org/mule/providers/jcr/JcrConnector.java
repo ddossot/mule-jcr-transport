@@ -30,16 +30,20 @@ import org.mule.config.i18n.CoreMessages;
 import org.mule.impl.MuleEvent;
 import org.mule.impl.MuleMessage;
 import org.mule.impl.RequestContext;
+import org.mule.impl.model.streaming.CallbackOutputStream;
 import org.mule.providers.AbstractConnector;
 import org.mule.providers.FatalConnectException;
 import org.mule.providers.jcr.handlers.NodeTypeHandler;
 import org.mule.providers.jcr.handlers.NodeTypeHandlerManager;
 import org.mule.providers.jcr.i18n.JcrMessages;
+import org.mule.umo.UMOEvent;
 import org.mule.umo.UMOException;
 import org.mule.umo.UMOMessage;
+import org.mule.umo.UMOSession;
 import org.mule.umo.endpoint.UMOImmutableEndpoint;
 import org.mule.umo.lifecycle.InitialisationException;
 import org.mule.umo.provider.ConnectorException;
+import org.mule.umo.provider.DispatchException;
 import org.mule.util.ClassUtils;
 
 /**
@@ -111,9 +115,6 @@ public final class JcrConnector extends AbstractConnector {
 	}
 
 	public void doInitialise() throws InitialisationException {
-		// Future JCR version will offer a standard way to get a repository
-		// instance, so injecting it in the connector will become optional at
-		// that time
 		if (getRepository() == null) {
 			throw new InitialisationException(JcrMessages
 					.missingDependency("repository"), this);
@@ -141,11 +142,14 @@ public final class JcrConnector extends AbstractConnector {
 		// NOOP
 	}
 
-	public OutputStream getOutputStream(UMOImmutableEndpoint endpoint,
+	/**
+	 * Will get the output stream for this type of transport. Typically this
+	 * will be called only when Streaming is being used on an outbound endpoint.
+	 */
+	public OutputStream getOutputStream(final UMOImmutableEndpoint endpoint,
 			UMOMessage message) throws UMOException {
 
-		// TODO unit test
-		PipedInputStream pipedInputStream = new PipedInputStream();
+		final PipedInputStream pipedInputStream = new PipedInputStream();
 		PipedOutputStream pipedOutputStream;
 
 		try {
@@ -155,19 +159,40 @@ public final class JcrConnector extends AbstractConnector {
 					.streamingFailedForEndpoint(endpoint.toString()), this, ioe);
 		}
 
-		Map properties = new HashMap();
+		final Map properties = new HashMap();
+
 		for (Iterator i = message.getPropertyNames().iterator(); i.hasNext();) {
 			String propertyName = (String) i.next();
 			properties.put(propertyName, message.getProperty(propertyName));
 		}
 
-		// TODO review potential piped streams deadlock if the same thread is
-		// used when dispatching (pool exhausted)
-		endpoint.dispatch(new MuleEvent(new MuleMessage(pipedInputStream,
-				properties), endpoint, RequestContext.getEvent().getSession(),
-				true));
+		final UMOEvent event = RequestContext.getEvent();
+		final UMOSession session = event != null ? event.getSession() : null;
 
-		return pipedOutputStream;
+		// It is essential to use a different thread for reading the piped input
+		// stream. Doing a dispatch and relying on Mule's work manager to do so
+		// might be a better option but this would require to force threading
+		// and never execute in the same thread even if the pool is expired.
+		final Thread thread = new Thread(new Runnable() {
+			public void run() {
+				try {
+					send(endpoint, new MuleEvent(new MuleMessage(
+							pipedInputStream, properties), endpoint, session,
+							true));
+				} catch (DispatchException de) {
+					logger.error("Can not send streaming message!", de);
+				}
+			}
+		});
+
+		thread.start();
+
+		return new CallbackOutputStream(pipedOutputStream,
+				new CallbackOutputStream.Callback() {
+					public void onClose() throws Exception {
+						thread.join();
+					}
+				});
 	}
 
 	public Session newSession() throws RepositoryException {
