@@ -13,6 +13,9 @@ package org.mule.providers.jcr;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -20,11 +23,13 @@ import java.util.List;
 import java.util.Map;
 
 import javax.jcr.Node;
+import javax.jcr.Property;
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.query.Query;
 
+import org.mule.impl.MuleMessage;
 import org.mule.impl.RequestContext;
 import org.mule.impl.endpoint.MuleEndpoint;
 import org.mule.providers.NullPayload;
@@ -36,6 +41,7 @@ import org.mule.tck.AbstractMuleTestCase;
 import org.mule.umo.UMOEvent;
 import org.mule.umo.UMOFilter;
 import org.mule.umo.UMOMessage;
+import org.mule.util.IOUtils;
 
 /**
  * @author David Dossot (david@dossot.net)
@@ -416,6 +422,36 @@ public class JcrMessageDispatcherTestCase extends AbstractMuleTestCase {
 		}
 
 		fail("Should have got an IAE");
+	}
+
+	public void testConnectorGetOutputStream() throws Exception {
+		Map properties = new HashMap();
+		properties.put(JcrConnector.JCR_NODE_RELPATH_PROPERTY, "stored-stream");
+		properties.put(JcrConnector.JCR_NODE_TYPE_NAME_PROPERTY, "nt:resource");
+		properties.put("jcr:mimeType", "text/plain");
+
+		MuleMessage message = new MuleMessage(null, properties);
+
+		OutputStream outputStream = connector
+				.getOutputStream(endpoint, message);
+
+		assertNotNull(outputStream);
+
+		final String testContent = "test streamed content";
+		IOUtils.copy(new StringReader(testContent), outputStream);
+
+		outputStream.flush();
+		outputStream.close();
+
+		Property property = RepositoryTestSupport.getTestDataNode().getNode(
+				"stored-stream").getProperty("jcr:data");
+
+		assertNotNull(property);
+
+		StringWriter sw = new StringWriter();
+		IOUtils.copy(property.getStream(), sw);
+
+		assertEquals(testContent, sw.toString());
 	}
 
 	private void setFilter(UMOFilter filter) {

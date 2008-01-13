@@ -202,6 +202,12 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 							.getChildNodeTypeHandler(targetParentNode);
 				}
 
+				if (logger.isDebugEnabled()) {
+					logger.debug("Selected node type handler: "
+							+ nodeTypeHandler + " for node: "
+							+ targetParentNode.getPath());
+				}
+
 				nodeTypeHandler.newNode(session, targetParentNode, nodeRelPath,
 						event.getMessage());
 			} else {
@@ -448,7 +454,8 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 			PathNotFoundException {
 
 		if (logger.isDebugEnabled()) {
-			logger.debug("Receiving from JCR for endpoint: " + getEndpoint());
+			logger.debug("Accessing JCR container for endpoint: "
+					+ getEndpoint());
 		}
 
 		Item item = null;
