@@ -10,22 +10,22 @@
 
 package org.mule.providers.jcr;
 
-import org.mule.tck.providers.AbstractMessageAdapterTestCase;
-import org.mule.umo.MessagingException;
-import org.mule.umo.provider.UMOMessageAdapter;
+import java.util.Collections;
+
+import javax.jcr.observation.Event;
+
+import org.apache.jackrabbit.commons.iterator.EventIteratorAdapter;
 
 /**
  * @author David Dossot (david@dossot.net)
  */
-public class JcrMessageAdapterTestCase extends AbstractMessageAdapterTestCase {
+public class JcrMessageAdapterWithEventsTestCase extends
+		JcrMessageAdapterTestCase {
 
 	public Object getValidMessage() throws Exception {
-		return "foo";
-	}
-
-	public UMOMessageAdapter createAdapter(Object payload)
-			throws MessagingException {
-		return new JcrMessageAdapter(payload);
+		return new EventIteratorAdapter(Collections
+				.singleton(new JcrEventTestCase.DummyEvent("/",
+						Event.PROPERTY_CHANGED, "foo")));
 	}
 
 }

@@ -10,16 +10,10 @@
 
 package org.mule.providers.jcr;
 
-import javax.jcr.ItemExistsException;
 import javax.jcr.Node;
-import javax.jcr.PathNotFoundException;
 import javax.jcr.Repository;
-import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.SimpleCredentials;
-import javax.jcr.lock.LockException;
-import javax.jcr.nodetype.ConstraintViolationException;
-import javax.jcr.version.VersionException;
 
 import org.apache.jackrabbit.core.TransientRepository;
 
@@ -60,27 +54,37 @@ public abstract class RepositoryTestSupport {
 		return repository;
 	}
 
-	public static void resetRepository() throws RepositoryException,
-			VersionException, LockException, ConstraintViolationException,
-			PathNotFoundException, ItemExistsException {
+	public static void resetRepository() {
 
-		Node root = session.getRootNode();
+		try {
+			Node root = getSession().getRootNode();
 
-		if (root.hasNode(ROOT_NODE_NAME)) {
-			root.getNode(ROOT_NODE_NAME).remove();
+			if (root.hasNode(ROOT_NODE_NAME)) {
+				root.getNode(ROOT_NODE_NAME).remove();
+			}
+
+			testDataNode = root.addNode(ROOT_NODE_NAME);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
 		}
-
-		testDataNode = root.addNode(ROOT_NODE_NAME);
 	}
 
-	public synchronized static Session getSession() throws Exception {
-		getRepository();
+	public synchronized static Session getSession() {
+		try {
+			getRepository();
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 
 		return session;
 	}
 
-	public synchronized static Node getTestDataNode() throws Exception {
-		getRepository();
+	public synchronized static Node getTestDataNode() {
+		try {
+			getRepository();
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 
 		return testDataNode;
 	}

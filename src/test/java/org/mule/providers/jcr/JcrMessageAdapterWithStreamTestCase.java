@@ -10,22 +10,16 @@
 
 package org.mule.providers.jcr;
 
-import org.mule.tck.providers.AbstractMessageAdapterTestCase;
-import org.mule.umo.MessagingException;
-import org.mule.umo.provider.UMOMessageAdapter;
+import java.io.ByteArrayInputStream;
 
 /**
  * @author David Dossot (david@dossot.net)
  */
-public class JcrMessageAdapterTestCase extends AbstractMessageAdapterTestCase {
+public class JcrMessageAdapterWithStreamTestCase extends
+		JcrMessageAdapterTestCase {
 
 	public Object getValidMessage() throws Exception {
-		return "foo";
-	}
-
-	public UMOMessageAdapter createAdapter(Object payload)
-			throws MessagingException {
-		return new JcrMessageAdapter(payload);
+		return new ByteArrayInputStream("foo".getBytes());
 	}
 
 }

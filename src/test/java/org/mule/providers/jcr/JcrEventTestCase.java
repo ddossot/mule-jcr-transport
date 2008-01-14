@@ -32,14 +32,14 @@ public class JcrEventTestCase extends TestCase {
 
 	private static final String USER_ID = "jqdoe";
 
-	private static class DummyEvent implements Event {
+	public static class DummyEvent implements Event {
 		private final String path;
 
 		private final int type;
 
 		private final String userID;
 
-		DummyEvent(final String path, final int type, final String userID) {
+		public DummyEvent(final String path, final int type, final String userID) {
 			this.path = path;
 			this.type = type;
 			this.userID = userID;
@@ -180,8 +180,8 @@ public class JcrEventTestCase extends TestCase {
 	}
 
 	public void testExceptionWhenGettingValue() {
-		assertEquals("", JcrMessageUtils.outputPropertyValue("/foo/bar",
-				null, null));
+		assertEquals("", JcrMessageUtils.outputPropertyValue("/foo/bar", null,
+				null));
 	}
 
 	private void testContentEventType(String propertyPath, int eventType,

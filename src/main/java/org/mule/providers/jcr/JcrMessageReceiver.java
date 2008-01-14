@@ -72,6 +72,11 @@ public final class JcrMessageReceiver extends AbstractMessageReceiver implements
 		return (JcrMessageReceiverContext) jcrMessageReceiverContext.get();
 	}
 
+	public static void setJcrMessageReceiverContext(
+			JcrMessageReceiverContext context) {
+		jcrMessageReceiverContext.set(context);
+	}
+
 	public JcrMessageReceiver(UMOConnector connector, UMOComponent component,
 			UMOEndpoint endpoint) throws InitialisationException {
 
@@ -141,9 +146,10 @@ public final class JcrMessageReceiver extends AbstractMessageReceiver implements
 
 		try {
 			receiverSession = jcrConnector.newSession();
-			observationManager = receiverSession.getWorkspace().getObservationManager();
+			observationManager = receiverSession.getWorkspace()
+					.getObservationManager();
 
-			jcrMessageReceiverContext.set(new JcrMessageReceiverContext() {
+			setJcrMessageReceiverContext(new JcrMessageReceiverContext() {
 				public JcrContentPayloadType getContentPayloadType() {
 					return contentPayloadType;
 				}

@@ -18,6 +18,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +37,9 @@ import org.mule.providers.NullPayload;
 import org.mule.providers.jcr.filters.JcrNodeNameFilter;
 import org.mule.providers.jcr.filters.JcrPropertyNameFilter;
 import org.mule.providers.jcr.handlers.NodeTypeHandler;
+import org.mule.providers.streaming.StreamMessageAdapter;
 import org.mule.routing.filters.logic.AndFilter;
+import org.mule.routing.filters.logic.NotFilter;
 import org.mule.tck.AbstractMuleTestCase;
 import org.mule.umo.UMOEvent;
 import org.mule.umo.UMOFilter;
@@ -47,6 +50,29 @@ import org.mule.util.IOUtils;
  * @author David Dossot (david@dossot.net)
  */
 public class JcrMessageDispatcherTestCase extends AbstractMuleTestCase {
+
+	public static final class NtQueryNodeTypeHandler implements NodeTypeHandler {
+		public String getNodeTypeName() {
+			return "nt:query";
+		}
+
+		public Node newNode(Session session, Node targetNode,
+				String nodeRelPath, UMOMessage message)
+				throws RepositoryException, IOException {
+
+			Node node = targetNode.addNode(nodeRelPath, getNodeTypeName());
+			storeContent(session, node, message);
+			return node;
+		}
+
+		public void storeContent(Session session, Node node, UMOMessage message)
+				throws RepositoryException, IOException {
+			node.setProperty("jcr:statement", message.getStringProperty(
+					"jcr:statement", null));
+			node.setProperty("jcr:language", message.getStringProperty(
+					"jcr:language", null));
+		}
+	}
 
 	private JcrConnector connector;
 
@@ -66,6 +92,8 @@ public class JcrMessageDispatcherTestCase extends AbstractMuleTestCase {
 
 		endpoint.setConnector(connector);
 
+		endpoint.setStreaming(false);
+
 		messageDispatcher = (JcrMessageDispatcher) new JcrMessageDispatcherFactory()
 				.create(endpoint);
 
@@ -76,6 +104,7 @@ public class JcrMessageDispatcherTestCase extends AbstractMuleTestCase {
 		testDataNode.setProperty("foo", Math.PI);
 		testDataNode.setProperty("stream", new ByteArrayInputStream("test"
 				.getBytes()));
+		testDataNode.setProperty("text", "EHLO SPAM");
 
 		Node target = testDataNode.addNode("noderelpath-target");
 		target.setProperty("proprelpath-target", 123L);
@@ -95,12 +124,36 @@ public class JcrMessageDispatcherTestCase extends AbstractMuleTestCase {
 		super.doTearDown();
 	}
 
-	public void testReceiveInputStream() throws Exception {
+	public void testReceiveInputStreamNonStreamingEndpoint() throws Exception {
 		JcrPropertyNameFilter jcrPropertyNameFilter = new JcrPropertyNameFilter();
 		jcrPropertyNameFilter.setPattern("stream");
 		setFilter(jcrPropertyNameFilter);
 
-		assertTrue(messageDispatcher.receive(0).getPayload() instanceof InputStream);
+		UMOMessage received = messageDispatcher.receive(0);
+		assertFalse(received.getAdapter() instanceof StreamMessageAdapter);
+		assertTrue(received.getPayload() instanceof InputStream);
+	}
+
+	public void testReceiveInputStreamStreamingEndpoint() throws Exception {
+		endpoint.setStreaming(true);
+		JcrPropertyNameFilter jcrPropertyNameFilter = new JcrPropertyNameFilter();
+		jcrPropertyNameFilter.setPattern("stream");
+		setFilter(jcrPropertyNameFilter);
+
+		UMOMessage received = messageDispatcher.receive(0);
+		assertTrue(received.getAdapter() instanceof StreamMessageAdapter);
+		assertTrue(received.getPayload() instanceof InputStream);
+	}
+
+	public void testReceiveNonInputStreamStreamingEndpoint() throws Exception {
+		endpoint.setStreaming(true);
+		JcrPropertyNameFilter jcrPropertyNameFilter = new JcrPropertyNameFilter();
+		jcrPropertyNameFilter.setPattern("text");
+		setFilter(jcrPropertyNameFilter);
+
+		UMOMessage received = messageDispatcher.receive(0);
+		assertTrue(received.getAdapter() instanceof StreamMessageAdapter);
+		assertTrue(received.getPayload() instanceof InputStream);
 	}
 
 	public void testReceiveWithEventUUID() throws Exception {
@@ -170,6 +223,17 @@ public class JcrMessageDispatcherTestCase extends AbstractMuleTestCase {
 
 	public void testReceiveByEndpointUriNoFilter() throws Exception {
 		assertTrue(messageDispatcher.receive(0).getPayload() instanceof Map);
+	}
+
+	public void testReceiveByEndpointUriWithBadFilter() throws Exception {
+
+		try {
+			setFilter(new NotFilter());
+		} catch (IllegalArgumentException iae) {
+			return;
+		}
+
+		fail("should have got an IAE");
 	}
 
 	public void testReceiveByEndpointUriWithPropertyNameFilter()
@@ -317,8 +381,10 @@ public class JcrMessageDispatcherTestCase extends AbstractMuleTestCase {
 	public void testStoreInNewNode() throws Exception {
 		UMOEvent event = getTestEvent("bar");
 
+		String newNodeName = "new-node";
+
 		event.getMessage().setStringProperty(
-				JcrConnector.JCR_NODE_RELPATH_PROPERTY, "new-node");
+				JcrConnector.JCR_NODE_RELPATH_PROPERTY, newNodeName);
 
 		event.getMessage().setStringProperty(
 				JcrConnector.JCR_NODE_TYPE_NAME_PROPERTY, "nt:resource");
@@ -330,40 +396,40 @@ public class JcrMessageDispatcherTestCase extends AbstractMuleTestCase {
 		assertNotNull(messageDispatcher.doSend(event).getPayload());
 
 		assertEquals("nt:resource", RepositoryTestSupport.getTestDataNode()
-				.getNode("new-node").getPrimaryNodeType().getName());
+				.getNode(newNodeName).getPrimaryNodeType().getName());
+	}
+
+	public void testStoreInNewNodeWithDispatch() throws Exception {
+		UMOEvent event = getTestEvent("bar");
+
+		String newNodeName = "new-node-dispatched";
+
+		event.getMessage().setStringProperty(
+				JcrConnector.JCR_NODE_RELPATH_PROPERTY, newNodeName);
+
+		event.getMessage().setStringProperty(
+				JcrConnector.JCR_NODE_TYPE_NAME_PROPERTY, "nt:resource");
+
+		event.getMessage().setStringProperty("jcr:mimeType", "text/plain");
+
+		RequestContext.setEvent(event);
+
+		messageDispatcher.doDispatch(event);
+
+		assertEquals("nt:resource", RepositoryTestSupport.getTestDataNode()
+				.getNode(newNodeName).getPrimaryNodeType().getName());
 	}
 
 	public void testStoreCustomTypeHandler() throws Exception {
-		connector.getNodeTypeHandlerManager().registerHandler(
-				new NodeTypeHandler() {
-					public String getNodeTypeName() {
-						return "nt:query";
-					}
-
-					public Node newNode(Session session, Node targetNode,
-							String nodeRelPath, UMOMessage message)
-							throws RepositoryException, IOException {
-
-						Node node = targetNode.addNode(nodeRelPath,
-								getNodeTypeName());
-						storeContent(session, node, message);
-						return node;
-					}
-
-					public void storeContent(Session session, Node node,
-							UMOMessage message) throws RepositoryException,
-							IOException {
-						node.setProperty("jcr:statement", message
-								.getStringProperty("jcr:statement", null));
-						node.setProperty("jcr:language", message
-								.getStringProperty("jcr:language", null));
-					}
-				});
+		connector.setCustomNodeTypeHandlers(Collections
+				.singletonList(NtQueryNodeTypeHandler.class.getName()));
 
 		UMOEvent event = getTestEvent(null);
 
+		String newNodeName = "nt-query-node";
+
 		event.getMessage().setStringProperty(
-				JcrConnector.JCR_NODE_RELPATH_PROPERTY, "nt-query-node");
+				JcrConnector.JCR_NODE_RELPATH_PROPERTY, newNodeName);
 
 		event.getMessage().setStringProperty(
 				JcrConnector.JCR_NODE_TYPE_NAME_PROPERTY, "nt:query");
@@ -375,8 +441,8 @@ public class JcrMessageDispatcherTestCase extends AbstractMuleTestCase {
 
 		assertNotNull(messageDispatcher.doSend(event).getPayload());
 
-		Node node = RepositoryTestSupport.getTestDataNode().getNode(
-				"nt-query-node");
+		Node node = RepositoryTestSupport.getTestDataNode()
+				.getNode(newNodeName);
 
 		assertEquals("nt:query", node.getPrimaryNodeType().getName());
 		assertEquals(Query.XPATH, node.getProperty("jcr:language").getString());
