@@ -141,7 +141,7 @@
 		<!-- 
 			Example of an HTTP endpoint that fetches data from a JCR container, turning Mule into an HTTP picture server.
 			
-			Browsing http://localhost:8080/images/mule.gif or http://localhost:8080/images?get=jackrabbit.gif
+			Browsing http://localhost:8080/images/mule.gif or http://localhost:8080/images/jackrabbit.gif
 			should return a gif image.
 		-->
 		<mule-descriptor name="jcrHttpContentFetcher" implementation="org.mule.components.script.jsr223.ScriptComponent">
