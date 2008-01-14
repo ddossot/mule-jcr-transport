@@ -42,7 +42,7 @@ public class JcrConnectorTestCase extends AbstractConnectorTestCase {
 	}
 
 	public Object getValidMessage() throws Exception {
-		return JcrMessageAdapterTestCase.getJcrMessages();
+		return "foo";
 	}
 
 	public void testInitializingWithoutConnector() {

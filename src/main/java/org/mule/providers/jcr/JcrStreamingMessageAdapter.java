@@ -18,8 +18,6 @@ import org.mule.umo.provider.OutputHandler;
 
 /**
  * Provides a message adapter for for stream based JCR message flows in Mule.
- * 
- * TODO unit test
  */
 public class JcrStreamingMessageAdapter extends StreamMessageAdapter {
 
