@@ -17,7 +17,7 @@ import org.mule.providers.streaming.StreamMessageAdapter;
 import org.mule.umo.provider.OutputHandler;
 
 /**
- * TODO document
+ * Provides a message adapter for for stream based JCR message flows in Mule.
  * 
  * TODO unit test
  */
@@ -44,16 +44,5 @@ public class JcrStreamingMessageAdapter extends StreamMessageAdapter {
 	public JcrStreamingMessageAdapter(InputStream in, OutputStream out,
 			OutputHandler handler) {
 		super(in, out, handler);
-	}
-
-	public void release() {
-		// Optional; does not need to be implemented. Delete if not required
-
-		/*
-		 * IMPLEMENTATION NOTE: The release method is called by Mule to notify
-		 * this adapter that it is no longer needed. This method can be used to
-		 * release any resources that a custom StreamAdapter may have associated
-		 * with it.
-		 */
 	}
 }
