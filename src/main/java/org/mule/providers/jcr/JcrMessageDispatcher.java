@@ -37,7 +37,10 @@ import org.mule.umo.UMOFilter;
 import org.mule.umo.UMOMessage;
 import org.mule.umo.endpoint.UMOImmutableEndpoint;
 import org.mule.umo.provider.UMOMessageAdapter;
+import org.mule.util.DateUtils;
 import org.mule.util.StringUtils;
+import org.mule.util.TemplateParser;
+import org.mule.util.UUID;
 
 import edu.emory.mathcs.backport.java.util.concurrent.atomic.AtomicReference;
 
@@ -52,6 +55,10 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 	private final AtomicReference nodeNamePatternFilterRef = new AtomicReference();
 
 	private final AtomicReference propertyNamePatternFilterRef = new AtomicReference();
+	
+	private static final String DEFAULT_DATE_FORMAT = "dd-MM-yy_HH-mm-ss.SSS";
+	
+	private static final TemplateParser ANT_PARSER = TemplateParser.createAntStyleParser();
 
 	private Session dispatcherSession;
 
@@ -85,7 +92,19 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 		// NOOP
 	}
 
-	/**
+	public synchronized void refreshEndpointFilter() {
+    	nodeNamePatternFilterRef.set(getPropertyNamePatternFilter(getEndpoint()
+    			.getFilter(), JcrNodeNameFilter.class));
+    
+    	propertyNamePatternFilterRef.set(getPropertyNamePatternFilter(
+    			getEndpoint().getFilter(), JcrPropertyNameFilter.class));
+    }
+
+    public Session getSession() {
+    	return jcrConnector.validateSession(dispatcherSession);
+    }
+
+    /**
 	 * @see org.mule.providers.jcr.JcrMessageDispatcher#doSend(UMOEvent) doSend
 	 */
 	public void doDispatch(UMOEvent event) throws Exception {
@@ -143,12 +162,8 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 						JcrConnector.JCR_ALWAYS_CREATE_CHILD_NODE_PROPERTY,
 						true)).booleanValue();
 
-		String propertyRelPath = (String) event.getProperty(
-				JcrConnector.JCR_PROPERTY_REL_PATH_PROPERTY, true);
-
-		String nodeRelPath = (String) event.getProperty(
-				JcrConnector.JCR_NODE_RELPATH_PROPERTY, true);
-
+        String nodeRelPath = getNodeRelPath(event);
+		String propertyRelPath = getNodePropertyPath(event);
 		Session session = getSession();
 
 		Item targetItem = alwaysCreate ? null : getTargetItemFromPath(session,
@@ -300,11 +315,8 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 					JcrConnector.JCR_NODE_UUID_PROPERTY, true);
 
 			if (nodeUUID == null) {
-				nodeRelpath = (String) event.getProperty(
-						JcrConnector.JCR_NODE_RELPATH_PROPERTY, true);
-
-				propertyRelPath = (String) event.getProperty(
-						JcrConnector.JCR_PROPERTY_REL_PATH_PROPERTY, true);
+				nodeRelpath = getNodeRelPath(event);
+				propertyRelPath = getNodePropertyPath(event);
 			}
 		}
 
@@ -346,15 +358,53 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 		return new MuleMessage(messageAdapter);
 	}
 
-	public synchronized void refreshEndpointFilter() {
-		nodeNamePatternFilterRef.set(getPropertyNamePatternFilter(getEndpoint()
-				.getFilter(), JcrNodeNameFilter.class));
+    // --- Private Methods ---
 
-		propertyNamePatternFilterRef.set(getPropertyNamePatternFilter(
-				getEndpoint().getFilter(), JcrPropertyNameFilter.class));
-	}
+    private String getNodePropertyPath(UMOEvent event) {
+        return parsePath((String) event.getProperty(
+        		JcrConnector.JCR_PROPERTY_REL_PATH_PROPERTY, true), event);
+    }
 
-	// --- Private Methods ---
+    private String getNodeRelPath(UMOEvent event) {
+        return parsePath((String) event.getProperty(
+        		JcrConnector.JCR_NODE_RELPATH_PROPERTY, true), event);
+    }
+    
+    private String parsePath(final String path, final UMOEvent event) {
+        // TODO unit test
+        // TODO extract as a static util
+        // TODO document
+        if ((path == null) || (path.indexOf('{')==-1)) {
+        return path;}
+        
+        return ANT_PARSER.parse(new TemplateParser.TemplateCallback()    {
+            public Object match(String token)
+            {
+                if (token.equals("DATE"))
+                {
+                    return DateUtils.getTimeStamp(DEFAULT_DATE_FORMAT);
+                }
+                else if (token.startsWith("DATE:"))
+                {
+                    token = token.substring(5);
+                    return DateUtils.getTimeStamp(token);
+                }
+                else if (token.startsWith("UUID"))
+                {
+                    return UUID.getUUID();
+                }
+                else if (token.startsWith("SYSTIME"))
+                {
+                    return String.valueOf(System.currentTimeMillis());
+                }
+                else if (event != null)
+                {
+                    return event.getProperty(token, true);
+                }
+                return null;
+            }
+        }, path);
+    }
 
 	private Object getRawContentFromProperty(Item targetItem)
 			throws RepositoryException {
@@ -549,10 +599,6 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 		}
 
 		return pattern;
-	}
-
-	public Session getSession() {
-		return jcrConnector.validateSession(dispatcherSession);
 	}
 
 }

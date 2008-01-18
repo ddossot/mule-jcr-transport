@@ -39,10 +39,6 @@ final class NtResourceHandler extends AbstractNodeTypeHandler {
 
 	static final String JCR_ENCODING_PROPERTY_NAME = "jcr:encoding";
 
-	public NtResourceHandler(NodeTypeHandlerManager nodeTypeManager) {
-		super(nodeTypeManager);
-	}
-
 	public String getNodeTypeName() {
 		return NT_RESOURCE_NODE_TYPE;
 	}

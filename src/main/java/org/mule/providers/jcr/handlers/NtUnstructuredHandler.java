@@ -28,10 +28,6 @@ import org.mule.umo.UMOMessage;
  */
 final class NtUnstructuredHandler extends AbstractNodeTypeHandler {
 
-	public NtUnstructuredHandler(NodeTypeHandlerManager nodeTypeManager) {
-		super(nodeTypeManager);
-	}
-
 	public String getNodeTypeName() {
 		return "nt:unstructured";
 	}

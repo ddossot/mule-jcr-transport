@@ -27,6 +27,12 @@ import org.mule.umo.UMOMessage;
  */
 public interface NodeTypeHandler {
 
+    /**
+     * Called once, when the handler is created.
+     * @param nodeTypeManager
+     */
+    void initialize(NodeTypeHandlerManager manager);
+    
 	String getNodeTypeName();
 
 	Node newNode(Session session, Node targetNode, String nodeRelPath,

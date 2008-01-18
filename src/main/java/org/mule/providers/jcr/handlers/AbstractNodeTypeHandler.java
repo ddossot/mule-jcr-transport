@@ -26,14 +26,14 @@ import org.mule.umo.UMOMessage;
  */
 abstract class AbstractNodeTypeHandler implements NodeTypeHandler {
 
-	private final NodeTypeHandlerManager nodeTypeManager;
+	private NodeTypeHandlerManager nodeTypeManager;
 
-	protected NodeTypeHandlerManager getNodeTypeManager() {
+    public void initialize(NodeTypeHandlerManager nodeTypeManager) {
+        this.nodeTypeManager = nodeTypeManager;
+    }
+    
+    protected NodeTypeHandlerManager getNodeTypeManager() {
 		return nodeTypeManager;
-	}
-
-	public AbstractNodeTypeHandler(NodeTypeHandlerManager nodeTypeManager) {
-		this.nodeTypeManager = nodeTypeManager;
 	}
 
 	public final Node newNode(Session session, Node targetNode,

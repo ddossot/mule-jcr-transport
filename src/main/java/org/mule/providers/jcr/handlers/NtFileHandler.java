@@ -28,10 +28,6 @@ final class NtFileHandler extends AbstractNodeTypeHandler {
 
 	static final String JCR_CONTENT_NODE_NAME = "jcr:content";
 
-	public NtFileHandler(NodeTypeHandlerManager nodeTypeManager) {
-		super(nodeTypeManager);
-	}
-
 	public String getNodeTypeName() {
 		return "nt:file";
 	}
