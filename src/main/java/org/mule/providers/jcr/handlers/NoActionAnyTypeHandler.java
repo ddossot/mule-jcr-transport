@@ -30,10 +30,9 @@ final class NoActionAnyTypeHandler extends AbstractNodeTypeHandler {
 
 	private final String nodeTypeName;
 
-	public NoActionAnyTypeHandler(NodeTypeHandlerManager nodeTypeManager,
+	public NoActionAnyTypeHandler(
 			String nodeTypeName) {
 
-		super(nodeTypeManager);
 		this.nodeTypeName = nodeTypeName;
 	}
 

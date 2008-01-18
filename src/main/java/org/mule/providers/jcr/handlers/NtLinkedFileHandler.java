@@ -24,10 +24,6 @@ import org.mule.umo.UMOMessage;
  */
 final class NtLinkedFileHandler extends AbstractNodeTypeHandler {
 
-	public NtLinkedFileHandler(NodeTypeHandlerManager nodeTypeManager) {
-		super(nodeTypeManager);
-	}
-
 	public String getNodeTypeName() {
 		return "nt:linkedFile";
 	}

@@ -37,6 +37,7 @@ import org.mule.providers.NullPayload;
 import org.mule.providers.jcr.filters.JcrNodeNameFilter;
 import org.mule.providers.jcr.filters.JcrPropertyNameFilter;
 import org.mule.providers.jcr.handlers.NodeTypeHandler;
+import org.mule.providers.jcr.handlers.NodeTypeHandlerManager;
 import org.mule.providers.streaming.StreamMessageAdapter;
 import org.mule.routing.filters.logic.AndFilter;
 import org.mule.routing.filters.logic.NotFilter;
@@ -72,6 +73,10 @@ public class JcrMessageDispatcherTestCase extends AbstractMuleTestCase {
 			node.setProperty("jcr:language", message.getStringProperty(
 					"jcr:language", null));
 		}
+
+        public void initialize(NodeTypeHandlerManager manager) {
+            // ignore the manager
+        }
 	}
 
 	private JcrConnector connector;
