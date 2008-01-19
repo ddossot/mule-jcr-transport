@@ -29,16 +29,43 @@ public interface NodeTypeHandler {
 
     /**
      * Called once, when the handler is created.
+     * 
      * @param nodeTypeManager
      */
     void initialize(NodeTypeHandlerManager manager);
-    
-	String getNodeTypeName();
 
-	Node newNode(Session session, Node targetNode, String nodeRelPath,
-			UMOMessage message) throws RepositoryException, IOException;
+    /**
+     * The node type name that will be used to register to the manager. It does
+     * not necessarily map with an actual JCR node name.
+     * 
+     * @return
+     */
+    String getNodeTypeName();
 
-	void storeContent(Session session, Node node, UMOMessage message)
-			throws RepositoryException, IOException;
+    /**
+     * Handles the creation of a new node.
+     * 
+     * @param session
+     * @param targetNode
+     * @param nodeRelPath
+     * @param message
+     * @return
+     * @throws RepositoryException
+     * @throws IOException
+     */
+    Node newNode(Session session, Node targetNode, String nodeRelPath,
+            UMOMessage message) throws RepositoryException, IOException;
+
+    /**
+     * Handles a content update.
+     * 
+     * @param session
+     * @param node
+     * @param message
+     * @throws RepositoryException
+     * @throws IOException
+     */
+    void storeContent(Session session, Node node, UMOMessage message)
+            throws RepositoryException, IOException;
 
 }
