@@ -10,7 +10,7 @@
 
 package org.mule.providers.jcr.transformers;
 
-import org.mule.providers.jcr.JcrMessageUtils;
+import org.mule.providers.jcr.JcrUtils;
 import org.mule.providers.jcr.RepositoryTestSupport;
 import org.mule.tck.AbstractTransformerTestCase;
 import org.mule.umo.transformer.UMOTransformer;
@@ -22,7 +22,7 @@ public class JcrItemToObjectTest extends AbstractTransformerTestCase {
 
 	public Object getResultData() {
 		try {
-			return JcrMessageUtils.getItemPayload(RepositoryTestSupport
+			return JcrUtils.getItemPayload(RepositoryTestSupport
 					.getTestDataNode());
 		} catch (Exception e) {
 			throw new RuntimeException(e);

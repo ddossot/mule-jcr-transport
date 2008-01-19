@@ -14,7 +14,7 @@ import javax.jcr.Item;
 import javax.jcr.PropertyIterator;
 import javax.jcr.RepositoryException;
 
-import org.mule.providers.jcr.JcrMessageUtils;
+import org.mule.providers.jcr.JcrUtils;
 import org.mule.transformers.AbstractTransformer;
 import org.mule.umo.transformer.TransformerException;
 
@@ -37,9 +37,9 @@ public class JcrItemToObject extends AbstractTransformer {
 
 		try {
 			if (src instanceof Item) {
-				return JcrMessageUtils.getItemPayload((Item) src);
+				return JcrUtils.getItemPayload((Item) src);
 			} else if (src instanceof PropertyIterator) {
-				return JcrMessageUtils
+				return JcrUtils
 						.getPropertiesPayload((PropertyIterator) src);
 			} else {
 				throw new IllegalArgumentException("Unsupported source: " + src);

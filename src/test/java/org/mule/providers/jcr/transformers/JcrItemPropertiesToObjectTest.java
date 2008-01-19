@@ -12,7 +12,7 @@ package org.mule.providers.jcr.transformers;
 
 import javax.jcr.RepositoryException;
 
-import org.mule.providers.jcr.JcrMessageUtils;
+import org.mule.providers.jcr.JcrUtils;
 import org.mule.providers.jcr.RepositoryTestSupport;
 
 /**
@@ -22,7 +22,7 @@ public class JcrItemPropertiesToObjectTest extends JcrItemToObjectTest {
 
 	public Object getResultData() {
 		try {
-			return JcrMessageUtils.getPropertiesPayload(RepositoryTestSupport
+			return JcrUtils.getPropertiesPayload(RepositoryTestSupport
 					.getTestDataNode().getProperties());
 		} catch (Exception e) {
 			throw new RuntimeException(e);

@@ -18,7 +18,7 @@ import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
-import org.mule.providers.jcr.JcrMessageUtils;
+import org.mule.providers.jcr.JcrUtils;
 import org.mule.umo.UMOMessage;
 
 /**
@@ -36,7 +36,7 @@ final class NtUnstructuredHandler extends AbstractNodeTypeHandler {
 		// no children to create
 	}
 
-	public void storeContent(Session session, Node node, UMOMessage message)
+	public void updateContent(Session session, Node node, UMOMessage message)
 			throws RepositoryException, IOException {
 
 		node.setProperty(NtResourceHandler.JCR_DATA_PROPERTY_NAME, message
@@ -45,15 +45,15 @@ final class NtUnstructuredHandler extends AbstractNodeTypeHandler {
 		Object payload = message.getPayload();
 
 		if (payload instanceof Map) {
-			JcrMessageUtils.storeProperties(session, node, (Map) payload);
+			JcrUtils.storeProperties(session, node, (Map) payload);
 
 		} else if (payload instanceof Collection) {
 			node.setProperty(NtResourceHandler.JCR_DATA_PROPERTY_NAME,
-					JcrMessageUtils.newPropertyValues(session,
+					JcrUtils.newPropertyValues(session,
 							(Collection) payload));
 		} else {
 			node.setProperty(NtResourceHandler.JCR_DATA_PROPERTY_NAME,
-					JcrMessageUtils.newPropertyValue(session, payload));
+					JcrUtils.newPropertyValue(session, payload));
 		}
 
 	}

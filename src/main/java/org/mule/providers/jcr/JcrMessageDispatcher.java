@@ -182,16 +182,16 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 				Node targetNode = (Node) targetItem;
 
 				jcrConnector.getNodeTypeHandlerManager().getNodeTypeHandler(
-						targetNode).storeContent(session, targetNode,
+						targetNode).updateContent(session, targetNode,
 						event.getMessage());
 			} else {
 				Property targetProperty = (Property) targetItem;
 
 				if ((payload instanceof Collection)) {
-					targetProperty.setValue(JcrMessageUtils.newPropertyValues(
+					targetProperty.setValue(JcrUtils.newPropertyValues(
 							session, (Collection) payload));
 				} else {
-					targetProperty.setValue(JcrMessageUtils.newPropertyValue(
+					targetProperty.setValue(JcrUtils.newPropertyValue(
 							session, payload));
 				}
 			}
@@ -223,7 +223,7 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 							+ targetParentNode.getPath());
 				}
 
-				nodeTypeHandler.newNode(session, targetParentNode, nodeRelPath,
+				nodeTypeHandler.createNode(session, targetParentNode, nodeRelPath,
 						event.getMessage());
 			} else {
 				throw new IllegalArgumentException(

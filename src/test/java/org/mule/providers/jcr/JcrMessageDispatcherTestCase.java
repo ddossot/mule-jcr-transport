@@ -57,16 +57,16 @@ public class JcrMessageDispatcherTestCase extends AbstractMuleTestCase {
 			return "nt:query";
 		}
 
-		public Node newNode(Session session, Node targetNode,
+		public Node createNode(Session session, Node targetNode,
 				String nodeRelPath, UMOMessage message)
 				throws RepositoryException, IOException {
 
 			Node node = targetNode.addNode(nodeRelPath, getNodeTypeName());
-			storeContent(session, node, message);
+			updateContent(session, node, message);
 			return node;
 		}
 
-		public void storeContent(Session session, Node node, UMOMessage message)
+		public void updateContent(Session session, Node node, UMOMessage message)
 				throws RepositoryException, IOException {
 			node.setProperty("jcr:statement", message.getStringProperty(
 					"jcr:statement", null));
