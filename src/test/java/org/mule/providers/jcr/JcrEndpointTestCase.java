@@ -19,16 +19,40 @@ import org.mule.umo.endpoint.UMOEndpointURI;
  */
 public class JcrEndpointTestCase extends AbstractMuleTestCase {
 
-	public void testValidEndpointURI() throws Exception {
-		UMOEndpointURI uri = new MuleEndpointURI(
-				"jcr://path/to/observedNode?eventTypes=5");
+    public void testValidEndpointURI() throws Exception {
+        UMOEndpointURI uri =
+                new MuleEndpointURI("jcr://path/to/observedNode?eventTypes=5");
 
-		assertEquals("jcr", uri.getScheme());
-		assertEquals("/path/to/observedNode", uri.getAddress());
+        assertEquals("jcr", uri.getScheme());
+        assertEquals("/path/to/observedNode", uri.getAddress());
 
-		assertEquals("path/to/observedNode", uri.getHost() + uri.getPath());
-		assertEquals(1, uri.getParams().size());
-		assertEquals("5", uri.getParams().getProperty("eventTypes"));
-	}
+        assertEquals("path/to/observedNode", uri.getHost()
+            + uri.getPath());
+        assertEquals(1, uri.getParams().size());
+        assertEquals("5", uri.getParams().getProperty("eventTypes"));
+    }
+
+    public void testValidRootEndpointURIWithParams() throws Exception {
+        UMOEndpointURI uri = new MuleEndpointURI("jcr://?eventTypes=5");
+
+        assertEquals("jcr", uri.getScheme());
+        assertEquals("/", uri.getAddress());
+        assertEquals(1, uri.getParams().size());
+        assertEquals("5", uri.getParams().getProperty("eventTypes"));
+        
+        uri = new MuleEndpointURI("jcr:///?eventTypes=31");
+
+        assertEquals("jcr", uri.getScheme());
+        assertEquals("/", uri.getAddress());
+        assertEquals(1, uri.getParams().size());
+        assertEquals("31", uri.getParams().getProperty("eventTypes"));
+    }
+
+    public void testValidRootEndpointURI() throws Exception {
+        UMOEndpointURI uri = new MuleEndpointURI("jcr:///");
+
+        assertEquals("jcr", uri.getScheme());
+        assertEquals("/", uri.getAddress());
+    }
 
 }
