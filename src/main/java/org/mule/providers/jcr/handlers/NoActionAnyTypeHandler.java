@@ -44,7 +44,7 @@ final class NoActionAnyTypeHandler extends AbstractNodeTypeHandler {
 		// no children to create
 	}
 
-	public void storeContent(Session session, Node node, UMOMessage message)
+	public void updateContent(Session session, Node node, UMOMessage message)
 			throws RepositoryException {
 		// do not store anything
 

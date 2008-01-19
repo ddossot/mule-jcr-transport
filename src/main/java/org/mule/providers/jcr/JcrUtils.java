@@ -47,11 +47,11 @@ import org.mule.util.IOUtils;
  * 
  * @author David Dossot (david@dossot.net)
  */
-public class JcrMessageUtils {
+public class JcrUtils {
 
-	private static final Log LOG = LogFactory.getLog(JcrMessageUtils.class);
+	private static final Log LOG = LogFactory.getLog(JcrUtils.class);
 
-	public static JcrMessage newInstance(Event event, Session session,
+	public static JcrMessage newJcrMessage(Event event, Session session,
 			JcrContentPayloadType contentPayloadType)
 			throws RepositoryException {
 
@@ -217,11 +217,11 @@ public class JcrMessageUtils {
 
 			if ((propertyValue instanceof Collection)) {
 				targetNode
-						.setProperty(propertyName, JcrMessageUtils
+						.setProperty(propertyName, JcrUtils
 								.newPropertyValues(session,
 										(Collection) propertyValue));
 			} else {
-				targetNode.setProperty(propertyName, JcrMessageUtils
+				targetNode.setProperty(propertyName, JcrUtils
 						.newPropertyValue(session, propertyValue));
 			}
 		}

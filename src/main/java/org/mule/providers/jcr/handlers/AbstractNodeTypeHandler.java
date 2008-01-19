@@ -36,13 +36,13 @@ abstract class AbstractNodeTypeHandler implements NodeTypeHandler {
 		return nodeTypeManager;
 	}
 
-	public final Node newNode(Session session, Node targetNode,
+	public final Node createNode(Session session, Node targetNode,
 			String nodeRelPath, UMOMessage message) throws RepositoryException,
 			IOException {
 
 		Node node = targetNode.addNode(nodeRelPath, getNodeTypeName());
 		createChildren(node);
-		storeContent(session, node, message);
+		updateContent(session, node, message);
 		return node;
 	}
 

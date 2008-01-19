@@ -47,7 +47,7 @@ final class NtResourceHandler extends AbstractNodeTypeHandler {
 		// no children to create
 	}
 
-	public void storeContent(Session session, Node node, UMOMessage message)
+	public void updateContent(Session session, Node node, UMOMessage message)
 			throws RepositoryException, IOException {
 
 		Object payload = message.getPayload();

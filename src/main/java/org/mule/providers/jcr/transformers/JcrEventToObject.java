@@ -19,7 +19,7 @@ import javax.jcr.observation.EventIterator;
 import org.mule.providers.jcr.JcrContentPayloadType;
 import org.mule.providers.jcr.JcrMessageReceiver;
 import org.mule.providers.jcr.JcrMessageReceiverContext;
-import org.mule.providers.jcr.JcrMessageUtils;
+import org.mule.providers.jcr.JcrUtils;
 import org.mule.transformers.AbstractTransformer;
 import org.mule.umo.transformer.TransformerException;
 
@@ -49,7 +49,7 @@ public class JcrEventToObject extends AbstractTransformer {
 
 		while (eventIterator.hasNext()) {
 			try {
-				eventList.add(JcrMessageUtils.newInstance(eventIterator
+				eventList.add(JcrUtils.newJcrMessage(eventIterator
 						.nextEvent(), jcrMessageReceiverContext
 						.getObservingSession(),
 						contentPayloadType != null ? contentPayloadType

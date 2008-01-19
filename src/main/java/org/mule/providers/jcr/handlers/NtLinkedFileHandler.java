@@ -32,7 +32,7 @@ final class NtLinkedFileHandler extends AbstractNodeTypeHandler {
 		// no child node
 	}
 
-	public void storeContent(Session session, Node node, UMOMessage message)
+	public void updateContent(Session session, Node node, UMOMessage message)
 			throws RepositoryException {
 
 		Object payload = message.getPayload();

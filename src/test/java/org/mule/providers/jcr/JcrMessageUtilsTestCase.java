@@ -33,7 +33,7 @@ public class JcrMessageUtilsTestCase extends TestCase {
 
 	public void testNewPropertyNullValue() throws Exception {
 		try {
-			JcrMessageUtils.newPropertyValue(session, null);
+			JcrUtils.newPropertyValue(session, null);
 		} catch (IllegalArgumentException iae) {
 			return;
 		}
@@ -42,7 +42,7 @@ public class JcrMessageUtilsTestCase extends TestCase {
 
 	public void testNewPropertyUnsupportedValue() throws Exception {
 		try {
-			JcrMessageUtils.newPropertyValue(session, new Object());
+			JcrUtils.newPropertyValue(session, new Object());
 		} catch (IllegalArgumentException iae) {
 			return;
 		}
@@ -53,8 +53,8 @@ public class JcrMessageUtilsTestCase extends TestCase {
 		for (int i = 0; i < supportedValues.length; i++) {
 			Object supportedValue = supportedValues[i];
 
-			Object retrievedValue = JcrMessageUtils
-					.getValuePayload(JcrMessageUtils.newPropertyValue(session,
+			Object retrievedValue = JcrUtils
+					.getValuePayload(JcrUtils.newPropertyValue(session,
 							supportedValue));
 
 			assertTrue(supportedValue + "!=" + retrievedValue, areEqual(
@@ -66,8 +66,8 @@ public class JcrMessageUtilsTestCase extends TestCase {
 	public void testSerializablePropertyValues() throws Exception {
 		Serializable s = new CompositeName("a/b");
 
-		InputStream retrievedValue = (InputStream) JcrMessageUtils
-				.getValuePayload(JcrMessageUtils.newPropertyValue(session, s));
+		InputStream retrievedValue = (InputStream) JcrUtils
+				.getValuePayload(JcrUtils.newPropertyValue(session, s));
 
 		ObjectInputStream ois = new ObjectInputStream(retrievedValue);
 		Object deserializedValue = ois.readObject();

@@ -21,7 +21,7 @@ import org.mule.providers.jcr.JcrContentPayloadType;
 import org.mule.providers.jcr.JcrEventTestCase;
 import org.mule.providers.jcr.JcrMessageReceiver;
 import org.mule.providers.jcr.JcrMessageReceiverContext;
-import org.mule.providers.jcr.JcrMessageUtils;
+import org.mule.providers.jcr.JcrUtils;
 import org.mule.providers.jcr.RepositoryTestSupport;
 import org.mule.tck.AbstractTransformerTestCase;
 import org.mule.umo.transformer.UMOTransformer;
@@ -34,7 +34,7 @@ public class JcrEventToObjectTest extends AbstractTransformerTestCase {
 
 	public Object getResultData() {
 		try {
-			return Collections.singletonList(JcrMessageUtils.newInstance(
+			return Collections.singletonList(JcrUtils.newJcrMessage(
 					testJcrEvent, JcrMessageReceiver
 							.getJcrMessageReceiverContext()
 							.getObservingSession(), JcrMessageReceiver

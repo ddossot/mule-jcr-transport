@@ -53,11 +53,11 @@ public interface NodeTypeHandler {
      * @throws RepositoryException
      * @throws IOException
      */
-    Node newNode(Session session, Node targetNode, String nodeRelPath,
+    Node createNode(Session session, Node targetNode, String nodeRelPath,
             UMOMessage message) throws RepositoryException, IOException;
 
     /**
-     * Handles a content update.
+     * Handles a node content update.
      * 
      * @param session
      * @param node
@@ -65,7 +65,7 @@ public interface NodeTypeHandler {
      * @throws RepositoryException
      * @throws IOException
      */
-    void storeContent(Session session, Node node, UMOMessage message)
+    void updateContent(Session session, Node node, UMOMessage message)
             throws RepositoryException, IOException;
 
 }

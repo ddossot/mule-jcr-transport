@@ -62,37 +62,37 @@ public class NodeTypeHandlersTest extends TestCase {
 		NodeTypeHandlerManager nodeTypeManager = new NodeTypeHandlerManager();
 
 		Node defaultNode = nodeTypeManager
-				.getChildNodeTypeHandler(testDataNode).newNode(session,
+				.getChildNodeTypeHandler(testDataNode).createNode(session,
 						testDataNode, "defaultNode",
 						new MuleMessage(ORIGINAL_DEFAULT_NODE_CONTENT));
 
 		Node unstructuredNode = nodeTypeManager.getNodeTypeHandler(
-				"nt:unstructured").newNode(session, testDataNode,
+				"nt:unstructured").createNode(session, testDataNode,
 				"unstructuredNode",
 				new MuleMessage(ORIGINAL_UNSTRUCTURED_NODE_CONTENT));
 
 		MuleMessage msg = new MuleMessage(ORIGINAL_FILE_NODE_CONTENT);
 		msg.setStringProperty("jcr:mimeType", "text/plain");
-		Node fileNode = nodeTypeManager.getNodeTypeHandler("nt:file").newNode(
+		Node fileNode = nodeTypeManager.getNodeTypeHandler("nt:file").createNode(
 				session, testDataNode, "fileNode", msg);
 		Node fileContentNode = fileNode.getNode("jcr:content");
 
 		msg = new MuleMessage(fileContentNode);
-		nodeTypeManager.getNodeTypeHandler("nt:linkedFile").newNode(session,
+		nodeTypeManager.getNodeTypeHandler("nt:linkedFile").createNode(session,
 				testDataNode, "linkedFileNodeFromNode", msg);
 
 		msg = new MuleMessage(fileContentNode.getUUID());
-		nodeTypeManager.getNodeTypeHandler("nt:linkedFile").newNode(session,
+		nodeTypeManager.getNodeTypeHandler("nt:linkedFile").createNode(session,
 				testDataNode, "linkedFileNodeFromUUID", msg);
 
 		msg = new MuleMessage(IGNORED_FOLDER_CONTENT);
 		Node folderNode = nodeTypeManager.getNodeTypeHandler("nt:folder")
-				.newNode(session, testDataNode, "folderNode", msg);
+				.createNode(session, testDataNode, "folderNode", msg);
 
 		msg = new MuleMessage(ORIGINAL_RESOURCE_NODE_CONTENT);
 		msg.setStringProperty("jcr:mimeType", "text/plain");
 		Node resourceNode = nodeTypeManager.getNodeTypeHandler("nt:resource")
-				.newNode(session, testDataNode, "resourceNode", msg);
+				.createNode(session, testDataNode, "resourceNode", msg);
 
 		session.save();
 		String dumpResult = dump(testDataNode);
@@ -122,24 +122,24 @@ public class NodeTypeHandlersTest extends TestCase {
 
 		// -- modify a few nodes --
 
-		nodeTypeManager.getNodeTypeHandler(defaultNode).storeContent(session,
+		nodeTypeManager.getNodeTypeHandler(defaultNode).updateContent(session,
 				defaultNode, new MuleMessage(MODIFIED_DEFAULT_NODE_CONTENT));
 
-		nodeTypeManager.getNodeTypeHandler(unstructuredNode).storeContent(
+		nodeTypeManager.getNodeTypeHandler(unstructuredNode).updateContent(
 				session, unstructuredNode,
 				new MuleMessage(MODIFIED_UNSTRUCTURED_NODE_CONTENT));
 
 		msg = new MuleMessage(MODIFIED_FILE_NODE_CONTENT);
 		msg.setStringProperty("jcr:mimeType", "text/plain");
-		nodeTypeManager.getNodeTypeHandler(fileNode).storeContent(session,
+		nodeTypeManager.getNodeTypeHandler(fileNode).updateContent(session,
 				fileNode, msg);
 
-		nodeTypeManager.getNodeTypeHandler(folderNode).storeContent(session,
+		nodeTypeManager.getNodeTypeHandler(folderNode).updateContent(session,
 				folderNode, new MuleMessage(IGNORED_FOLDER_CONTENT));
 
 		msg = new MuleMessage(MODIFIED_RESOURCE_NODE_CONTENT);
 		msg.setStringProperty("jcr:mimeType", "text/plain");
-		nodeTypeManager.getNodeTypeHandler(resourceNode).storeContent(session,
+		nodeTypeManager.getNodeTypeHandler(resourceNode).updateContent(session,
 				resourceNode, msg);
 
 		session.save();

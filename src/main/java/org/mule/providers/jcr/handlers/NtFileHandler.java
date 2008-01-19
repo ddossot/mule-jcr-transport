@@ -37,13 +37,13 @@ final class NtFileHandler extends AbstractNodeTypeHandler {
 				NtResourceHandler.NT_RESOURCE_NODE_TYPE);
 	}
 
-	public void storeContent(Session session, Node node, UMOMessage message)
+	public void updateContent(Session session, Node node, UMOMessage message)
 			throws RepositoryException, IOException {
 
 		Node contentNode = node.getNode(JCR_CONTENT_NODE_NAME);
 
 		getNodeTypeManager().getNodeTypeHandler(
-				NtResourceHandler.NT_RESOURCE_NODE_TYPE).storeContent(session,
+				NtResourceHandler.NT_RESOURCE_NODE_TYPE).updateContent(session,
 				contentNode, message);
 	}
 }
