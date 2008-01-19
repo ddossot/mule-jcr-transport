@@ -37,10 +37,7 @@ import org.mule.umo.UMOFilter;
 import org.mule.umo.UMOMessage;
 import org.mule.umo.endpoint.UMOImmutableEndpoint;
 import org.mule.umo.provider.UMOMessageAdapter;
-import org.mule.util.DateUtils;
 import org.mule.util.StringUtils;
-import org.mule.util.TemplateParser;
-import org.mule.util.UUID;
 
 import edu.emory.mathcs.backport.java.util.concurrent.atomic.AtomicReference;
 
@@ -56,10 +53,6 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 
 	private final AtomicReference propertyNamePatternFilterRef = new AtomicReference();
 	
-	private static final String DEFAULT_DATE_FORMAT = "dd-MM-yy_HH-mm-ss.SSS";
-	
-	private static final TemplateParser ANT_PARSER = TemplateParser.createAntStyleParser();
-
 	private Session dispatcherSession;
 
 	public JcrMessageDispatcher(UMOImmutableEndpoint endpoint) {
@@ -361,52 +354,16 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
     // --- Private Methods ---
 
     private String getNodePropertyPath(UMOEvent event) {
-        return parsePath((String) event.getProperty(
+        return JcrUtils.parsePath((String) event.getProperty(
         		JcrConnector.JCR_PROPERTY_REL_PATH_PROPERTY, true), event);
     }
 
     private String getNodeRelPath(UMOEvent event) {
-        return parsePath((String) event.getProperty(
+        return JcrUtils.parsePath((String) event.getProperty(
         		JcrConnector.JCR_NODE_RELPATH_PROPERTY, true), event);
     }
     
-    private String parsePath(final String path, final UMOEvent event) {
-        // TODO unit test
-        // TODO extract as a static util
-        // TODO document
-        if ((path == null) || (path.indexOf('{')==-1)) {
-        return path;}
-        
-        return ANT_PARSER.parse(new TemplateParser.TemplateCallback()    {
-            public Object match(String token)
-            {
-                if (token.equals("DATE"))
-                {
-                    return DateUtils.getTimeStamp(DEFAULT_DATE_FORMAT);
-                }
-                else if (token.startsWith("DATE:"))
-                {
-                    token = token.substring(5);
-                    return DateUtils.getTimeStamp(token);
-                }
-                else if (token.startsWith("UUID"))
-                {
-                    return UUID.getUUID();
-                }
-                else if (token.startsWith("SYSTIME"))
-                {
-                    return String.valueOf(System.currentTimeMillis());
-                }
-                else if (event != null)
-                {
-                    return event.getProperty(token, true);
-                }
-                return null;
-            }
-        }, path);
-    }
-
-	private Object getRawContentFromProperty(Item targetItem)
+ 	private Object getRawContentFromProperty(Item targetItem)
 			throws RepositoryException {
 
 		if (logger.isDebugEnabled()) {
