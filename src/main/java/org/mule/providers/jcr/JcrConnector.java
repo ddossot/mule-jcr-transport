@@ -54,8 +54,6 @@ import org.mule.util.ClassUtils;
  */
 public final class JcrConnector extends AbstractConnector {
 
-	// TODO add transaction support
-
 	private Repository repository;
 
 	private String workspaceName;
