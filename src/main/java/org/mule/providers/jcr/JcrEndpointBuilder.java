@@ -15,6 +15,7 @@ import java.util.Properties;
 
 import org.mule.impl.endpoint.AbstractEndpointBuilder;
 import org.mule.umo.endpoint.MalformedEndpointException;
+import org.mule.util.StringUtils;
 
 /**
  * JCR endpoints do not follow the regular host/resource path, hence need this
@@ -24,10 +25,13 @@ import org.mule.umo.endpoint.MalformedEndpointException;
  */
 public class JcrEndpointBuilder extends AbstractEndpointBuilder {
 
-	protected void setEndpoint(URI uri, Properties props)
-			throws MalformedEndpointException {
+    protected void setEndpoint(URI uri, Properties props)
+            throws MalformedEndpointException {
 
-		address = "/" + uri.getHost() + uri.getPath();
-	}
+        address = "/"
+            + StringUtils.stripStart(StringUtils.defaultString(uri.getHost())
+                + StringUtils.defaultString(uri.getPath()), "/");
+
+    }
 
 }
