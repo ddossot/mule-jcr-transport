@@ -114,9 +114,8 @@ public class JcrMessageDispatcherTestCase extends AbstractMuleTestCase {
         Node target = testDataNode.addNode("noderelpath-target");
         target.setProperty("proprelpath-target", 123L);
 
-        target = testDataNode.addNode("uuid-target");
-        target.addMixin("mix:referenceable");
-        uuid = target.getUUID();
+        testDataNode.addMixin("mix:referenceable");
+        uuid = testDataNode.getUUID();
 
         RepositoryTestSupport.getSession().save();
     }
@@ -175,6 +174,49 @@ public class JcrMessageDispatcherTestCase extends AbstractMuleTestCase {
         event = getTestEvent(null);
         event.getMessage().setStringProperty(
                 JcrConnector.JCR_NODE_UUID_PROPERTY, "foo");
+        RequestContext.setEvent(event);
+
+        assertEquals(NullPayload.getInstance(),
+                messageDispatcher.receive(0).getPayload());
+    }
+
+    public void testReceiveWithEventUUIDAndNodeRelpath() throws Exception {
+        UMOEvent event = getTestEvent(null);
+        event.getMessage().setStringProperty(
+                JcrConnector.JCR_NODE_UUID_PROPERTY, uuid);
+        event.getMessage().setStringProperty(
+                JcrConnector.JCR_NODE_RELPATH_PROPERTY, "noderelpath-target");
+        RequestContext.setEvent(event);
+
+        assertTrue(messageDispatcher.receive(0).getPayload() instanceof Map);
+
+        event = getTestEvent(null);
+        event.getMessage().setStringProperty(
+                JcrConnector.JCR_NODE_UUID_PROPERTY, uuid);
+        event.getMessage().setStringProperty(
+                JcrConnector.JCR_NODE_RELPATH_PROPERTY, "bar");
+        RequestContext.setEvent(event);
+
+        assertEquals(NullPayload.getInstance(),
+                messageDispatcher.receive(0).getPayload());
+    }
+
+    public void testReceiveWithEventUUIDAndPropertyRelpath() throws Exception {
+        UMOEvent event = getTestEvent(null);
+        event.getMessage().setStringProperty(
+                JcrConnector.JCR_NODE_UUID_PROPERTY, uuid);
+        event.getMessage().setStringProperty(
+                JcrConnector.JCR_PROPERTY_REL_PATH_PROPERTY, "foo");
+        RequestContext.setEvent(event);
+
+        assertEquals(Double.class,
+                messageDispatcher.receive(0).getPayload().getClass());
+
+        event = getTestEvent(null);
+        event.getMessage().setStringProperty(
+                JcrConnector.JCR_NODE_UUID_PROPERTY, uuid);
+        event.getMessage().setStringProperty(
+                JcrConnector.JCR_PROPERTY_REL_PATH_PROPERTY, "bar");
         RequestContext.setEvent(event);
 
         assertEquals(NullPayload.getInstance(),

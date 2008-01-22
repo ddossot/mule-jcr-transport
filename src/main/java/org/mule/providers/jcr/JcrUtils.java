@@ -352,6 +352,10 @@ public class JcrUtils {
         }
     }
 
+    static String getParsableEventProperty(final UMOEvent event, final String propertyName) {
+        return JcrUtils.parsePath((String) event.getProperty(propertyName, true), event);
+    }
+    
     static String parsePath(final String path, final UMOEvent event) {
         if ((path == null)
             || (path.indexOf('{') == -1)) {

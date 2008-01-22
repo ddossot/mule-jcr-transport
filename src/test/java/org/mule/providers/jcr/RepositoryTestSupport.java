@@ -24,69 +24,79 @@ import org.apache.jackrabbit.core.TransientRepository;
  */
 public abstract class RepositoryTestSupport {
 
-	public static final String USERNAME = "admin";
+    public static final String USERNAME = "admin";
 
-	public static final String PASSWORD = "admin";
+    public static final String PASSWORD = "admin";
 
-	public static final String ROOT_NODE_NAME = "testData";
+    public static final String ROOT_NODE_NAME = "testData";
 
-	private static Repository repository;
+    private static Repository repository;
 
-	private static Session session;
+    private static Session session;
 
-	private static Node testDataNode;
+    private static Node testDataNode;
 
-	private RepositoryTestSupport() {
-		// NOOP
-	}
+    private RepositoryTestSupport() {
+        // NOOP
+    }
 
-	public synchronized static Repository getRepository() throws Exception {
-		if (repository == null) {
-			repository = new TransientRepository();
+    public synchronized static Repository getRepository() throws Exception {
+        if (repository == null) {
+            final TransientRepository transientRepository =
+                    new TransientRepository();
 
-			session = repository.login(new SimpleCredentials("admin", "admin"
-					.toCharArray()));
+            Runtime.getRuntime().addShutdownHook(new Thread() {
+                public void run() {
+                    transientRepository.shutdown();
+                }
+            });
 
-			resetRepository();
-			session.save();
-		}
+            repository = transientRepository;
 
-		return repository;
-	}
+            session =
+                    repository.login(new SimpleCredentials("admin",
+                            "admin".toCharArray()));
 
-	public static void resetRepository() {
+            resetRepository();
+            session.save();
+        }
 
-		try {
-			Node root = getSession().getRootNode();
+        return repository;
+    }
 
-			if (root.hasNode(ROOT_NODE_NAME)) {
-				root.getNode(ROOT_NODE_NAME).remove();
-			}
+    public static void resetRepository() {
 
-			testDataNode = root.addNode(ROOT_NODE_NAME);
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
+        try {
+            Node root = getSession().getRootNode();
 
-	public synchronized static Session getSession() {
-		try {
-			getRepository();
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
+            if (root.hasNode(ROOT_NODE_NAME)) {
+                root.getNode(ROOT_NODE_NAME).remove();
+            }
 
-		return session;
-	}
+            testDataNode = root.addNode(ROOT_NODE_NAME);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-	public synchronized static Node getTestDataNode() {
-		try {
-			getRepository();
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
+    public synchronized static Session getSession() {
+        try {
+            getRepository();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 
-		return testDataNode;
-	}
+        return session;
+    }
+
+    public synchronized static Node getTestDataNode() {
+        try {
+            getRepository();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        return testDataNode;
+    }
 
 }

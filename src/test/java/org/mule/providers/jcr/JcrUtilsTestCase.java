@@ -39,6 +39,8 @@ public class JcrUtilsTestCase extends TestCase {
         assertNull(JcrUtils.parsePath(null, null));
 
         assertEquals("foo", JcrUtils.parsePath("foo", null));
+        
+        assertEquals("${foo}", JcrUtils.parsePath("${foo}", null));
 
         String path =
                 "date:${DATE};customDate:${DATE:yyyy};uuid:${UUID};systime:${SYSTIME};eventProperty:${eventProperty};missing:${foo}";
