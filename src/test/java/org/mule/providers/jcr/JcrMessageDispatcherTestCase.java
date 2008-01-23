@@ -45,6 +45,7 @@ import org.mule.tck.AbstractMuleTestCase;
 import org.mule.umo.UMOEvent;
 import org.mule.umo.UMOFilter;
 import org.mule.umo.UMOMessage;
+import org.mule.umo.provider.DispatchException;
 import org.mule.util.IOUtils;
 
 /**
@@ -281,16 +282,16 @@ public class JcrMessageDispatcherTestCase extends AbstractMuleTestCase {
                 (JcrMessageDispatcher) new JcrMessageDispatcherFactory().create(endpoint);
 
         UMOEvent event = getTestEvent(null);
-        
+
         event.getMessage().setStringProperty(
                 JcrConnector.JCR_NODE_RELPATH_PROPERTY,
                 RepositoryTestSupport.ROOT_NODE_NAME
                     + "/noderelpath-target");
-        
+
         event.getMessage().setStringProperty(
                 JcrConnector.JCR_PROPERTY_REL_PATH_PROPERTY,
                 "proprelpath-target");
-        
+
         RequestContext.setEvent(event);
 
         assertEquals(Long.class,
@@ -417,7 +418,28 @@ public class JcrMessageDispatcherTestCase extends AbstractMuleTestCase {
             return;
         }
 
-        fail("Should have got an IAE!");
+        fail("Should have got an IllegalArgumentException!");
+    }
+
+    public void testFailedStoreInNodeFromUUID() throws Exception {
+        UMOEvent event = getTestEvent(new Object());
+        event.getMessage().setStringProperty(
+                JcrConnector.JCR_NODE_UUID_PROPERTY, "foo-bar-uuid");
+        event.getMessage().setStringProperty(
+                JcrConnector.JCR_NODE_RELPATH_PROPERTY, "noderelpath-target");
+        event.getMessage().setStringProperty(
+                JcrConnector.JCR_PROPERTY_REL_PATH_PROPERTY,
+                "proprelpath-target");
+
+        RequestContext.setEvent(event);
+
+        try {
+            messageDispatcher.doSend(event);
+        } catch (DispatchException de) {
+            return;
+        }
+
+        fail("Should have got a DispatchException!");
     }
 
     public void testStoreCollectionInNode() throws Exception {
@@ -446,6 +468,25 @@ public class JcrMessageDispatcherTestCase extends AbstractMuleTestCase {
     public void testStoreSingleValueInNode() throws Exception {
         Long value = new Long(13579);
         UMOEvent event = getTestEvent(value);
+        event.getMessage().setStringProperty(
+                JcrConnector.JCR_NODE_RELPATH_PROPERTY, "noderelpath-target");
+        event.getMessage().setStringProperty(
+                JcrConnector.JCR_PROPERTY_REL_PATH_PROPERTY,
+                "proprelpath-target");
+        RequestContext.setEvent(event);
+
+        assertSame(value, messageDispatcher.doSend(event).getPayload());
+        assertEquals(
+                value.longValue(),
+                RepositoryTestSupport.getTestDataNode().getNode(
+                        "noderelpath-target").getProperty("proprelpath-target").getLong());
+    }
+
+    public void testStoreSingleValueInNodeFromUUID() throws Exception {
+        Long value = new Long(4862);
+        UMOEvent event = getTestEvent(value);
+        event.getMessage().setStringProperty(
+                JcrConnector.JCR_NODE_UUID_PROPERTY, uuid);
         event.getMessage().setStringProperty(
                 JcrConnector.JCR_NODE_RELPATH_PROPERTY, "noderelpath-target");
         event.getMessage().setStringProperty(
