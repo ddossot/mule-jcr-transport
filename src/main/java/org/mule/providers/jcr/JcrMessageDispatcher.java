@@ -22,6 +22,7 @@ import javax.jcr.Property;
 import javax.jcr.PropertyIterator;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
+import javax.jcr.query.QueryResult;
 
 import org.mule.impl.MuleMessage;
 import org.mule.impl.RequestContext;
@@ -58,8 +59,9 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 
     private Session dispatcherSession;
 
-    public JcrMessageDispatcher(UMOImmutableEndpoint endpoint) {
+    public JcrMessageDispatcher(final UMOImmutableEndpoint endpoint) {
         super(endpoint);
+
         jcrConnector = (JcrConnector) endpoint.getConnector();
     }
 
@@ -104,7 +106,7 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
     /**
      * @see org.mule.providers.jcr.JcrMessageDispatcher#doSend(UMOEvent) doSend
      */
-    public void doDispatch(UMOEvent event) throws Exception {
+    public void doDispatch(final UMOEvent event) throws Exception {
         doSend(event);
     }
 
@@ -118,14 +120,8 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
      * <p>
      * Unless the creation of child nodes is forced by an event or endpoint
      * property (<code>JcrConnector.JCR_ALWAYS_CREATE_CHILD_NODE</code>),
-     * the target item where content will be stored will determined by
-     * navigating from the endpoint URI item to the item defined by optional
-     * event properties (JcrConnector.JCR_NODE_RELPATH_PROPERTY and
-     * JcrConnector.JCR_PROPERTY_REL_PATH_PROPERTY). If none of these properties
-     * is defined, the item referred to by the endpoint URI will be used.Note
-     * that if a node UUID is specified in a property, it will supersede the
-     * endpoint URI and the transport will navigate from the node referred to by
-     * its unique identifier.
+     * the target item where content will be stored will determined the same way
+     * as explained in the <code>doReceive</code> method.
      * </p>
      * 
      * <p>
@@ -156,7 +152,7 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
      * 
      * @return the source <code>UMOMessage</code>.
      */
-    public UMOMessage doSend(UMOEvent event) throws Exception {
+    public UMOMessage doSend(final UMOEvent event) throws Exception {
         boolean alwaysCreate =
                 Boolean.valueOf(
                         (String) event.getProperty(
@@ -169,8 +165,7 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
         Session session = getSession();
 
         Item targetItem =
-                alwaysCreate ? null : getTargetItem(session, nodeUUID,
-                        nodeRelPath, propertyRelPath);
+                alwaysCreate ? null : getTargetItem(session, event, true);
 
         if (targetItem != null) {
             // write payload to node or property
@@ -202,7 +197,7 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
             }
 
         } else {
-            targetItem = getTargetItem(session, nodeUUID);
+            targetItem = getTargetItem(session, event, false);
 
             if (targetItem == null) {
                 throw new DispatchException(
@@ -272,15 +267,15 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
      * 
      * <p>
      * The first step of the content fetching consists in selecting a target
-     * item from the repository. This item is selected by using the path of the
-     * endpoint and by appending any optional relative paths that could have
-     * been specified as event properties for the current <code>UMOEvent</code> (<code>JcrConnector.JCR_NODE_RELPATH_PROPERTY</code>
-     * and <code>JcrConnector.JCR_PROPERTY_REL_PATH_PROPERTY</code>).
-     * Alternatively, an event property (<code>JcrConnector.JCR_NODE_UUID_PROPERTY</code>)
-     * can be used to specify the UUID to use to select the target item: if this
-     * is done, the endpoint URI will be ignored. The relative node and property
-     * paths, if present, will be applied to the node selected by its UUID, to
-     * further navigate the target item.
+     * item from the repository. By default, this item is a node selected by
+     * using the path of the endpoint. Alternatively, an event property (<code>JcrConnector.JCR_NODE_UUID_PROPERTY</code>)
+     * can be used to specify the UUID to use to select the target node: if this
+     * is done, the endpoint URI will be ignored. A third option is to define a
+     * query (with queryStatement and queryLanguage) that will be used to select
+     * the node. Then, if any optional relative paths have been specified as
+     * event properties for the current <code>UMOEvent</code> (<code>JcrConnector.JCR_NODE_RELPATH_PROPERTY</code>
+     * and/or <code>JcrConnector.JCR_PROPERTY_REL_PATH_PROPERTY</code>), they
+     * will be used to navigate to the actual item to use.
      * </p>
      * 
      * <p>
@@ -315,7 +310,7 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
      * 
      * @return the message fetched from this dispatcher.
      */
-    public UMOMessage doReceive(long ignoredTimeout) throws Exception {
+    public UMOMessage doReceive(final long ignoredTimeout) throws Exception {
         UMOEvent event = RequestContext.getEvent();
 
         if (logger.isDebugEnabled()) {
@@ -323,9 +318,7 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
                 + event);
         }
 
-        Item targetItem =
-                getTargetItem(getSession(), getNodeUUID(event),
-                        getNodeRelPath(event), getPropertyRelPath(event));
+        Item targetItem = getTargetItem(getSession(), event, true);
 
         Object rawJcrContent = null;
 
@@ -367,22 +360,29 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
         return new MuleMessage(messageAdapter);
     }
 
-    private String getNodeUUID(UMOEvent event) {
+    private String getNodeUUID(final UMOEvent event) {
         return event != null ? (String) event.getProperty(
                 JcrConnector.JCR_NODE_UUID_PROPERTY, true) : null;
     }
 
-    private String getPropertyRelPath(UMOEvent event) {
+    private QueryDefinition getQueryDefinition(final UMOEvent event) {
+        return event != null ? new QueryDefinition((String) event.getProperty(
+                JcrConnector.JCR_QUERY_LANGUAGE_PROPERTY, true),
+                JcrUtils.getParsableEventProperty(event,
+                        JcrConnector.JCR_QUERY_STATEMENT_PROPERTY)) : null;
+    }
+
+    private String getPropertyRelPath(final UMOEvent event) {
         return event != null ? JcrUtils.getParsableEventProperty(event,
                 JcrConnector.JCR_PROPERTY_REL_PATH_PROPERTY) : null;
     }
 
-    private String getNodeRelPath(UMOEvent event) {
+    private String getNodeRelPath(final UMOEvent event) {
         return event != null ? JcrUtils.getParsableEventProperty(event,
                 JcrConnector.JCR_NODE_RELPATH_PROPERTY) : null;
     }
 
-    private Object getRawContentFromProperty(Item targetItem)
+    private Object getRawContentFromProperty(final Item targetItem)
             throws RepositoryException {
 
         if (logger.isDebugEnabled()) {
@@ -446,64 +446,100 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
         return rawJcrContent;
     }
 
-    private Item getTargetItem(Session session, String nodeUUID)
-            throws RepositoryException, PathNotFoundException {
-        return getTargetItem(session, nodeUUID, null, null);
-    }
+    private Item getTargetItem(final Session session, final UMOEvent event,
+            final boolean navigateRelativePaths) throws RepositoryException,
+            PathNotFoundException {
 
-    private Item getTargetItem(Session session, String nodeUUID,
-            String nodeRelpath, String propertyRelPath)
-            throws RepositoryException, PathNotFoundException {
+        final String nodeUUID = getNodeUUID(event);
+
+        final QueryDefinition queryDefinition = getQueryDefinition(event);
+
+        final String nodeRelPath =
+                navigateRelativePaths ? getNodeRelPath(event) : null;
+
+        final String propertyRelPath =
+                navigateRelativePaths ? getPropertyRelPath(event) : null;
 
         Item targetItem = null;
 
         if (nodeUUID != null) {
             targetItem =
-                    getTargetItemFromUUID(session, nodeUUID, nodeRelpath,
+                    getTargetItemFromUUID(session, nodeUUID, nodeRelPath,
                             propertyRelPath);
+        } else if ((queryDefinition != null)
+            && (queryDefinition.getStatement() != null)) {
+            targetItem =
+                    getTargetItemFromQuery(session, queryDefinition,
+                            nodeRelPath, propertyRelPath);
         } else {
             targetItem =
-                    getTargetItemFromPath(session, nodeRelpath, propertyRelPath);
+                    getTargetItemFromPath(session, nodeRelPath, propertyRelPath);
         }
 
         return targetItem;
     }
 
-    private Item getTargetItemByNodeNamePatternFilter(Item targetItem,
-            String nodeNamePatternFilter) throws RepositoryException {
+    private Item getTargetItemFromQuery(final Session session,
+            final QueryDefinition queryDefinition, final String nodeRelpath,
+            final String propertyRelPath) throws RepositoryException {
+
+        final QueryResult queryResult =
+                session.getWorkspace().getQueryManager().createQuery(
+                        queryDefinition.getStatement(),
+                        queryDefinition.getLanguage()).execute();
+
+        // there is no way to get a Property out of a QueryResult so we will
+        // return only a Node
+        final String context = queryDefinition.getLanguage()
+            + ": "
+                + queryDefinition.getStatement();
+
+        final TargetItem targetItem =
+                new TargetItem(getTargetItemFromNodeIterator(context,
+                        queryResult.getNodes()), context);
+
+        navigateToRelativeTargetItem(targetItem, nodeRelpath, propertyRelPath);
+
+        return targetItem.getItem();
+    }
+
+    private Item getTargetItemByNodeNamePatternFilter(final Item targetItem,
+            final String nodeNamePatternFilter) throws RepositoryException {
 
         if (logger.isDebugEnabled()) {
             logger.debug("Applying node name pattern filter: "
                 + nodeNamePatternFilter);
         }
 
-        NodeIterator nodes =
+        final NodeIterator nodes =
                 ((Node) targetItem).getNodes(nodeNamePatternFilter);
 
-        if (nodes.getSize() == 0) {
-            logger.warn(JcrMessages.noNodeFor(targetItem.getPath()
-                + "["
-                    + nodeNamePatternFilter
-                    + "]").getMessage());
+        return getTargetItemFromNodeIterator(targetItem.getPath()
+            + "["
+                + nodeNamePatternFilter
+                + "]", nodes);
+    }
 
-            targetItem = null;
+    private Item getTargetItemFromNodeIterator(final String pathContext,
+            final NodeIterator nodes) throws RepositoryException {
+
+        if (nodes.getSize() == 0) {
+            logger.warn(JcrMessages.noNodeFor(pathContext).getMessage());
+
+            return null;
 
         } else {
             if (nodes.getSize() > 1) {
-                logger.warn(JcrMessages.moreThanOneNodeFor(targetItem.getPath()
-                    + "["
-                        + nodeNamePatternFilter
-                        + "]").getMessage());
+                logger.warn(JcrMessages.moreThanOneNodeFor(pathContext).getMessage());
             }
 
-            targetItem = nodes.nextNode();
+            return nodes.nextNode();
         }
-        return targetItem;
     }
 
-    private Item getTargetItemFromPath(Session session, String nodeRelpath,
-            String propertyRelPath) throws RepositoryException,
-            PathNotFoundException {
+    private Item getTargetItemFromPath(final Session session,
+            final String nodeRelpath, final String propertyRelPath)
+            throws RepositoryException, PathNotFoundException {
 
         if (logger.isDebugEnabled()) {
             logger.debug("Accessing JCR container for endpoint: "
@@ -516,7 +552,8 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
         if (session.itemExists(targetItem.getAbsolutePath())) {
             targetItem.setItem(session.getItem(targetItem.getAbsolutePath()));
 
-            getRelativeTargetItem(targetItem, nodeRelpath, propertyRelPath);
+            navigateToRelativeTargetItem(targetItem, nodeRelpath,
+                    propertyRelPath);
         }
 
         if ((logger.isDebugEnabled())
@@ -527,14 +564,16 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
         return targetItem.getItem();
     }
 
-    private Item getTargetItemFromUUID(Session session, String nodeUUID,
-            String nodeRelpath, String propertyRelPath) {
+    private Item getTargetItemFromUUID(final Session session,
+            final String nodeUUID, final String nodeRelpath,
+            final String propertyRelPath) {
         try {
             final Node nodeByUUID = session.getNodeByUUID(nodeUUID);
 
             if (nodeByUUID != null) {
                 TargetItem targetItem = new TargetItem(nodeByUUID, nodeUUID);
-                getRelativeTargetItem(targetItem, nodeRelpath, propertyRelPath);
+                navigateToRelativeTargetItem(targetItem, nodeRelpath,
+                        propertyRelPath);
 
                 if ((logger.isDebugEnabled())
                     && (targetItem.getItem() == null)) {
@@ -553,8 +592,8 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
         return null;
     }
 
-    private void getRelativeTargetItem(final TargetItem targetItem,
-            String nodeRelpath, String propertyRelPath)
+    private void navigateToRelativeTargetItem(final TargetItem targetItem,
+            final String nodeRelpath, final String propertyRelPath)
             throws RepositoryException, PathNotFoundException {
 
         if (nodeRelpath != null) {
@@ -603,8 +642,8 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
         }
     }
 
-    private static String getPropertyNamePatternFilter(UMOFilter filter,
-            Class filterClass) {
+    private static String getPropertyNamePatternFilter(final UMOFilter filter,
+            final Class filterClass) {
 
         String pattern = null;
 
@@ -634,25 +673,45 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
         return pattern;
     }
 
+    private final static class QueryDefinition {
+        private final String language;
+
+        private final String statement;
+
+        public QueryDefinition(final String language, final String statement) {
+            this.language = language;
+            this.statement = statement;
+        }
+
+        public String getLanguage() {
+            return language;
+        }
+
+        public String getStatement() {
+            return statement;
+        }
+
+    }
+
     private static class TargetItem {
         private Item item;
 
         private String absolutePath;
 
-        public TargetItem(Item item, String absolutePath) {
+        public TargetItem(final Item item, final String absolutePath) {
             this.item = item;
             this.absolutePath = absolutePath;
         }
 
         public Node asNodeOrNull() {
-            return item.isNode() ? (Node) item : null;
+            return (item != null && item.isNode()) ? (Node) item : null;
         }
 
         public Item getItem() {
             return item;
         }
 
-        public void setItem(Item item) {
+        public void setItem(final Item item) {
             this.item = item;
         }
 
@@ -660,7 +719,7 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
             return absolutePath;
         }
 
-        public void setAbsolutePath(String absolutePath) {
+        public void setAbsolutePath(final String absolutePath) {
             this.absolutePath = absolutePath;
         }
     }
