@@ -20,29 +20,33 @@ import org.mule.config.i18n.MessageFactory;
  */
 public abstract class JcrMessages extends MessageFactory {
 
-	private static final String BUNDLE_PATH = getBundlePath("jcr");
+    private static final String BUNDLE_PATH = getBundlePath("jcr");
 
-	public static Message missingDependency(String name) {
-		return createMessage(BUNDLE_PATH, 0, name);
-	}
+    public static Message missingDependency(String name) {
+        return createMessage(BUNDLE_PATH, 0, name);
+    }
 
-	public static Message observationsNotSupported() {
-		return createMessage(BUNDLE_PATH, 1);
-	}
+    public static Message observationsNotSupported() {
+        return createMessage(BUNDLE_PATH, 1);
+    }
 
-	public static Message canNotGetObservationManager(String workspaceName) {
-		return createMessage(BUNDLE_PATH, 2, workspaceName);
-	}
+    public static Message canNotGetObservationManager(String workspaceName) {
+        return createMessage(BUNDLE_PATH, 2, workspaceName);
+    }
 
-	public static Message noNodeFor(String criteria) {
-		return createMessage(BUNDLE_PATH, 3, criteria);
-	}
+    public static Message noNodeFor(String criteria) {
+        return createMessage(BUNDLE_PATH, 3, criteria);
+    }
 
-	public static Message badFilterType(Class clazz) {
-		return createMessage(BUNDLE_PATH, 4, clazz);
-	}
+    public static Message badFilterType(Class clazz) {
+        return createMessage(BUNDLE_PATH, 4, clazz);
+    }
 
-	public static Message moreThanOneNodeFor(String criteria) {
-		return createMessage(BUNDLE_PATH, 5, criteria);
-	}
+    public static Message moreThanOneNodeFor(String criteria) {
+        return createMessage(BUNDLE_PATH, 5, criteria);
+    }
+
+    public static Message sqlQuerySyntaxNotSupported() {
+        return createMessage(BUNDLE_PATH, 6);
+    }
 }
