@@ -25,76 +25,95 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @author David Dossot (david@dossot.net)
  */
 public final class JcrMessage implements Event, Serializable {
-	static final String UNKNOWN_EVENT_TYPE = "UNKNOWN";
+    static final String UNKNOWN_EVENT_TYPE = "UNKNOWN";
 
-	private static final long serialVersionUID = -7200906980423201081L;
+    private static final long serialVersionUID = -7200906980423201081L;
 
-	private final String path;
+    private final String path;
 
-	private final int type;
+    private final int type;
 
-	private final String typeAsString;
+    private final String typeAsString;
 
-	private final String userID;
+    private final String userID;
 
-	private final Serializable content;
+    private final Serializable content;
 
-	public JcrMessage(final String path, final int type,
-			final String typeAsString, final String userID,
-			final Serializable content) {
+    private final String uuid;
 
-		this.path = path;
-		this.type = type;
-		this.typeAsString = typeAsString;
-		this.userID = userID;
-		this.content = content;
-	}
+    /**
+     * @deprecated Prefer using the complete constructor.
+     */
+    public JcrMessage(final String path, final int type,
+            final String typeAsString, final String userID,
+            final Serializable content) {
+        this(path, type, typeAsString, userID, content, null);
+    }
 
-	public String toString() {
-		return ToStringBuilder.reflectionToString(this);
-	}
+    public JcrMessage(final String path, final int type,
+            final String typeAsString, final String userID,
+            final Serializable content, final String uuid) {
 
-	public int hashCode() {
-		return HashCodeBuilder.reflectionHashCode(this);
-	}
+        this.path = path;
+        this.type = type;
+        this.typeAsString = typeAsString;
+        this.userID = userID;
+        this.content = content;
+        this.uuid = uuid;
+    }
 
-	public boolean equals(Object obj) {
-		return EqualsBuilder.reflectionEquals(this, obj);
-	}
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this);
+    }
 
-	/**
-	 * @return the content
-	 */
-	public Serializable getContent() {
-		return content;
-	}
+    public int hashCode() {
+        return HashCodeBuilder.reflectionHashCode(this);
+    }
 
-	/**
-	 * @return the path
-	 */
-	public String getPath() {
-		return path;
-	}
+    public boolean equals(Object obj) {
+        return EqualsBuilder.reflectionEquals(this, obj);
+    }
 
-	/**
-	 * @return the type
-	 */
-	public int getType() {
-		return type;
-	}
+    /**
+     * @return the content
+     */
+    public Serializable getContent() {
+        return content;
+    }
 
-	/**
-	 * @return the typeAsString
-	 */
-	public String getTypeAsString() {
-		return typeAsString;
-	}
+    /**
+     * @return the path
+     */
+    public String getPath() {
+        return path;
+    }
 
-	/**
-	 * @return the userID
-	 */
-	public String getUserID() {
-		return userID;
-	}
+    /**
+     * @return the type
+     */
+    public int getType() {
+        return type;
+    }
+
+    /**
+     * @return the typeAsString
+     */
+    public String getTypeAsString() {
+        return typeAsString;
+    }
+
+    /**
+     * @return the userID
+     */
+    public String getUserID() {
+        return userID;
+    }
+
+    /**
+     * @return the uuid
+     */
+    public String getUuid() {
+        return uuid;
+    }
 
 }

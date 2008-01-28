@@ -493,7 +493,15 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
         final String context = queryDefinition.getLanguage()
             + ": "
                 + queryDefinition.getStatement();
-
+        
+        if (logger.isDebugEnabled()) {
+            logger.debug("Query : "
+                + context
+                    + " returned: "
+                    + queryResult.getRows().getSize()
+                    + " rows.");
+        }
+        
         final TargetItem targetItem =
                 new TargetItem(getTargetItemFromNodeIterator(context,
                         queryResult.getNodes()), context);
