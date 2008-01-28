@@ -52,10 +52,11 @@ import org.mule.util.UUID;
  * @author David Dossot (david@dossot.net)
  */
 public class JcrUtils {
-    
+
     public static final String DEFAULT_DATE_FORMAT = "dd-MM-yy_HH-mm-ss.SSS";
-    
-    private static final TemplateParser ANT_PARSER = TemplateParser.createAntStyleParser();
+
+    private static final TemplateParser ANT_PARSER =
+            TemplateParser.createAntStyleParser();
 
     private static final Log LOG = LogFactory.getLog(JcrUtils.class);
 
@@ -63,15 +64,45 @@ public class JcrUtils {
             JcrContentPayloadType contentPayloadType)
             throws RepositoryException {
 
+        final EventContent eventContent =
+                getEventContent(event, session, contentPayloadType);
+        
         return new JcrMessage(event.getPath(), event.getType(),
                 getEventTypeNameFromValue(event.getType()), event.getUserID(),
-                getEventContent(event, session, contentPayloadType));
+                eventContent.getData(), eventContent.getUuid());
     }
 
-    static Serializable getEventContent(Event event, Session session,
+    static class EventContent {
+        private Serializable data;
+
+        private String uuid;
+
+        public EventContent() {
+            setData("");
+            setUuid(null);
+        }
+
+        public Serializable getData() {
+            return data;
+        }
+
+        public void setData(Serializable data) {
+            this.data = data;
+        }
+
+        public String getUuid() {
+            return uuid;
+        }
+
+        public void setUuid(String uuid) {
+            this.uuid = uuid;
+        }
+    }
+
+    static EventContent getEventContent(Event event, Session session,
             JcrContentPayloadType contentPayloadType) {
 
-        Serializable result = "";
+        EventContent result = new EventContent();
 
         if (!JcrContentPayloadType.NONE.equals(contentPayloadType)) {
 
@@ -94,9 +125,13 @@ public class JcrUtils {
 
                     if (!item.isNode()) {
                         // is not a node == is a property
-                        result =
-                                outputProperty(eventPath, (Property) item,
-                                        contentPayloadType);
+                        result.setData(outputProperty(eventPath,
+                                (Property) item, contentPayloadType));
+                    } else {
+                        final Node node = ((Node) item);
+                        if (node.isNodeType("mix:referenceable")) {
+                            result.setUuid(node.getUUID());
+                        }
                     }
 
                 } catch (RepositoryException ignoredException) {
@@ -352,10 +387,12 @@ public class JcrUtils {
         }
     }
 
-    static String getParsableEventProperty(final UMOEvent event, final String propertyName) {
-        return JcrUtils.parsePath((String) event.getProperty(propertyName, true), event);
+    static String getParsableEventProperty(final UMOEvent event,
+            final String propertyName) {
+        return JcrUtils.parsePath(
+                (String) event.getProperty(propertyName, true), event);
     }
-    
+
     static String parsePath(final String path, final UMOEvent event) {
         if ((path == null)
             || (path.indexOf('{') == -1)) {
@@ -364,24 +401,24 @@ public class JcrUtils {
 
         return ANT_PARSER.parse(new TemplateParser.TemplateCallback() {
             public Object match(String token) {
-                
+
                 if (token.equals("DATE")) {
                     return DateUtils.getTimeStamp(DEFAULT_DATE_FORMAT);
-                    
+
                 } else if (token.startsWith("DATE:")) {
                     token = token.substring(5);
                     return DateUtils.getTimeStamp(token);
-                    
+
                 } else if (token.startsWith("UUID")) {
                     return UUID.getUUID();
-                    
+
                 } else if (token.startsWith("SYSTIME")) {
                     return String.valueOf(System.currentTimeMillis());
-                    
+
                 } else if (event != null) {
                     return event.getProperty(token, true);
                 }
-                
+
                 return null;
             }
         }, path);
