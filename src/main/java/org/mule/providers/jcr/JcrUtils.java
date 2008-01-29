@@ -66,7 +66,7 @@ public class JcrUtils {
 
         final EventContent eventContent =
                 getEventContent(event, session, contentPayloadType);
-        
+
         return new JcrMessage(event.getPath(), event.getType(),
                 getEventTypeNameFromValue(event.getType()), event.getUserID(),
                 eventContent.getData(), eventContent.getUuid());
@@ -114,12 +114,12 @@ public class JcrUtils {
             // moment we build this message), report the error at info level
             // only (this is a failure that can happen and is not business
             // critical in any way).
-            if ((eventType == Event.PROPERTY_ADDED)
-                || (eventType == Event.PROPERTY_CHANGED)) {
+            String eventPath = "N/A";
 
-                String eventPath = "N/A";
+            try {
+                if ((eventType == Event.PROPERTY_ADDED)
+                    || (eventType == Event.PROPERTY_CHANGED)) {
 
-                try {
                     eventPath = event.getPath();
                     Item item = session.getItem(eventPath);
 
@@ -127,23 +127,29 @@ public class JcrUtils {
                         // is not a node == is a property
                         result.setData(outputProperty(eventPath,
                                 (Property) item, contentPayloadType));
-                    } else {
+                    }
+
+                } else if (eventType == Event.NODE_ADDED) {
+                    eventPath = event.getPath();
+                    Item item = session.getItem(eventPath);
+
+                    if (item.isNode()) {
                         final Node node = ((Node) item);
                         if (node.isNodeType("mix:referenceable")) {
                             result.setUuid(node.getUUID());
                         }
                     }
-
-                } catch (RepositoryException ignoredException) {
-                    if (LOG.isInfoEnabled()) {
-                        LOG.info("Can not fetch content for event path: "
-                            + eventPath
-                                + "("
-                                + ignoredException.getMessage()
-                                + ")");
-                    }
+                }
+            } catch (RepositoryException ignoredException) {
+                if (LOG.isInfoEnabled()) {
+                    LOG.info("Can not fetch content for event path: "
+                        + eventPath
+                            + "("
+                            + ignoredException.getMessage()
+                            + ")");
                 }
             }
+
         }
 
         return result;
