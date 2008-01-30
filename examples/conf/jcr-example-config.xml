@@ -155,8 +155,7 @@
 					message.clearProperties();
 					message.setStringProperty("nodeRelPath", imageName);
 					message.setStringProperty("Content-Type", "image/gif");
-					eventContext.setStopFurtherProcessing(true);
-					return managementContext.lookupEndpoint("jcrImages").receive(0).getPayload();
+					return eventContext.receiveEvent("jcrImages", -1).getPayload();
 			]]>
 				</text-property>
 			</properties>

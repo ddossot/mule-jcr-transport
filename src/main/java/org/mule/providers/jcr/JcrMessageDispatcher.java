@@ -13,6 +13,7 @@ package org.mule.providers.jcr;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.Collection;
+import java.util.List;
 
 import javax.jcr.Item;
 import javax.jcr.Node;
@@ -203,16 +204,14 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
                 throw new DispatchException(
                         JcrMessages.noNodeFor("Endpoint URI: "
                             + endpoint.getEndpointURI().toString()
-                                + " ; NodeUUDI: "
+                                + " ; NodeUUID: "
                                 + nodeUUID), event.getMessage(), endpoint);
 
             } else if (targetItem.isNode()) {
                 Node targetParentNode = (Node) targetItem;
 
                 // create the target node, based on its type and relpath
-                String nodeTypeName =
-                        (String) event.getProperty(
-                                JcrConnector.JCR_NODE_TYPE_NAME_PROPERTY, true);
+                String nodeTypeName = getNodeTypeName(event);
 
                 NodeTypeHandler nodeTypeHandler;
 
@@ -314,8 +313,14 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
         UMOEvent event = RequestContext.getEvent();
 
         if (logger.isDebugEnabled()) {
-            logger.debug("Receiving from JCR with event: "
-                + event);
+            if (event != null) {
+                logger.debug("Receiving from JCR with event: "
+                    + event
+                        + ", message: "
+                        + event.getMessage());
+            } else {
+                logger.debug("Receiving from JCR with no event.");
+            }
         }
 
         Item targetItem = getTargetItem(getSession(), event, true);
@@ -360,9 +365,41 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
         return new MuleMessage(messageAdapter);
     }
 
+    private String getNodeTypeName(final UMOEvent event) {
+        String nodeTypeName = null;
+
+        Object nodeTypeNameProperty =
+                event.getProperty(JcrConnector.JCR_NODE_TYPE_NAME_PROPERTY,
+                        true);
+
+        if (nodeTypeNameProperty instanceof String) {
+            nodeTypeName = (String) nodeTypeNameProperty;
+        } else if (nodeTypeNameProperty instanceof List) {
+            List nodeTypeNameProperties = (List) nodeTypeNameProperty;
+
+            if (nodeTypeNameProperties.size() > 0) {
+                nodeTypeName = (String) nodeTypeNameProperties.get(0);
+            }
+
+            if (nodeTypeNameProperties.size() > 1) {
+                logger.warn("Message property: "
+                    + JcrConnector.JCR_NODE_TYPE_NAME_PROPERTY
+                        + " has multiple values, the connector will use: "
+                        + nodeTypeName);
+            }
+        } else {
+            logger.warn("Message property: "
+                + JcrConnector.JCR_NODE_TYPE_NAME_PROPERTY
+                    + " has an unusable value: "
+                    + nodeTypeNameProperty);
+        }
+
+        return nodeTypeName;
+    }
+
     private String getNodeUUID(final UMOEvent event) {
-        return event != null ? (String) event.getProperty(
-                JcrConnector.JCR_NODE_UUID_PROPERTY, true) : null;
+        return event != null ? (String) JcrUtils.getParsableEventProperty(
+                event, JcrConnector.JCR_NODE_UUID_PROPERTY) : null;
     }
 
     private QueryDefinition getQueryDefinition(final UMOEvent event) {
@@ -462,6 +499,18 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 
         Item targetItem = null;
 
+        if (logger.isDebugEnabled()) {
+            logger.debug("Getting target item with nodeUUID='"
+                + nodeUUID
+                    + "', queryDefinition='"
+                    + queryDefinition
+                    + "', nodeRelPath='"
+                    + nodeRelPath
+                    + "', propertyRelPath='"
+                    + propertyRelPath
+                    + "'");
+        }
+
         if (nodeUUID != null) {
             targetItem =
                     getTargetItemFromUUID(session, nodeUUID, nodeRelPath,
@@ -493,7 +542,7 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
         final String context = queryDefinition.getLanguage()
             + ": "
                 + queryDefinition.getStatement();
-        
+
         if (logger.isDebugEnabled()) {
             logger.debug("Query : "
                 + context
@@ -501,7 +550,7 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
                     + queryResult.getRows().getSize()
                     + " rows.");
         }
-        
+
         final TargetItem targetItem =
                 new TargetItem(getTargetItemFromNodeIterator(context,
                         queryResult.getNodes()), context);
@@ -697,6 +746,12 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 
         public String getStatement() {
             return statement;
+        }
+
+        public String toString() {
+            return getLanguage()
+                + ": "
+                    + getStatement();
         }
 
     }
