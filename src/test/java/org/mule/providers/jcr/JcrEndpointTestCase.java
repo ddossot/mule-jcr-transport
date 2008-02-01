@@ -12,6 +12,7 @@ package org.mule.providers.jcr;
 
 import org.mule.impl.endpoint.MuleEndpointURI;
 import org.mule.tck.AbstractMuleTestCase;
+import org.mule.umo.endpoint.MalformedEndpointException;
 import org.mule.umo.endpoint.UMOEndpointURI;
 
 /**
@@ -26,8 +27,7 @@ public class JcrEndpointTestCase extends AbstractMuleTestCase {
         assertEquals("jcr", uri.getScheme());
         assertEquals("/path/to/observedNode", uri.getAddress());
 
-        assertEquals("path/to/observedNode", uri.getHost()
-            + uri.getPath());
+        assertEquals("path/to/observedNode", uri.getHost() + uri.getPath());
         assertEquals(1, uri.getParams().size());
         assertEquals("5", uri.getParams().getProperty("eventTypes"));
     }
@@ -39,7 +39,7 @@ public class JcrEndpointTestCase extends AbstractMuleTestCase {
         assertEquals("/", uri.getAddress());
         assertEquals(1, uri.getParams().size());
         assertEquals("5", uri.getParams().getProperty("eventTypes"));
-        
+
         uri = new MuleEndpointURI("jcr:///?eventTypes=31");
 
         assertEquals("jcr", uri.getScheme());
@@ -53,6 +53,23 @@ public class JcrEndpointTestCase extends AbstractMuleTestCase {
 
         assertEquals("jcr", uri.getScheme());
         assertEquals("/", uri.getAddress());
+    }
+
+    public void testValidIndexedEndpointURI() throws Exception {
+        UMOEndpointURI uri =
+                JcrEndpointBuilder.newJcrEndpointURI("/indexed[1]/child[2]/bar");
+
+        assertEquals("jcr", uri.getScheme());
+        assertEquals("/indexed[1]/child[2]/bar", uri.getAddress());
+    }
+
+    public void testInvalidIndexedEndpointURI() throws Exception {
+        try {
+            new MuleEndpointURI("jcr:///indexed[1]/child[2]/bar");
+            fail("should have got a MalformedEndpointException");
+        } catch (MalformedEndpointException mee) {
+            return;
+        }
     }
 
 }
