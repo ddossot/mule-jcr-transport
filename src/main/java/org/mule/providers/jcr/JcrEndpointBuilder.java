@@ -14,7 +14,9 @@ import java.net.URI;
 import java.util.Properties;
 
 import org.mule.impl.endpoint.AbstractEndpointBuilder;
+import org.mule.impl.endpoint.MuleEndpointURI;
 import org.mule.umo.endpoint.MalformedEndpointException;
+import org.mule.umo.endpoint.UMOEndpointURI;
 import org.mule.util.StringUtils;
 
 /**
@@ -25,12 +27,35 @@ import org.mule.util.StringUtils;
  */
 public class JcrEndpointBuilder extends AbstractEndpointBuilder {
 
+    /**
+     * Helper method for safely building a JCR endpoint URI from a node path,
+     * which can contains the [ and ] reserved characters.
+     * 
+     * @param path
+     *            a node path.
+     * 
+     * @return a new UMOEndpointURI.
+     * 
+     * @throws MalformedEndpointException
+     *             thrown in case the path can not be transformed into a valid
+     *             UMOEndpointURI.
+     */
+    public static UMOEndpointURI newJcrEndpointURI(String path)
+            throws MalformedEndpointException {
+
+        return new MuleEndpointURI("jcr://"
+                + path.replaceAll("\\[", "%5B").replaceAll("\\]", "%5D"));
+    }
+
     protected void setEndpoint(URI uri, Properties props)
             throws MalformedEndpointException {
 
-        address = "/"
-            + StringUtils.stripStart(StringUtils.defaultString(uri.getHost())
-                + StringUtils.defaultString(uri.getPath()), "/");
+        address =
+                "/"
+                        + StringUtils.stripStart(
+                                StringUtils.defaultString(uri.getHost())
+                                        + StringUtils.defaultString(uri.getPath()),
+                                "/");
 
     }
 
