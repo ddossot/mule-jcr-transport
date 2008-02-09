@@ -4,7 +4,7 @@
 	<groupId>org.mule.transports</groupId>
 	<artifactId>mule-transport-jcr</artifactId>
 	<name>Mule JCR Transport</name>
-	<version>1.1.0-M3-SNAPSHOT</version>
+	<version>1.1.0</version>
 	<description>Provides connectivity to JCR repositories.</description>
 
 	<properties>
@@ -17,9 +17,9 @@
 	</issueManagement>
 
 	<scm>
-		<connection>scm:svn:http://svn.muleforge.org/mule-transport-jcr/trunk</connection>
-		<developerConnection>scm:svn:https://svn.muleforge.org/mule-transport-jcr/trunk</developerConnection>
-		<url>http://svn.mule-transport-jcr.muleforge.org/</url>
+		<connection>scm:svn:http://svn.muleforge.org/mule-transport-jcr/tags/mule-transport-jcr-1.1.0</connection>
+		<developerConnection>scm:svn:https://svn.muleforge.org/mule-transport-jcr/tags/mule-transport-jcr-1.1.0</developerConnection>
+		<url>http://svn.mule-transport-jcr.muleforge.org/tags/mule-transport-jcr-1.1.0</url>
 	</scm>
 
 	<ciManagement>
