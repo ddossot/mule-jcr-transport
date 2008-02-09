@@ -61,7 +61,7 @@
 		-->
 		<mule-descriptor name="systemInMulticaster" implementation="org.mule.components.simple.BridgeComponent">
 			<inbound-router>
-				<endpoint address="stream://System.in">
+				<endpoint address="stream://System.in" synchronous="true">
 					<properties>
 						<property name="promptMessage" value="Type content to store in JCR: " />
 					</properties>
