@@ -80,8 +80,8 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 		nodeNamePatternFilter = getPropertyNamePatternFilter(getEndpoint()
 				.getFilter(), JcrNodeNameFilter.class);
 
-		propertyNamePatternFilter = getPropertyNamePatternFilter(
-				getEndpoint().getFilter(), JcrPropertyNameFilter.class);
+		propertyNamePatternFilter = getPropertyNamePatternFilter(getEndpoint()
+				.getFilter(), JcrPropertyNameFilter.class);
 	}
 
 	public Session getSession() {
@@ -306,7 +306,7 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 
 		if (targetItem != null) {
 			if (targetItem.isNode()) {
-				rawJcrContent = getRawContentFromNode(rawJcrContent, targetItem);
+				rawJcrContent = getRawContentFromNode(targetItem);
 			} else {
 				rawJcrContent = getRawContentFromProperty(targetItem);
 			}
@@ -398,8 +398,10 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 		return targetItem;
 	}
 
-	private Object getRawContentFromNode(Object rawJcrContent, Item targetItem)
+	private Object getRawContentFromNode(Item targetItem)
 			throws RepositoryException {
+
+		Object result = null;
 
 		if (nodeNamePatternFilter != null) {
 			targetItem = getTargetItemByNodeNamePatternFilter(targetItem,
@@ -425,11 +427,11 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 							targetItem.getPath() + "["
 									+ propertyNamePatternFilter + "]")
 							.getMessage());
-					rawJcrContent = null;
+					result = null;
 				} else if (properties.getSize() == 1) {
-					rawJcrContent = properties.next();
+					result = properties.next();
 				} else {
-					rawJcrContent = properties;
+					result = properties;
 				}
 
 			} else {
@@ -439,10 +441,10 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 				}
 
 				// targetItem is a node
-				rawJcrContent = targetItem;
+				result = targetItem;
 			}
 		}
-		return rawJcrContent;
+		return result;
 	}
 
 	private Item getTargetItem(final Session session, final UMOEvent event,

@@ -26,12 +26,11 @@ import org.mule.umo.UMOMessage;
  */
 final class NoActionAnyTypeHandler extends AbstractNodeTypeHandler {
 
-	protected transient Log logger = LogFactory.getLog(getClass());
+	private transient Log logger = LogFactory.getLog(getClass());
 
 	private final String nodeTypeName;
 
-	public NoActionAnyTypeHandler(
-			String nodeTypeName) {
+	public NoActionAnyTypeHandler(String nodeTypeName) {
 
 		this.nodeTypeName = nodeTypeName;
 	}
