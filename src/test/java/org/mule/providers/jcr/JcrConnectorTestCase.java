@@ -18,14 +18,14 @@ import org.mule.umo.provider.UMOConnector;
  * @author David Dossot (david@dossot.net)
  */
 public class JcrConnectorTestCase extends AbstractConnectorTestCase {
-	public UMOConnector getConnector() throws Exception {
+	public UMOConnector createConnector() throws Exception {
 		return newJcrConnector();
 	}
 
 	static JcrConnector newJcrConnector() throws Exception,
 			InitialisationException {
 
-		JcrConnector c = new JcrConnector();
+		final JcrConnector c = new JcrConnector();
 		c.setName("Test-Jcr");
 		c.setRepository(RepositoryTestSupport.getRepository());
 		c.setUsername(RepositoryTestSupport.USERNAME);
@@ -49,13 +49,13 @@ public class JcrConnectorTestCase extends AbstractConnectorTestCase {
 		try {
 			new JcrConnector().doInitialise();
 			fail("An InitialisationException should have been thrown");
-		} catch (InitialisationException ie) {
+		} catch (final InitialisationException ie) {
 			// expected
 		}
 	}
 
 	public void testProperties() throws Exception {
-		JcrConnector jcrConnector = (JcrConnector) connector;
+		final JcrConnector jcrConnector = (JcrConnector) getConnector();
 
 		assertEquals(RepositoryTestSupport.USERNAME, jcrConnector.getUsername());
 		assertEquals(RepositoryTestSupport.PASSWORD, jcrConnector.getPassword());

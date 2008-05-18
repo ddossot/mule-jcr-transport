@@ -8,7 +8,7 @@
 	<description>Provides connectivity to JCR repositories.</description>
 
 	<properties>
-		<muleVersion>1.4.3</muleVersion>
+		<muleVersion>1.4.4</muleVersion>
 	</properties>
 
 	<issueManagement>
