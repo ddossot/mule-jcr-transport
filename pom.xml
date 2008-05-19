@@ -58,6 +58,15 @@
 			<layout>default</layout>
 		</repository>
 		<repository>
+			<id>day</id>
+			<name>Day Repository</name>
+			<layout>legacy</layout>
+			<url>http://www.day.com/maven</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+		<repository>
 			<!-- local repository for this transport. Users can upload dependencies here when the artifact
 				is not available on any other repository. Its the users' responsibility to make sure that no
 				licenses are violated by uploading dependencies to this location
@@ -152,8 +161,13 @@
 		</plugins>
 	</reporting>
 
-	<!-- Common Dependencies -->
 	<dependencies>
+		<!-- Transport Dependencies -->
+		<dependency>
+			<groupId>javax.jcr</groupId>
+			<artifactId>jcr</artifactId>
+			<version>1.0</version>
+		</dependency>
 		<dependency>
 			<groupId>org.mule</groupId>
 			<artifactId>mule-core</artifactId>
@@ -165,6 +179,7 @@
 			<version>1.0.2</version>
 			<scope>provided</scope>
 		</dependency>
+		<!-- Test Dependencies -->
 		<dependency>
 			<groupId>org.mule.tests</groupId>
 			<artifactId>mule-tests-functional</artifactId>
@@ -175,6 +190,25 @@
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>3.8.1</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.jackrabbit</groupId>
+			<artifactId>jackrabbit-core</artifactId>
+			<version>[1.3,2.0)</version>
+			<scope>test</scope>
+			<exclusions>
+				<!-- JackRabbit provides an outdated version of slf4j -->
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-api</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>com.thoughtworks.xstream</groupId>
+			<artifactId>xstream</artifactId>
+			<version>1.2</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

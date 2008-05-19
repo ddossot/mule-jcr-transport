@@ -1,42 +1,75 @@
 /*
- * \$Id: EndpointTestCase.vm 11571 2008-04-12 00:22:07Z dfeist $
+ * \$Id$
  * --------------------------------------------------------------------------------------
  * Copyright (c) MuleSource, Inc.  All rights reserved.  http://www.mulesource.com
  *
- * The software in this package is published under the terms of the CPAL v1.0
+ * The software in this package is published under the terms of the MuleSource MPL
  * license, a copy of which has been included with this distribution in the
  * LICENSE.txt file.
  */
 
 package org.mule.transport.jcr;
 
+import org.mule.api.endpoint.EndpointURI;
+import org.mule.api.endpoint.MalformedEndpointException;
 import org.mule.endpoint.MuleEndpointURI;
 import org.mule.tck.AbstractMuleTestCase;
-import org.mule.api.endpoint.EndpointURI;
 
+/**
+ * @author David Dossot (david@dossot.net)
+ */
+public class JcrEndpointTestCase extends AbstractMuleTestCase {
 
-public class JcrEndpointTestCase extends AbstractMuleTestCase
-{
+	public void testValidEndpointURI() throws Exception {
+		final EndpointURI uri = new MuleEndpointURI(
+				"jcr://path/to/observedNode?eventTypes=5");
 
-    /* For general guidelines on writing transports see
-       http://mule.mulesource.org/display/MULE/Writing+Transports */
+		assertEquals("jcr", uri.getScheme());
+		assertEquals("/path/to/observedNode", uri.getAddress());
 
-    public void testValidEndpointURI() throws Exception
-    {
-        // TODO test creating and asserting Endpoint values eg
+		assertEquals("path/to/observedNode", uri.getHost() + uri.getPath());
+		assertEquals(1, uri.getParams().size());
+		assertEquals("5", uri.getParams().getProperty("eventTypes"));
+	}
 
-        /*
-        EndpointURI url = new MuleEndpointURI("tcp://localhost:7856");
-        assertEquals("tcp", url.getScheme());
-        assertEquals("tcp://localhost:7856", url.getAddress());
-        assertNull(url.getEndpointName());
-        assertEquals(7856, url.getPort());
-        assertEquals("localhost", url.getHost());
-        assertEquals("tcp://localhost:7856", url.getAddress());
-        assertEquals(0, url.getParams().size());
-        */
+	public void testValidRootEndpointURIWithParams() throws Exception {
+		EndpointURI uri = new MuleEndpointURI("jcr://?eventTypes=5");
 
-        throw new UnsupportedOperationException("testValidEndpointURI");
-    }
+		assertEquals("jcr", uri.getScheme());
+		assertEquals("/", uri.getAddress());
+		assertEquals(1, uri.getParams().size());
+		assertEquals("5", uri.getParams().getProperty("eventTypes"));
+
+		uri = new MuleEndpointURI("jcr:///?eventTypes=31");
+
+		assertEquals("jcr", uri.getScheme());
+		assertEquals("/", uri.getAddress());
+		assertEquals(1, uri.getParams().size());
+		assertEquals("31", uri.getParams().getProperty("eventTypes"));
+	}
+
+	public void testValidRootEndpointURI() throws Exception {
+		final EndpointURI uri = new MuleEndpointURI("jcr:///");
+
+		assertEquals("jcr", uri.getScheme());
+		assertEquals("/", uri.getAddress());
+	}
+
+	public void testValidIndexedEndpointURI() throws Exception {
+		final EndpointURI uri = JcrEndpointURIBuilder
+				.newJcrEndpointURI("/indexed[1]/child[2]/bar");
+
+		assertEquals("jcr", uri.getScheme());
+		assertEquals("/indexed[1]/child[2]/bar", uri.getAddress());
+	}
+
+	public void testInvalidIndexedEndpointURI() throws Exception {
+		try {
+			new MuleEndpointURI("jcr:///indexed[1]/child[2]/bar");
+			fail("should have got a MalformedEndpointException");
+		} catch (final MalformedEndpointException mee) {
+			return;
+		}
+	}
 
 }
