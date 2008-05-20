@@ -10,104 +10,97 @@
 
 package org.mule.transport.jcr;
 
-import org.mule.transport.AbstractMessageDispatcher;
 import org.mule.api.MuleEvent;
 import org.mule.api.MuleMessage;
 import org.mule.api.endpoint.OutboundEndpoint;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.mule.transport.AbstractMessageDispatcher;
 
 /**
  * <code>JcrMessageDispatcher</code> TODO document
  */
-public class JcrMessageDispatcher extends AbstractMessageDispatcher
-{
+public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 
-    /* For general guidelines on writing transports see
-       http://mule.mulesource.org/display/MULE/Writing+Transports */
+	/*
+	 * For general guidelines on writing transports see
+	 * http://mule.mulesource.org/display/MULE/Writing+Transports
+	 */
 
-    public JcrMessageDispatcher(OutboundEndpoint endpoint)
-    {
-        super(endpoint);
+	public JcrMessageDispatcher(final OutboundEndpoint endpoint) {
+		super(endpoint);
 
-        /* IMPLEMENTATION NOTE: If you need a reference to the specific
-           connector for this dispatcher use:
+		/*
+		 * IMPLEMENTATION NOTE: If you need a reference to the specific
+		 * connector for this dispatcher use:
+		 * 
+		 * JcrConnector cnn = (JcrConnector)endpoint.getConnector();
+		 */
+	}
 
-           JcrConnector cnn = (JcrConnector)endpoint.getConnector(); */
-    }
+	@Override
+	public void doConnect() throws Exception {
+		/*
+		 * IMPLEMENTATION NOTE: Makes a connection to the underlying resource.
+		 * Where connections are managed by the connector this method may do
+		 * nothing
+		 */
 
-    public void doConnect() throws Exception
-    {
-        /* IMPLEMENTATION NOTE: Makes a connection to the underlying
-           resource. Where connections are managed by the connector this
-           method may do nothing */
+		// If a resource for this Dispatcher needs a connection established,
+		// then this is the place to do it
+	}
 
-        // If a resource for this Dispatcher needs a connection established,
-        // then this is the place to do it
-    }
+	@Override
+	public void doDisconnect() throws Exception {
+		/*
+		 * IMPLEMENTATION NOTE: Disconnect any conections made in the connect
+		 * method
+		 */
 
-    public void doDisconnect() throws Exception
-    {
-        /* IMPLEMENTATION NOTE: Disconnect any conections made in the connect
-           method */
+		// If the connect method did not do anything then this method
+		// shouldn't do anything either
+	}
 
-        // If the connect method did not do anything then this method
-        // shouldn't do anything either
-    }
+	@Override
+	public void doDispatch(final MuleEvent event) throws Exception {
+		/*
+		 * IMPLEMENTATION NOTE: This is invoked when the endpoint is
+		 * asynchronous. It should invoke the transport but not return any
+		 * result. If a result is returned it should be ignorred, but if the
+		 * underlying transport does have a notion of asynchronous processing,
+		 * that should be invoked. This method is executed in a different thread
+		 * to the request thread.
+		 */
 
-    public void doDispatch(MuleEvent event) throws Exception
-    {
-        /* IMPLEMENTATION NOTE: This is invoked when the endpoint is
-           asynchronous.  It should invoke the transport but not return any
-           result.  If a result is returned it should be ignorred, but if the
-           underlying transport does have a notion of asynchronous processing,
-           that should be invoked.  This method is executed in a different
-           thread to the request thread. */
+		// TODO Write the client code here to dispatch the event over this
+		// transport
+		throw new UnsupportedOperationException("doDispatch");
+	}
 
-        // TODO Write the client code here to dispatch the event over this
-        // transport
+	@Override
+	public MuleMessage doSend(final MuleEvent event) throws Exception {
+		/*
+		 * IMPLEMENTATION NOTE: Should send the event payload over the
+		 * transport. If there is a response from the transport it shuold be
+		 * returned from this method. The sendEvent method is called when the
+		 * endpoint is running synchronously and any response returned will
+		 * ultimately be passed back to the callee. This method is executed in
+		 * the same thread as the request thread.
+		 */
 
-        throw new UnsupportedOperationException("doDispatch");
-    }
+		// TODO Write the client code here to send the event over this
+		// transport (or to dispatch the event to a store or repository)
+		// TODO Once the event has been sent, return the result (if any)
+		// wrapped in a MuleMessage object
+		throw new UnsupportedOperationException("doSend");
+	}
 
-    public MuleMessage doSend(MuleEvent event) throws Exception
-    {
-        /* IMPLEMENTATION NOTE: Should send the event payload over the
-           transport. If there is a response from the transport it shuold be
-           returned from this method. The sendEvent method is called when the
-           endpoint is running synchronously and any response returned will
-           ultimately be passed back to the callee. This method is executed in
-           the same thread as the request thread. */
-        
-        // TODO Write the client code here to send the event over this
-        // transport (or to dispatch the event to a store or repository)
-        
-        // TODO Once the event has been sent, return the result (if any)
-        // wrapped in a MuleMessage object
+	@Override
+	public void doDispose() {
+		// Optional; does not need to be implemented. Delete if not required
 
-        throw new UnsupportedOperationException("doSend");
-    }
-
-    public MuleMessage doReceive(long timeout) throws Exception
-    {
-        /* IMPLEMENTATION NOTE: Can be used to make arbitary requests to a
-           transport resource. if the timeout is 0 the method should block
-           until an event on the endpoint is received. */
-        
-        // TODO Write the client code here to perform a request over the
-        // transport
-
-        throw new UnsupportedOperationException("receive");
-    }
-
-    public void doDispose()
-    {
-        // Optional; does not need to be implemented. Delete if not required
-        
-        /* IMPLEMENTATION NOTE: Is called when the Dispatcher is being
-           disposed and should clean up any open resources. */
-    }
+		/*
+		 * IMPLEMENTATION NOTE: Is called when the Dispatcher is being disposed
+		 * and should clean up any open resources.
+		 */
+	}
 
 }
-

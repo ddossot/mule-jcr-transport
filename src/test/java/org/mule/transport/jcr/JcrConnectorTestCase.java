@@ -10,44 +10,58 @@
 
 package org.mule.transport.jcr;
 
-import org.mule.transport.AbstractConnectorTestCase;
-import org.mule.api.service.Service;
+import org.mule.api.lifecycle.InitialisationException;
 import org.mule.api.transport.Connector;
+import org.mule.transport.AbstractConnectorTestCase;
 
-public class JcrConnectorTestCase extends AbstractConnectorTestCase
-{
+/**
+ * @author David Dossot (david@dossot.net)
+ */
+public class JcrConnectorTestCase extends AbstractConnectorTestCase {
+	@Override
+	public Connector createConnector() throws Exception {
+		return newJcrConnector();
+	}
 
-    /* For general guidelines on writing transports see
-       http://mule.mulesource.org/display/MULE/Writing+Transports */
+	static JcrConnector newJcrConnector() throws Exception,
+			InitialisationException {
 
-    public Connector createConnector() throws Exception
-    {
-        /* IMPLEMENTATION NOTE: Create and initialise an instance of your
-           connector here. Do not actually call the connect method. */
+		final JcrConnector c = new JcrConnector();
 
-        JcrConnector c = new JcrConnector();
-        c.setName("Test");
-        // TODO Set any additional properties on the connector here
-        return c;
-    }
+		c.setName("Test-Jcr");
+		c.setRepository(RepositoryTestSupport.getRepository());
+		c.setUsername(RepositoryTestSupport.USERNAME);
+		c.setPassword(RepositoryTestSupport.PASSWORD);
+		c.setWorkspaceName(null);
 
-    public String getTestEndpointURI()
-    {
-        // TODO Return a valid endpoint for you transport here
-        throw new UnsupportedOperationException("getTestEndpointURI");
-    }
+		return c;
+	}
 
-    public Object getValidMessage() throws Exception
-    {
-        // TODO Return an valid message for your transport
-        throw new UnsupportedOperationException("getValidMessage");
-    }
+	@Override
+	public String getTestEndpointURI() {
+		return "jcr://path/to/observedFolder";
+	}
 
+	@Override
+	public Object getValidMessage() throws Exception {
+		return "foo";
+	}
 
-    public void testProperties() throws Exception
-    {
-        // TODO test setting and retrieving any custom properties on the
-        // Connector as necessary
-    }
+	public void testInitializingWithoutConnector() {
+		try {
+			new JcrConnector().doInitialise();
+			fail("An InitialisationException should have been thrown");
+		} catch (final InitialisationException ie) {
+			// expected
+		}
+	}
+
+	public void testProperties() throws Exception {
+		final JcrConnector jcrConnector = (JcrConnector) getConnector();
+
+		assertEquals(RepositoryTestSupport.USERNAME, jcrConnector.getUsername());
+		assertEquals(RepositoryTestSupport.PASSWORD, jcrConnector.getPassword());
+		assertNull(jcrConnector.getWorkspaceName());
+	}
 
 }

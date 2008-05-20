@@ -10,6 +10,7 @@
 
 package org.mule.transport.jcr.i18n;
 
+import org.mule.api.endpoint.ImmutableEndpoint;
 import org.mule.config.i18n.Message;
 import org.mule.config.i18n.MessageFactory;
 
@@ -48,5 +49,9 @@ public abstract class JcrMessages extends MessageFactory {
 
 	public static Message sqlQuerySyntaxNotSupported() {
 		return createMessage(BUNDLE_PATH, 6);
+	}
+
+	public static Message notAnOutboundEndpoint(ImmutableEndpoint endpoint) {
+		return createMessage(BUNDLE_PATH, 7, endpoint);
 	}
 }

@@ -10,31 +10,26 @@
 
 package org.mule.transport.jcr;
 
-import org.mule.api.endpoint.InboundEndpoint;
+import org.mule.api.transport.Connector;
+import org.mule.endpoint.MuleEndpointURI;
 import org.mule.tck.AbstractMuleTestCase;
+import org.mule.transport.service.TransportFactory;
 
+/**
+ * @author David Dossot (david@dossot.net)
+ */
+public class JcrConnectorFactoryTestCase extends AbstractMuleTestCase {
 
-public class JcrConnectorFactoryTestCase extends AbstractMuleTestCase
-{
+	public void testCreateFromFactory() throws Exception {
+		final Connector connector = TransportFactory.createConnector(
+				new MuleEndpointURI(getEndpointURI()), muleContext);
 
-    /* For general guidelines on writing transports see
-       http://mule.mulesource.org/display/MULE/Writing+Transports */
+		assertNotNull(connector);
+		assertTrue(connector instanceof JcrConnector);
+	}
 
-    public void testCreateFromFactory() throws Exception
-    {
-        InboundEndpoint endpoint = muleContext.getRegistry()
-                .lookupEndpointFactory().getInboundEndpoint(getEndpointURI());
-        assertNotNull(endpoint);
-        assertNotNull(endpoint.getConnector());
-        assertTrue(endpoint.getConnector() instanceof JcrConnector);
-        assertEquals(getEndpointURI(), endpoint.getEndpointURI().getAddress());
-    }
-    
-    public String getEndpointURI() 
-    {
-        // TODO return a valid endpoint URI string for your transport
-        // i.e. tcp://localhost:1234
-        throw new UnsupportedOperationException("getEndpointURI");
-    }
+	public String getEndpointURI() {
+		return "jcr://path/to/observedNode";
+	}
 
 }
