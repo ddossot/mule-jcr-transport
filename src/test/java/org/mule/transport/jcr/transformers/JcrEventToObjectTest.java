@@ -22,6 +22,7 @@ import org.mule.transformer.AbstractTransformerTestCase;
 import org.mule.transport.jcr.JcrContentPayloadType;
 import org.mule.transport.jcr.JcrEventTestCase;
 import org.mule.transport.jcr.JcrMessageReceiver;
+import org.mule.transport.jcr.JcrMessageReceiverContext;
 import org.mule.transport.jcr.JcrUtils;
 import org.mule.transport.jcr.RepositoryTestSupport;
 

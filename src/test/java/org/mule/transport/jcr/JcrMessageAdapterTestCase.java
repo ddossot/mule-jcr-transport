@@ -10,25 +10,24 @@
 
 package org.mule.transport.jcr;
 
-import org.mule.transport.AbstractMessageAdapterTestCase;
-import org.mule.api.transport.MessageAdapter;
 import org.mule.api.MessagingException;
+import org.mule.api.transport.MessageAdapter;
+import org.mule.transport.AbstractMessageAdapterTestCase;
 
-public class JcrMessageAdapterTestCase extends AbstractMessageAdapterTestCase
-{
+/**
+ * @author David Dossot (david@dossot.net)
+ */
+public class JcrMessageAdapterTestCase extends AbstractMessageAdapterTestCase {
 
-    /* For general guidelines on writing transports see
-       http://mule.mulesource.org/display/MULE/Writing+Transports */
+	@Override
+	public Object getValidMessage() throws Exception {
+		return "foo";
+	}
 
-    public Object getValidMessage() throws Exception
-    {
-        // TODO Create a valid message for your transport
-        throw new UnsupportedOperationException("getValidMessage");
-    }
-
-    public MessageAdapter createAdapter(Object payload) throws MessagingException
-    {
-        return new JcrMessageAdapter(payload);
-    }
+	@Override
+	public MessageAdapter createAdapter(final Object payload)
+			throws MessagingException {
+		return new JcrMessageAdapter(payload);
+	}
 
 }

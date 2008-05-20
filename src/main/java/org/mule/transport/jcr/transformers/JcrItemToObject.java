@@ -15,7 +15,7 @@ import javax.jcr.PropertyIterator;
 import javax.jcr.RepositoryException;
 
 import org.mule.api.transformer.TransformerException;
-import org.mule.transformer.AbstractTransformer;
+import org.mule.transformer.AbstractDiscoverableTransformer;
 import org.mule.transport.jcr.JcrUtils;
 
 /**
@@ -24,7 +24,7 @@ import org.mule.transport.jcr.JcrUtils;
  * 
  * @author David Dossot (david@dossot.net)
  */
-public class JcrItemToObject extends AbstractTransformer {
+public class JcrItemToObject extends AbstractDiscoverableTransformer {
 
 	public JcrItemToObject() {
 		super();

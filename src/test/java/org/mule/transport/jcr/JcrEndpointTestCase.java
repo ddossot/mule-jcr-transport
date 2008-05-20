@@ -24,6 +24,8 @@ public class JcrEndpointTestCase extends AbstractMuleTestCase {
 		final EndpointURI uri = new MuleEndpointURI(
 				"jcr://path/to/observedNode?eventTypes=5");
 
+		uri.initialise();
+
 		assertEquals("jcr", uri.getScheme());
 		assertEquals("/path/to/observedNode", uri.getAddress());
 
@@ -34,6 +36,7 @@ public class JcrEndpointTestCase extends AbstractMuleTestCase {
 
 	public void testValidRootEndpointURIWithParams() throws Exception {
 		EndpointURI uri = new MuleEndpointURI("jcr://?eventTypes=5");
+		uri.initialise();
 
 		assertEquals("jcr", uri.getScheme());
 		assertEquals("/", uri.getAddress());
@@ -41,6 +44,7 @@ public class JcrEndpointTestCase extends AbstractMuleTestCase {
 		assertEquals("5", uri.getParams().getProperty("eventTypes"));
 
 		uri = new MuleEndpointURI("jcr:///?eventTypes=31");
+		uri.initialise();
 
 		assertEquals("jcr", uri.getScheme());
 		assertEquals("/", uri.getAddress());
@@ -50,6 +54,7 @@ public class JcrEndpointTestCase extends AbstractMuleTestCase {
 
 	public void testValidRootEndpointURI() throws Exception {
 		final EndpointURI uri = new MuleEndpointURI("jcr:///");
+		uri.initialise();
 
 		assertEquals("jcr", uri.getScheme());
 		assertEquals("/", uri.getAddress());
@@ -59,13 +64,15 @@ public class JcrEndpointTestCase extends AbstractMuleTestCase {
 		final EndpointURI uri = JcrEndpointURIBuilder
 				.newJcrEndpointURI("/indexed[1]/child[2]/bar");
 
+		uri.initialise();
+
 		assertEquals("jcr", uri.getScheme());
 		assertEquals("/indexed[1]/child[2]/bar", uri.getAddress());
 	}
 
 	public void testInvalidIndexedEndpointURI() throws Exception {
 		try {
-			new MuleEndpointURI("jcr:///indexed[1]/child[2]/bar");
+			new MuleEndpointURI("jcr:///indexed[1]/child[2]/bar").initialise();
 			fail("should have got a MalformedEndpointException");
 		} catch (final MalformedEndpointException mee) {
 			return;

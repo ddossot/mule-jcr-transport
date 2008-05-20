@@ -10,9 +10,8 @@ import java.util.Calendar;
 import javax.jcr.Session;
 import javax.naming.CompositeName;
 
-import junit.framework.TestCase;
-
 import org.mule.api.MuleEvent;
+import org.mule.tck.AbstractMuleTestCase;
 import org.mule.tck.MuleTestUtils;
 import org.mule.util.IOUtils;
 import org.mule.util.StringUtils;
@@ -20,7 +19,7 @@ import org.mule.util.StringUtils;
 /**
  * @author David Dossot (david@dossot.net)
  */
-public class JcrUtilsTestCase extends TestCase {
+public class JcrUtilsTestCase extends AbstractMuleTestCase {
 
 	private Session session;
 
@@ -30,8 +29,8 @@ public class JcrUtilsTestCase extends TestCase {
 			new Long(123), "baz" };
 
 	@Override
-	protected void setUp() throws Exception {
-		super.setUp();
+	protected void doSetUp() throws Exception {
+		super.doSetUp();
 		session = RepositoryTestSupport.getSession();
 	}
 
@@ -44,7 +43,11 @@ public class JcrUtilsTestCase extends TestCase {
 
 		final String path = "date:${DATE};customDate:${DATE:yyyy};uuid:${UUID};systime:${SYSTIME};eventProperty:${eventProperty};missing:${foo}";
 
-		final MuleEvent event = MuleTestUtils.getTestEvent("payload");
+		assertNotNull(
+				"The test hasn't been configured properly, no muleContext available",
+				muleContext);
+		final MuleEvent event = MuleTestUtils.getTestEvent("payload",
+				muleContext);
 		event.getMessage().setProperty("eventProperty", "bar");
 
 		final String parsedPath = JcrUtils.parsePath(path, event);

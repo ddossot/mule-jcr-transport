@@ -17,9 +17,10 @@ import javax.jcr.RepositoryException;
 import javax.jcr.observation.EventIterator;
 
 import org.mule.api.transformer.TransformerException;
-import org.mule.transformer.AbstractTransformer;
+import org.mule.transformer.AbstractDiscoverableTransformer;
 import org.mule.transport.jcr.JcrContentPayloadType;
 import org.mule.transport.jcr.JcrMessageReceiver;
+import org.mule.transport.jcr.JcrMessageReceiverContext;
 import org.mule.transport.jcr.JcrUtils;
 
 /**
@@ -28,7 +29,7 @@ import org.mule.transport.jcr.JcrUtils;
  * 
  * @author David Dossot (david@dossot.net)
  */
-public class JcrEventToObject extends AbstractTransformer {
+public class JcrEventToObject extends AbstractDiscoverableTransformer {
 
 	private JcrContentPayloadType contentPayloadType;
 
@@ -44,7 +45,7 @@ public class JcrEventToObject extends AbstractTransformer {
 		final List eventList = new ArrayList();
 		final EventIterator eventIterator = (EventIterator) src;
 
-		JcrMessageReceiverContext jcrMessageReceiverContext = JcrMessageReceiver
+		final JcrMessageReceiverContext jcrMessageReceiverContext = JcrMessageReceiver
 				.getJcrMessageReceiverContext();
 
 		while (eventIterator.hasNext()) {

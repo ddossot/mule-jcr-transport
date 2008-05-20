@@ -10,56 +10,115 @@
 
 package org.mule.transport.jcr;
 
-import org.mule.transport.AbstractMessageAdapter;
+import java.io.InputStream;
+import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+
+import javax.jcr.observation.EventIterator;
+
+import org.apache.commons.lang.SerializationUtils;
 import org.mule.api.MessagingException;
+import org.mule.api.ThreadSafeAccess;
+import org.mule.api.transformer.TransformerException;
 import org.mule.api.transport.MessageTypeNotSupportedException;
+import org.mule.config.i18n.CoreMessages;
+import org.mule.transport.AbstractMessageAdapter;
+import org.mule.util.IOUtils;
 
 /**
- * <code>JcrMessageAdapter</code> TODO document
+ * <code>JcrMessageAdapter</code> allows a <code>MuleEvent</code> to access
+ * the properties and payload of a JCR Event in a uniform way. The
+ * <code>JcrMessageAdapter</code> expects a message of type
+ * <i>java.util.Collection</i> that only contains objects of type
+ * <code>SerializableJcrEvent</code>. It will throw an
+ * IllegalArgumentException if the source message type is not compatible.
+ * 
+ * @author David Dossot (david@dossot.net)
  */
-public class JcrMessageAdapter extends AbstractMessageAdapter
-{
- 
-    /* For general guidelines on writing transports see
-       http://mule.mulesource.org/display/MULE/Writing+Transports */
+public final class JcrMessageAdapter extends AbstractMessageAdapter {
+	private static final long serialVersionUID = 2337091822007161288L;
 
-    /* IMPLEMENTATION NOTE: The MessageAdapter is used to wrap an underlying
-       message. It should store a copy of the underlying message as an
-       instance variable. */
+	private final Object payload;
 
-    /* IMPLEMENTATION NOTE: If the underlying transport data is available as a stream
-        it is recommended that you pass the stream object into the MessageAdapter as the payload.
-        This will ensure that Mule will use streaming where possible. */
-    
-    public JcrMessageAdapter(Object message) throws MessagingException
-    {
-        /* IMPLEMENTATION NOTE: The constructor should determine that the
-           message is of the correct type or throw an exception i.e.
-        
-        if (message instanceof byte[]) {
-            this.message = (byte[]) message;
-        } else {
-            throw new MessageTypeNotSupportedException(message, getClass());
-        }
-        */
-    }
+	private byte[] contents = null;
 
-    public String getPayloadAsString(String encoding) throws Exception
-    {
-        // TODO return the string representation of the wrapped message
-        throw new UnsupportedOperationException("getPayloadAsString");
-    }
+	public JcrMessageAdapter(final Object message) throws MessagingException {
+		if ((message instanceof Serializable)
+				|| (message instanceof InputStream)
+				|| (message instanceof EventIterator)) {
 
-    public byte[] getPayloadAsBytes() throws Exception
-    {
-        // TODO return the byte[] representation of the wrapped message
-        throw new UnsupportedOperationException("getPayloadAsBytes");
-    }
+			payload = message;
 
-    public Object getPayload()
-    {
-        // TODO return the actual wrapped message
-        throw new UnsupportedOperationException("getPayload");
-    }
+		} else {
+			throw new MessageTypeNotSupportedException(message, getClass());
+		}
+
+	}
+
+	protected JcrMessageAdapter(final JcrMessageAdapter template) {
+		super(template);
+		payload = template.payload;
+		contents = template.contents;
+	}
+
+	@Override
+	public ThreadSafeAccess newThreadCopy() {
+		return new JcrMessageAdapter(this);
+	}
+
+	protected byte[] convertToBytes(final Object object)
+			throws TransformerException, UnsupportedEncodingException {
+
+		assertAccess(READ);
+
+		if (object instanceof InputStream) {
+			return IOUtils.toByteArray((InputStream) object);
+
+		} else if (object instanceof EventIterator) {
+			// trying to get a bytes representation of the iterator is an error
+			return EventIterator.class.getName().getBytes(getEncoding());
+
+		} else if (object instanceof String) {
+			return object.toString().getBytes(getEncoding());
+
+		} else if (object instanceof byte[]) {
+			return (byte[]) object;
+
+		} else if (object instanceof Serializable) {
+			try {
+				return SerializationUtils.serialize((Serializable) object);
+			} catch (final Exception e) {
+				throw new TransformerException(CoreMessages.transformFailed(
+						object.getClass().getName(), "byte[]"), e);
+			}
+		} else {
+			throw new TransformerException(CoreMessages
+					.transformOnObjectNotOfSpecifiedType(object.getClass()
+							.getName(), "byte[] or "
+							+ Serializable.class.getName()));
+		}
+	}
+
+	public byte[] getPayloadAsBytes() throws Exception {
+		assertAccess(READ);
+
+		synchronized (this) {
+			contents = convertToBytes(payload);
+			return contents;
+		}
+	}
+
+	public String getPayloadAsString(final String encoding) throws Exception {
+		assertAccess(READ);
+
+		synchronized (this) {
+			return new String(this.getPayloadAsBytes(), encoding);
+		}
+	}
+
+	public Object getPayload() {
+		assertAccess(READ);
+		return payload;
+	}
 
 }
