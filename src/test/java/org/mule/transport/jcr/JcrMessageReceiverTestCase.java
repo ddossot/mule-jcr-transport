@@ -10,33 +10,40 @@
 
 package org.mule.transport.jcr;
 
+import org.mule.api.endpoint.EndpointBuilder;
 import org.mule.api.endpoint.InboundEndpoint;
 import org.mule.api.service.Service;
 import org.mule.api.transport.MessageReceiver;
+import org.mule.endpoint.EndpointURIEndpointBuilder;
+import org.mule.endpoint.URIBuilder;
 import org.mule.transport.AbstractMessageReceiverTestCase;
 
 import com.mockobjects.dynamic.Mock;
 
+/**
+ * @author David Dossot (david@dossot.net)
+ */
 public class JcrMessageReceiverTestCase extends AbstractMessageReceiverTestCase {
-
-	/*
-	 * For general guidelines on writing transports see
-	 * http://mule.mulesource.org/display/MULE/Writing+Transports
-	 */
 
 	@Override
 	public MessageReceiver getMessageReceiver() throws Exception {
 		final Mock mockService = new Mock(Service.class);
-		mockService.expectAndReturn("getResponseTransformer", null);
+		mockService.expectAndReturn("getResponseRouter", null);
+
 		return new JcrMessageReceiver(endpoint.getConnector(),
 				(Service) mockService.proxy(), endpoint);
 	}
 
 	@Override
 	public InboundEndpoint getEndpoint() throws Exception {
-		// TODO return a valid endpoint i.e.
-		// return new MuleEndpoint("tcp://localhost:1234", true)
-		throw new UnsupportedOperationException("getEndpoint");
+		final EndpointBuilder builder = new EndpointURIEndpointBuilder(
+				new URIBuilder("jcr://path/to/observedNode"), muleContext);
+
+		builder.setConnector(JcrConnectorTestCase.newJcrConnector());
+		endpoint = muleContext.getRegistry().lookupEndpointFactory()
+				.getInboundEndpoint(builder);
+
+		return endpoint;
 	}
 
 }

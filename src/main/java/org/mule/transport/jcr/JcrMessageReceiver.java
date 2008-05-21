@@ -1,110 +1,281 @@
 /*
- * $Id: MessageReceiver.vm 10961 2008-02-22 19:01:02Z dfeist $
+ * $Id$
  * --------------------------------------------------------------------------------------
  * Copyright (c) MuleSource, Inc.  All rights reserved.  http://www.mulesource.com
  *
- * The software in this package is published under the terms of the CPAL v1.0
+ * The software in this package is published under the terms of the MuleSource MPL
  * license, a copy of which has been included with this distribution in the
  * LICENSE.txt file.
  */
 
 package org.mule.transport.jcr;
 
-import org.mule.transport.ConnectException;
-import org.mule.transport.AbstractMessageReceiver;
-import org.mule.api.service.Service;
+import java.util.List;
+
+import javax.jcr.Repository;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+import javax.jcr.observation.EventIterator;
+import javax.jcr.observation.EventListener;
+import javax.jcr.observation.ObservationManager;
+
+import org.apache.commons.beanutils.converters.BooleanConverter;
+import org.apache.commons.beanutils.converters.IntegerConverter;
+import org.mule.DefaultMuleMessage;
+import org.mule.api.MessagingException;
+import org.mule.api.MuleException;
 import org.mule.api.endpoint.InboundEndpoint;
 import org.mule.api.lifecycle.CreateException;
+import org.mule.api.lifecycle.LifecycleException;
+import org.mule.api.service.Service;
 import org.mule.api.transport.Connector;
+import org.mule.transport.AbstractMessageReceiver;
+import org.mule.transport.ConnectException;
+import org.mule.transport.jcr.i18n.JcrMessages;
+
+import edu.emory.mathcs.backport.java.util.concurrent.atomic.AtomicReference;
 
 /**
- * <code>JcrMessageReceiver</code> TODO document
+ * Registers a JCR <code>javax.jcr.observation.EventListener</code> to the
+ * <code>javax.jcr.observation.ObservationManager</code> of the repository.
+ * 
+ * @author David Dossot (david@dossot.net)
  */
-public class JcrMessageReceiver extends  AbstractMessageReceiver {
+public final class JcrMessageReceiver extends AbstractMessageReceiver implements
+		EventListener {
 
-    /* For general guidelines on writing transports see
-       http://mule.mulesource.org/display/MULE/Writing+Transports */
+	private static final String[] EMPTY_STRING_ARRAY = new String[0];
 
-    public JcrMessageReceiver(Connector connector, Service service,
-                              InboundEndpoint endpoint)
-            throws CreateException
-    {
-        super(connector, service, endpoint);
-    }
+	private final JcrConnector jcrConnector;
 
-    public void doConnect() throws ConnectException
-    {
-        /* IMPLEMENTATION NOTE: This method should make a connection to the underlying
-           transport i.e. connect to a socket or register a soap service. When
-           there is no connection to be made this method should be used to
-           check that resources are available. For example the
-           FileMessageReceiver checks that the directories it will be using
-           are available and readable. The MessageReceiver should remain in a
-           'stopped' state even after the doConnect() method is called. This
-           means that a connection has been made but no events will be
-           received until the start() method is called.
+	private final Integer eventTypes;
 
-           Calling start() on the MessageReceiver will call doConnect() if the receiver
-           hasn't connected already. */
+	private final String absPath;
 
-        /* IMPLEMENTATION NOTE: If you need to spawn any threads such as
-           worker threads for this receiver you can schedule a worker thread
-           with the work manager i.e.
+	private final Boolean deep;
 
-             getWorkManager().scheduleWork(worker, WorkManager.INDEFINITE, null, null);
-           Where 'worker' implemments javax.resource.spi.work.Work */
+	private final List uuid;
 
-        /* IMPLEMENTATION NOTE: When throwing an exception from this method
-           you need to throw an ConnectException that accepts a Message, a
-           cause exception and a reference to this MessageReceiver i.e.
+	private final List nodeTypeName;
 
-             throw new ConnectException(new Message(Messages.FAILED_TO_SCHEDULE_WORK), e, this);
-        */
+	private final Boolean noLocal;
 
-        // TODO the code necessay to Connect to the underlying resource
-    }
+	private final JcrContentPayloadType contentPayloadType;
 
-    public void doDisconnect() throws ConnectException
-    {
-        /* IMPLEMENTATION NOTE: Disconnects and tidies up any rources allocted
-           using the doConnect() method. This method should return the
-           MessageReceiver into a disconnected state so that it can be
-           connected again using the doConnect() method. */
+	private ObservationManager observationManager;
 
-        // TODO release any resources here
-    }
+	private Session receiverSession;
 
-    public void doStart()
-    {
-        // Optional; does not need to be implemented. Delete if not required
+	private static final AtomicReference jcrMessageReceiverContext = new AtomicReference();
 
-        /* IMPLEMENTATION NOTE: Should perform any actions necessary to enable
-           the reciever to start reciving events. This is different to the
-           doConnect() method which actually makes a connection to the
-           transport, but leaves the MessageReceiver in a stopped state. For
-           polling-based MessageReceivers the start() method simply starts the
-           polling thread, for the Axis Message receiver the start method on
-           the SOAPService is called. What action is performed here depends on
-           the transport being used. Most of the time a custom provider
-           doesn't need to override this method. */
-    }
+	public static JcrMessageReceiverContext getJcrMessageReceiverContext() {
+		return (JcrMessageReceiverContext) jcrMessageReceiverContext.get();
+	}
 
-    public void doStop()
-    {
-        // Optional; does not need to be implemented. Delete if not required
+	public static void setJcrMessageReceiverContext(
+			final JcrMessageReceiverContext context) {
+		jcrMessageReceiverContext.set(context);
+	}
 
-        /* IMPLEMENTATION NOTE: Should perform any actions necessary to stop
-           the reciever from receiving events. */
-    }
+	public JcrMessageReceiver(final Connector connector, final Service service,
+			final InboundEndpoint endpoint) throws CreateException {
 
-    public void doDispose()
-    {
-        // Optional; does not need to be implemented. Delete if not required
+		super(connector, service, endpoint);
 
-        /* IMPLEMENTATION NOTE: Is called when the Conector is being dispoed
-           and should clean up any resources. The doStop() and doDisconnect()
-           methods will be called implicitly when this method is called. */
-    }
+		jcrConnector = (JcrConnector) getConnector();
+
+		if (logger.isDebugEnabled()) {
+			logger.debug("Initializing for: " + endpoint);
+		}
+
+		// Future JCR version will offer a standard way to get a repository
+		// instance, at that time host/port will be used for what they are on
+		// the endpoint because it will become possible to specify a full URL to
+		// a repository
+
+		absPath = endpoint.getEndpointURI().getAddress();
+
+		eventTypes = (Integer) new IntegerConverter(jcrConnector
+				.getEventTypes()).convert(Integer.class, endpoint
+				.getProperty("eventTypes"));
+
+		deep = (Boolean) new BooleanConverter(jcrConnector.isDeep()).convert(
+				Boolean.class, endpoint.getProperty("deep"));
+
+		final Object uuidProperty = endpoint.getProperty("uuid");
+
+		if (uuidProperty == null) {
+			uuid = jcrConnector.getUuid();
+		} else {
+			uuid = (List) uuidProperty;
+		}
+
+		final Object nodeTypeNameProperty = endpoint
+				.getProperty("nodeTypeName");
+
+		if (nodeTypeNameProperty == null) {
+			nodeTypeName = jcrConnector.getNodeTypeName();
+		} else {
+			nodeTypeName = (List) nodeTypeNameProperty;
+		}
+
+		noLocal = (Boolean) new BooleanConverter(jcrConnector.isNoLocal())
+				.convert(Boolean.class, endpoint.getProperty("noLocal"));
+
+		String contentPayloadTypeProperty = (String) endpoint
+				.getProperty("contentPayloadType");
+
+		if (contentPayloadTypeProperty == null) {
+			contentPayloadTypeProperty = jcrConnector.getContentPayloadType();
+		}
+
+		try {
+			contentPayloadType = JcrContentPayloadType
+					.fromString(contentPayloadTypeProperty);
+
+		} catch (final IllegalArgumentException iae) {
+			throw new CreateException(iae, this);
+		}
+	}
+
+	@Override
+	public void doConnect() throws ConnectException {
+		if (jcrConnector.getRepository().getDescriptor(
+				Repository.OPTION_OBSERVATION_SUPPORTED) == null) {
+			throw new ConnectException(JcrMessages.observationsNotSupported(),
+					this);
+		}
+
+		try {
+			receiverSession = jcrConnector.newSession();
+			observationManager = receiverSession.getWorkspace()
+					.getObservationManager();
+
+			setJcrMessageReceiverContext(new JcrMessageReceiverContext() {
+				public JcrContentPayloadType getContentPayloadType() {
+					return contentPayloadType;
+				}
+
+				public Session getObservingSession() {
+					return receiverSession;
+				}
+			});
+
+		} catch (final Exception e) {
+			throw new ConnectException(JcrMessages
+					.canNotGetObservationManager(jcrConnector
+							.getWorkspaceName()), e, this);
+		}
+	}
+
+	@Override
+	public void doStart() throws MuleException {
+		try {
+			observationManager.addEventListener(this, eventTypes.intValue(),
+					absPath, deep.booleanValue(), uuid == null ? null
+							: (String[]) uuid.toArray(EMPTY_STRING_ARRAY),
+					nodeTypeName == null ? null : (String[]) nodeTypeName
+							.toArray(EMPTY_STRING_ARRAY), noLocal
+							.booleanValue());
+
+			if (logger.isInfoEnabled()) {
+				logger.info("Observing JCR for events of types: " + eventTypes
+						+ " - at: " + absPath + " - deep: " + deep
+						+ " - uuid: " + uuid + " - nodeTypeName: "
+						+ nodeTypeName + " - noLocal: " + noLocal
+						+ " - contentPayloadType: " + contentPayloadType);
+			}
+
+		} catch (final RepositoryException re) {
+			throw new LifecycleException(re, this);
+		}
+	}
+
+	@Override
+	public void doStop() throws MuleException {
+		try {
+			observationManager.removeEventListener(this);
+		} catch (final RepositoryException re) {
+			throw new LifecycleException(re, this);
+		}
+
+	}
+
+	@Override
+	public void doDisconnect() throws ConnectException {
+		jcrConnector.terminateSession(receiverSession);
+
+		receiverSession = null;
+	}
+
+	@Override
+	public void doDispose() {
+		observationManager = null;
+	}
+
+	public void onEvent(final EventIterator eventIterator) {
+		if (logger.isDebugEnabled()) {
+			logger.debug("JCR events received");
+		}
+
+		try {
+			routeMessage(new DefaultMuleMessage(jcrConnector
+					.getMessageAdapter(eventIterator)));
+
+		} catch (final MessagingException me) {
+			handleException(me);
+		} catch (final MuleException mue) {
+			handleException(mue);
+		}
+	}
+
+	/**
+	 * @return the absPath
+	 */
+	String getAbsPath() {
+		return absPath;
+	}
+
+	/**
+	 * @return the contentPayloadType
+	 */
+	JcrContentPayloadType getContentPayloadType() {
+		return contentPayloadType;
+	}
+
+	/**
+	 * @return the deep
+	 */
+	Boolean isDeep() {
+		return deep;
+	}
+
+	/**
+	 * @return the eventTypes
+	 */
+	Integer getEventTypes() {
+		return eventTypes;
+	}
+
+	/**
+	 * @return the nodeTypeName
+	 */
+	List getNodeTypeName() {
+		return nodeTypeName;
+	}
+
+	/**
+	 * @return the noLocal
+	 */
+	Boolean isNoLocal() {
+		return noLocal;
+	}
+
+	/**
+	 * @return the uuid
+	 */
+	List getUuid() {
+		return uuid;
+	}
 
 }
-
