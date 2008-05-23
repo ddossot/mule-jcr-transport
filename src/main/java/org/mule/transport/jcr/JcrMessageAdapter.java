@@ -36,7 +36,7 @@ import org.mule.util.IOUtils;
  * @author David Dossot (david@dossot.net)
  */
 public final class JcrMessageAdapter extends AbstractMessageAdapter {
-	private static final long serialVersionUID = 2337091822007161288L;
+	private static final long serialVersionUID = 2337091822097161288L;
 
 	private final Object payload;
 

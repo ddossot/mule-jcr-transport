@@ -27,6 +27,8 @@ import java.util.Map.Entry;
 
 import javax.jcr.Item;
 import javax.jcr.Node;
+import javax.jcr.NodeIterator;
+import javax.jcr.PathNotFoundException;
 import javax.jcr.Property;
 import javax.jcr.PropertyIterator;
 import javax.jcr.PropertyType;
@@ -35,10 +37,16 @@ import javax.jcr.Session;
 import javax.jcr.Value;
 import javax.jcr.ValueFormatException;
 import javax.jcr.observation.Event;
+import javax.jcr.query.QueryResult;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mule.api.MuleEvent;
+import org.mule.api.endpoint.ImmutableEndpoint;
+import org.mule.api.routing.filter.Filter;
+import org.mule.routing.filters.logic.AndFilter;
+import org.mule.transport.jcr.filters.AbstractJcrNameFilter;
+import org.mule.transport.jcr.i18n.JcrMessages;
 import org.mule.util.DateUtils;
 import org.mule.util.IOUtils;
 import org.mule.util.TemplateParser;
@@ -440,6 +448,376 @@ public class JcrUtils {
 				return null;
 			}
 		}, path);
+	}
+
+	static String getPropertyNamePatternFilter(final Filter filter,
+			final Class filterClass) {
+
+		String pattern = null;
+
+		if (filter != null) {
+			if (filter instanceof AbstractJcrNameFilter) {
+				if (filter.getClass().equals(filterClass)) {
+					pattern = ((AbstractJcrNameFilter) filter).getPattern();
+				}
+			} else if (filter instanceof AndFilter) {
+				final AndFilter andFilter = (AndFilter) filter;
+
+				pattern = getPropertyNamePatternFilter((Filter) andFilter
+						.getFilters().get(0), filterClass);
+
+				if (pattern == null) {
+					pattern = getPropertyNamePatternFilter((Filter) andFilter
+							.getFilters().get(1), filterClass);
+				}
+			} else {
+				throw new IllegalArgumentException(JcrMessages.badFilterType(
+						filter.getClass()).getMessage());
+			}
+		}
+
+		return pattern;
+	}
+
+	private static String getNodeUUID(final MuleEvent event) {
+		return event != null ? (String) JcrUtils.getParsableEventProperty(
+				event, JcrConnector.JCR_NODE_UUID_PROPERTY) : null;
+	}
+
+	private static QueryDefinition getQueryDefinition(final MuleEvent event) {
+		return event != null ? new QueryDefinition((String) event.getProperty(
+				JcrConnector.JCR_QUERY_LANGUAGE_PROPERTY, true), JcrUtils
+				.getParsableEventProperty(event,
+						JcrConnector.JCR_QUERY_STATEMENT_PROPERTY)) : null;
+	}
+
+	private static String getPropertyRelPath(final MuleEvent event) {
+		return event != null ? JcrUtils.getParsableEventProperty(event,
+				JcrConnector.JCR_PROPERTY_REL_PATH_PROPERTY) : null;
+	}
+
+	private static String getNodeRelPath(final MuleEvent event) {
+		return event != null ? JcrUtils.getParsableEventProperty(event,
+				JcrConnector.JCR_NODE_RELPATH_PROPERTY) : null;
+	}
+
+	static Object getRawContentFromProperty(final Item targetItem)
+			throws RepositoryException {
+
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("Getting payload for property: " + targetItem.getPath());
+		}
+
+		return targetItem;
+	}
+
+	static Object getRawContentFromNode(Item targetItem,
+			final String nodeNamePatternFilter,
+			final String propertyNamePatternFilter) throws RepositoryException {
+
+		Object result = null;
+
+		if (nodeNamePatternFilter != null) {
+			targetItem = getTargetItemByNodeNamePatternFilter(targetItem,
+					nodeNamePatternFilter);
+		}
+
+		if (targetItem != null) {
+			if (propertyNamePatternFilter != null) {
+
+				if (LOG.isDebugEnabled()) {
+					LOG.debug("Applying property name pattern filter: "
+							+ propertyNamePatternFilter);
+				}
+
+				final PropertyIterator properties = ((Node) targetItem)
+						.getProperties(propertyNamePatternFilter);
+
+				// if the map contains only one property, because we
+				// have applied a filter, we assume the intention was to
+				// get a single property value
+				if (properties.getSize() == 0) {
+					LOG.warn(JcrMessages.noNodeFor(
+							targetItem.getPath() + "["
+									+ propertyNamePatternFilter + "]")
+							.getMessage());
+					result = null;
+				} else if (properties.getSize() == 1) {
+					result = properties.next();
+				} else {
+					result = properties;
+				}
+
+			} else {
+				if (LOG.isDebugEnabled()) {
+					LOG.debug("Getting payload for node: "
+							+ targetItem.getPath());
+				}
+
+				// targetItem is a node
+				result = targetItem;
+			}
+		}
+		return result;
+	}
+
+	static Item getTargetItem(final Session session,
+			final ImmutableEndpoint endpoint, final MuleEvent event,
+			final boolean navigateRelativePaths) throws RepositoryException,
+			PathNotFoundException {
+
+		final String nodeUUID = getNodeUUID(event);
+
+		final QueryDefinition queryDefinition = getQueryDefinition(event);
+
+		final String nodeRelPath = navigateRelativePaths ? getNodeRelPath(event)
+				: null;
+
+		final String propertyRelPath = navigateRelativePaths ? getPropertyRelPath(event)
+				: null;
+
+		Item targetItem = null;
+
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("Getting target item with nodeUUID='" + nodeUUID
+					+ "', queryDefinition='" + queryDefinition
+					+ "', nodeRelPath='" + nodeRelPath + "', propertyRelPath='"
+					+ propertyRelPath + "'");
+		}
+
+		if (nodeUUID != null) {
+			targetItem = getTargetItemFromUUID(session, nodeUUID, nodeRelPath,
+					propertyRelPath);
+		} else if ((queryDefinition != null)
+				&& (queryDefinition.getStatement() != null)) {
+			targetItem = getTargetItemFromQuery(session, queryDefinition,
+					nodeRelPath, propertyRelPath);
+		} else {
+			targetItem = getTargetItemFromPath(session, endpoint, nodeRelPath,
+					propertyRelPath);
+		}
+
+		return targetItem;
+	}
+
+	private static Item getTargetItemByNodeNamePatternFilter(
+			final Item targetItem, final String nodeNamePatternFilter)
+			throws RepositoryException {
+
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("Applying node name pattern filter: "
+					+ nodeNamePatternFilter);
+		}
+
+		final NodeIterator nodes = ((Node) targetItem)
+				.getNodes(nodeNamePatternFilter);
+
+		return getTargetItemFromNodeIterator(targetItem.getPath() + "["
+				+ nodeNamePatternFilter + "]", nodes);
+	}
+
+	private static Item getTargetItemFromQuery(final Session session,
+			final QueryDefinition queryDefinition, final String nodeRelpath,
+			final String propertyRelPath) throws RepositoryException {
+
+		final QueryResult queryResult = session.getWorkspace()
+				.getQueryManager().createQuery(queryDefinition.getStatement(),
+						queryDefinition.getLanguage()).execute();
+
+		// there is no way to get a Property out of a QueryResult so we will
+		// return only a Node
+		final String context = queryDefinition.getLanguage() + ": "
+				+ queryDefinition.getStatement();
+
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("Query : " + context + " returned: "
+					+ queryResult.getRows().getSize() + " rows.");
+		}
+
+		final TargetItem targetItem = new TargetItem(
+				getTargetItemFromNodeIterator(context, queryResult.getNodes()),
+				context);
+
+		navigateToRelativeTargetItem(targetItem, nodeRelpath, propertyRelPath);
+
+		return targetItem.getItem();
+	}
+
+	private static Item getTargetItemFromNodeIterator(final String pathContext,
+			final NodeIterator nodes) throws RepositoryException {
+
+		if (nodes.getSize() == 0) {
+			LOG.warn(JcrMessages.noNodeFor(pathContext).getMessage());
+
+			return null;
+
+		} else {
+			if (nodes.getSize() > 1) {
+				LOG.warn(JcrMessages.moreThanOneNodeFor(pathContext)
+						.getMessage());
+			}
+
+			return nodes.nextNode();
+		}
+	}
+
+	private static Item getTargetItemFromPath(final Session session,
+			final ImmutableEndpoint endpoint, final String nodeRelpath,
+			final String propertyRelPath) throws RepositoryException,
+			PathNotFoundException {
+
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("Accessing JCR container for endpoint: " + endpoint);
+		}
+
+		final TargetItem targetItem = new TargetItem(null, endpoint
+				.getEndpointURI().getAddress());
+
+		if (session.itemExists(targetItem.getAbsolutePath())) {
+			targetItem.setItem(session.getItem(targetItem.getAbsolutePath()));
+
+			navigateToRelativeTargetItem(targetItem, nodeRelpath,
+					propertyRelPath);
+		}
+
+		if ((LOG.isDebugEnabled()) && (targetItem.getItem() == null)) {
+			LOG.debug(JcrMessages.noNodeFor(targetItem.getAbsolutePath())
+					.getMessage());
+		}
+
+		return targetItem.getItem();
+	}
+
+	private static Item getTargetItemFromUUID(final Session session,
+			final String nodeUUID, final String nodeRelpath,
+			final String propertyRelPath) {
+		try {
+			final Node nodeByUUID = session.getNodeByUUID(nodeUUID);
+
+			if (nodeByUUID != null) {
+				final TargetItem targetItem = new TargetItem(nodeByUUID,
+						nodeUUID);
+				navigateToRelativeTargetItem(targetItem, nodeRelpath,
+						propertyRelPath);
+
+				if ((LOG.isDebugEnabled()) && (targetItem.getItem() == null)) {
+					LOG.debug(JcrMessages.noNodeFor(
+							targetItem.getAbsolutePath()).getMessage());
+				}
+
+				return targetItem.getItem();
+			}
+
+		} catch (final RepositoryException re) {
+			LOG.warn(JcrMessages.noNodeFor("UUID=" + nodeUUID).getMessage());
+		}
+
+		return null;
+	}
+
+	private static void navigateToRelativeTargetItem(
+			final TargetItem targetItem, final String nodeRelpath,
+			final String propertyRelPath) throws RepositoryException,
+			PathNotFoundException {
+
+		if (nodeRelpath != null) {
+			final Node node = targetItem.asNodeOrNull();
+
+			if (node != null) {
+				targetItem.setAbsolutePath(targetItem.getAbsolutePath() + "/"
+						+ nodeRelpath);
+
+				if (node.hasNode(nodeRelpath)) {
+					targetItem.setItem(node.getNode(nodeRelpath));
+				} else {
+					targetItem.setItem(null);
+				}
+			} else {
+				throw new IllegalArgumentException("The node relative path "
+						+ nodeRelpath
+						+ " has been specified though the target item path "
+						+ targetItem.getAbsolutePath()
+						+ " did not refer to a node!");
+			}
+		}
+
+		if (propertyRelPath != null) {
+			final Node node = targetItem.asNodeOrNull();
+
+			if (node != null) {
+				targetItem.setAbsolutePath(targetItem.getAbsolutePath() + "/"
+						+ propertyRelPath);
+
+				if (node.hasProperty(propertyRelPath)) {
+					targetItem.setItem(node.getProperty(propertyRelPath));
+				} else {
+					targetItem.setItem(null);
+				}
+			} else {
+				throw new IllegalArgumentException(
+						"The property relative path "
+								+ propertyRelPath
+								+ " has been specified though the target item path "
+								+ targetItem.getAbsolutePath()
+								+ " did not refer to a node!");
+			}
+		}
+	}
+
+	private final static class QueryDefinition {
+		private final String language;
+
+		private final String statement;
+
+		public QueryDefinition(final String language, final String statement) {
+			this.language = language;
+			this.statement = statement;
+		}
+
+		public String getLanguage() {
+			return language;
+		}
+
+		public String getStatement() {
+			return statement;
+		}
+
+		@Override
+		public String toString() {
+			return getLanguage() + ": " + getStatement();
+		}
+
+	}
+
+	private static class TargetItem {
+		private Item item;
+
+		private String absolutePath;
+
+		public TargetItem(final Item item, final String absolutePath) {
+			this.item = item;
+			this.absolutePath = absolutePath;
+		}
+
+		public Node asNodeOrNull() {
+			return (item != null && item.isNode()) ? (Node) item : null;
+		}
+
+		public Item getItem() {
+			return item;
+		}
+
+		public void setItem(final Item item) {
+			this.item = item;
+		}
+
+		public String getAbsolutePath() {
+			return absolutePath;
+		}
+
+		public void setAbsolutePath(final String absolutePath) {
+			this.absolutePath = absolutePath;
+		}
 	}
 
 }
