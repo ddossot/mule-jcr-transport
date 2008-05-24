@@ -20,7 +20,7 @@ import org.mule.api.MuleMessage;
 
 /**
  * Defines a handler that extracts the necessary information from a
- * <code>UMOMessage</code> in order to store content in a JCR container while
+ * <code>MuleMessage</code> in order to store content in a JCR container while
  * trying to comply to the constraint of the desired node type.
  * 
  * @author David Dossot (david@dossot.net)

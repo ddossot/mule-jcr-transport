@@ -10,14 +10,9 @@
 
 package org.mule.transport.jcr;
 
-import org.mule.api.MuleContext;
-import org.mule.api.endpoint.EndpointBuilder;
 import org.mule.api.endpoint.InboundEndpoint;
-import org.mule.api.routing.filter.Filter;
 import org.mule.api.service.Service;
 import org.mule.api.transport.MessageReceiver;
-import org.mule.endpoint.EndpointURIEndpointBuilder;
-import org.mule.endpoint.URIBuilder;
 import org.mule.transport.AbstractMessageReceiverTestCase;
 
 import com.mockobjects.dynamic.Mock;
@@ -38,33 +33,7 @@ public class JcrMessageReceiverTestCase extends AbstractMessageReceiverTestCase 
 
 	@Override
 	public InboundEndpoint getEndpoint() throws Exception {
-		return newInboundEndpoint(muleContext, "jcr://path/to/observedNode");
-	}
-
-	static InboundEndpoint newInboundEndpoint(final MuleContext muleContext,
-			final String address) throws Exception {
-		return newInboundEndpoint(muleContext, address, null);
-	}
-
-	static InboundEndpoint newInboundEndpoint(final MuleContext muleContext,
-			final String address, final Filter filter) throws Exception {
-
-		final EndpointBuilder builder = new EndpointURIEndpointBuilder(
-				new URIBuilder(address), muleContext);
-
-		if (filter != null) {
-			builder.setFilter(filter);
-		}
-
-		final JcrConnector jcrConnector = JcrConnectorTestCase
-				.newJcrConnector();
-
-		jcrConnector.setMuleContext(muleContext);
-		jcrConnector.initialise();
-		builder.setConnector(jcrConnector);
-
-		return muleContext.getRegistry().lookupEndpointFactory()
-				.getInboundEndpoint(builder);
+		return JcrEndpointTestCase.newInboundEndpoint(muleContext, "jcr://path/to/observedNode");
 	}
 
 }

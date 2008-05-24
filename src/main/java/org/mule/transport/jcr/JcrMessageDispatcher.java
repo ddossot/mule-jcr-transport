@@ -10,97 +10,216 @@
 
 package org.mule.transport.jcr;
 
+import java.util.Collection;
+
+import javax.jcr.Item;
+import javax.jcr.Node;
+import javax.jcr.Property;
+import javax.jcr.Session;
+
 import org.mule.api.MuleEvent;
 import org.mule.api.MuleMessage;
 import org.mule.api.endpoint.OutboundEndpoint;
+import org.mule.api.routing.filter.Filter;
+import org.mule.api.transport.DispatchException;
 import org.mule.transport.AbstractMessageDispatcher;
+import org.mule.transport.jcr.filters.JcrNodeNameFilter;
+import org.mule.transport.jcr.filters.JcrPropertyNameFilter;
+import org.mule.transport.jcr.handlers.NodeTypeHandler;
+import org.mule.transport.jcr.i18n.JcrMessages;
+import org.mule.util.StringUtils;
 
 /**
- * <code>JcrMessageDispatcher</code> TODO document
+ * A dispatcher for writing to a JCR container.
+ * 
+ * @author David Dossot (david@dossot.net)
  */
 public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 
-	/*
-	 * For general guidelines on writing transports see
-	 * http://mule.mulesource.org/display/MULE/Writing+Transports
-	 */
+	private final JcrConnector jcrConnector;
+
+	private final String nodeNamePatternFilter;
+
+	private final String propertyNamePatternFilter;
+
+	private Session dispatcherSession;
+
+	public Session getSession() {
+		dispatcherSession = jcrConnector.validateSession(dispatcherSession);
+		return dispatcherSession;
+	}
 
 	public JcrMessageDispatcher(final OutboundEndpoint endpoint) {
 		super(endpoint);
 
-		/*
-		 * IMPLEMENTATION NOTE: If you need a reference to the specific
-		 * connector for this dispatcher use:
-		 * 
-		 * JcrConnector cnn = (JcrConnector)endpoint.getConnector();
-		 */
+		jcrConnector = (JcrConnector) endpoint.getConnector();
+
+		final Filter filter = getEndpoint().getFilter();
+
+		nodeNamePatternFilter = JcrUtils.getPropertyNamePatternFilter(filter,
+				JcrNodeNameFilter.class);
+
+		propertyNamePatternFilter = JcrUtils.getPropertyNamePatternFilter(
+				filter, JcrPropertyNameFilter.class);
 	}
 
 	@Override
 	public void doConnect() throws Exception {
-		/*
-		 * IMPLEMENTATION NOTE: Makes a connection to the underlying resource.
-		 * Where connections are managed by the connector this method may do
-		 * nothing
-		 */
-
-		// If a resource for this Dispatcher needs a connection established,
-		// then this is the place to do it
+		dispatcherSession = jcrConnector.newSession();
 	}
 
 	@Override
 	public void doDisconnect() throws Exception {
-		/*
-		 * IMPLEMENTATION NOTE: Disconnect any conections made in the connect
-		 * method
-		 */
-
-		// If the connect method did not do anything then this method
-		// shouldn't do anything either
-	}
-
-	@Override
-	public void doDispatch(final MuleEvent event) throws Exception {
-		/*
-		 * IMPLEMENTATION NOTE: This is invoked when the endpoint is
-		 * asynchronous. It should invoke the transport but not return any
-		 * result. If a result is returned it should be ignorred, but if the
-		 * underlying transport does have a notion of asynchronous processing,
-		 * that should be invoked. This method is executed in a different thread
-		 * to the request thread.
-		 */
-
-		// TODO Write the client code here to dispatch the event over this
-		// transport
-		throw new UnsupportedOperationException("doDispatch");
-	}
-
-	@Override
-	public MuleMessage doSend(final MuleEvent event) throws Exception {
-		/*
-		 * IMPLEMENTATION NOTE: Should send the event payload over the
-		 * transport. If there is a response from the transport it shuold be
-		 * returned from this method. The sendEvent method is called when the
-		 * endpoint is running synchronously and any response returned will
-		 * ultimately be passed back to the callee. This method is executed in
-		 * the same thread as the request thread.
-		 */
-
-		// TODO Write the client code here to send the event over this
-		// transport (or to dispatch the event to a store or repository)
-		// TODO Once the event has been sent, return the result (if any)
-		// wrapped in a MuleMessage object
-		throw new UnsupportedOperationException("doSend");
+		jcrConnector.terminateSession(dispatcherSession);
 	}
 
 	@Override
 	public void doDispose() {
-		// Optional; does not need to be implemented. Delete if not required
+		dispatcherSession = null;
+	}
 
-		/*
-		 * IMPLEMENTATION NOTE: Is called when the Dispatcher is being disposed
-		 * and should clean up any open resources.
-		 */
+	/**
+	 * @see org.mule.transport.jcr.JcrMessageDispatcher#doSend(UMOEvent) doSend
+	 */
+	@Override
+	public void doDispatch(final MuleEvent event) throws Exception {
+		doSend(event);
+	}
+
+	/**
+	 * <p>
+	 * Sends content to the configured JCR endpoint, using optional event
+	 * properties to define the target repository item and the node type name to
+	 * use.
+	 * </p>
+	 * 
+	 * <p>
+	 * Unless the creation of child nodes is forced by an event or endpoint
+	 * property (<code>JcrConnector.JCR_ALWAYS_CREATE_CHILD_NODE</code>),
+	 * the target item where content will be stored will determined the same way
+	 * as explained in the <code>doReceive</code> method.
+	 * </p>
+	 * 
+	 * <p>
+	 * If an existing target item is found and is a node, the appropriate
+	 * {@link org.mule.transport.jcr.handlers.NodeTypeHandler NodeTypeHandler}
+	 * will be used to convert the <code>MuleMessage</code> payload into valid
+	 * JCR content (nodes and properties).
+	 * </p>
+	 * 
+	 * <p>
+	 * If an existing target item is found and is a property, the
+	 * <code>MuleMessage</code> payload will be directly written to it, using
+	 * a simple conversion mechanism. Note that if the payload is a
+	 * <code>Collection</code>, the property will be multi-valued.
+	 * </p>
+	 * 
+	 * <p>
+	 * If no existing target item is found or if the creation of a new node is
+	 * forced (see first paragraph), a new node will be created, under the
+	 * absolute path defined by the endpoint URI, with a content extracted from
+	 * the <code>MuleMessage</code> payload and stored according to the type
+	 * defined in the event or connector property (<code>JcrConnector.JCR_NODE_TYPE_NAME</code>).
+	 * If the endpoint URI points to a property and not a node, an exception
+	 * will be raised.
+	 * </p>
+	 * 
+	 * @see org.mule.transport.jcr.JcrConnector Property names constants
+	 * 
+	 * @return the source <code>MuleMessage</code>.
+	 */
+	@Override
+	public MuleMessage doSend(final MuleEvent event) throws Exception {
+		final boolean alwaysCreate = Boolean.valueOf(
+				(String) event.getProperty(
+						JcrConnector.JCR_ALWAYS_CREATE_CHILD_NODE_PROPERTY,
+						true)).booleanValue();
+
+		final String nodeUUID = JcrUtils.getNodeUUID(event);
+		final String nodeRelPath = JcrUtils.getNodeRelPath(event);
+		final String propertyRelPath = JcrUtils.getPropertyRelPath(event);
+		final Session session = getSession();
+
+		Item targetItem = alwaysCreate ? null : JcrUtils.getTargetItem(session,
+				endpoint, event, true);
+
+		if (targetItem != null) {
+			// write payload to node or property
+			final Object payload = event.transformMessage();
+
+			if (logger.isDebugEnabled()) {
+				logger.debug("Writing '" + payload + "' to item: "
+						+ targetItem.getPath());
+			}
+
+			if (targetItem.isNode()) {
+				final Node targetNode = (Node) targetItem;
+
+				jcrConnector.getNodeTypeHandlerManager().getNodeTypeHandler(
+						targetNode).updateContent(session, targetNode,
+						event.getMessage());
+			} else {
+				final Property targetProperty = (Property) targetItem;
+
+				if ((payload instanceof Collection)) {
+					targetProperty.setValue(JcrUtils.newPropertyValues(session,
+							(Collection) payload));
+				} else {
+					targetProperty.setValue(JcrUtils.newPropertyValue(session,
+							payload));
+				}
+			}
+
+		} else {
+			targetItem = JcrUtils
+					.getTargetItem(session, endpoint, event, false);
+
+			if (targetItem == null) {
+				throw new DispatchException(JcrMessages
+						.noNodeFor("Endpoint URI: "
+								+ endpoint.getEndpointURI().toString()
+								+ " ; NodeUUID: " + nodeUUID), event
+						.getMessage(), endpoint);
+
+			} else if (targetItem.isNode()) {
+				final Node targetParentNode = (Node) targetItem;
+
+				// create the target node, based on its type and relpath
+				final String nodeTypeName = JcrUtils.getNodeTypeName(event);
+
+				NodeTypeHandler nodeTypeHandler;
+
+				if (StringUtils.isNotBlank(nodeTypeName)) {
+					nodeTypeHandler = jcrConnector.getNodeTypeHandlerManager()
+							.getNodeTypeHandler(nodeTypeName);
+				} else {
+					nodeTypeHandler = jcrConnector.getNodeTypeHandlerManager()
+							.getChildNodeTypeHandler(targetParentNode);
+				}
+
+				if (logger.isDebugEnabled()) {
+					logger.debug("Selected node type handler: "
+							+ nodeTypeHandler + " for node: "
+							+ targetParentNode.getPath());
+				}
+
+				nodeTypeHandler.createNode(session, targetParentNode,
+						nodeRelPath, event.getMessage());
+			} else {
+				throw new IllegalArgumentException(
+						"The provided nodeRelPath ("
+								+ nodeRelPath
+								+ ") and propertyRelPath ("
+								+ propertyRelPath
+								+ ") point to a missing item, hence the connector tries to create a new node "
+								+ "but the endpoint URI, used as a parent node, refers to a JCR property.");
+			}
+
+		}
+
+		session.save();
+
+		return event.getMessage();
 	}
 
 }

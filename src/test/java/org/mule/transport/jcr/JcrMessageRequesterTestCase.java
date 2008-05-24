@@ -10,11 +10,8 @@
 
 package org.mule.transport.jcr;
 
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.Map;
-
-import javax.jcr.Node;
 
 import org.mule.RequestContext;
 import org.mule.api.MuleEvent;
@@ -23,7 +20,6 @@ import org.mule.api.endpoint.InboundEndpoint;
 import org.mule.api.routing.filter.Filter;
 import org.mule.routing.filters.logic.AndFilter;
 import org.mule.routing.filters.logic.NotFilter;
-import org.mule.tck.AbstractMuleTestCase;
 import org.mule.transport.NullPayload;
 import org.mule.transport.jcr.filters.JcrNodeNameFilter;
 import org.mule.transport.jcr.filters.JcrPropertyNameFilter;
@@ -31,44 +27,14 @@ import org.mule.transport.jcr.filters.JcrPropertyNameFilter;
 /**
  * @author David Dossot (david@dossot.net)
  */
-public class JcrMessageRequesterTestCase extends AbstractMuleTestCase {
-
-	private JcrConnector connector;
+public class JcrMessageRequesterTestCase extends AbstractJcrMessagerTestCase {
 
 	private JcrMessageRequester messageRequester;
-
-	private String uuid;
 
 	@Override
 	protected void doSetUp() throws Exception {
 		super.doSetUp();
-
 		newRequesterForTestEndpoint(null);
-
-		// create some extra test nodes and properties
-		RepositoryTestSupport.resetRepository();
-
-		final Node testDataNode = RepositoryTestSupport.getTestDataNode();
-		testDataNode.setProperty("pi", Math.PI);
-		testDataNode.setProperty("stream", new ByteArrayInputStream("test"
-				.getBytes()));
-		testDataNode.setProperty("text", "EHLO SPAM");
-		testDataNode.addMixin("mix:referenceable");
-		uuid = testDataNode.getUUID();
-
-		final Node target = testDataNode.addNode("noderelpath-target");
-		target.setProperty("proprelpath-target", 123L);
-
-		RepositoryTestSupport.getSession().save();
-	}
-
-	@Override
-	protected void doTearDown() throws Exception {
-		RequestContext.setEvent(null);
-
-		connector.disconnect();
-		connector.dispose();
-		super.doTearDown();
 	}
 
 	private void newRequesterForTestEndpoint(final Filter filter)
@@ -81,7 +47,7 @@ public class JcrMessageRequesterTestCase extends AbstractMuleTestCase {
 	private void newRequesterForSpecificEndpoint(final String uri,
 			final Filter filter) throws Exception {
 
-		final InboundEndpoint endpoint = JcrMessageReceiverTestCase
+		final InboundEndpoint endpoint = JcrEndpointTestCase
 				.newInboundEndpoint(muleContext, uri, filter);
 
 		connector = (JcrConnector) endpoint.getConnector();

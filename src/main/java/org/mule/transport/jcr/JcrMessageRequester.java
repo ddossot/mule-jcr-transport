@@ -78,7 +78,7 @@ public class JcrMessageRequester extends AbstractMessageRequester {
 	 * <p>
 	 * Receives JCR content from the configured endpoint, using optional event
 	 * properties to define the target repository item. Unless an exception is
-	 * thrown, a <code>UMOMessage</code> will always be retrieved, possibly
+	 * thrown, a <code>MuleMessage</code> will always be retrieved, possibly
 	 * with a null payload if no content was acessible.
 	 * </p>
 	 * 
@@ -95,7 +95,7 @@ public class JcrMessageRequester extends AbstractMessageRequester {
 	 * is done, the endpoint URI will be ignored. A third option is to define a
 	 * query (with queryStatement and queryLanguage) that will be used to select
 	 * the node. Then, if any optional relative paths have been specified as
-	 * event properties for the current <code>UMOEvent</code> (<code>JcrConnector.JCR_NODE_RELPATH_PROPERTY</code>
+	 * event properties for the current <code>MuleEvent</code> (<code>JcrConnector.JCR_NODE_RELPATH_PROPERTY</code>
 	 * and/or <code>JcrConnector.JCR_PROPERTY_REL_PATH_PROPERTY</code>), they
 	 * will be used to navigate to the actual item to use.
 	 * </p>
@@ -107,12 +107,12 @@ public class JcrMessageRequester extends AbstractMessageRequester {
 	 * extracted. If more than one node is selected, the first one will be
 	 * arbitrarily used as the target item and a warning will be issued. If no
 	 * item can be selected, a null payload will be used for the returned
-	 * <code>UMOMessage</code>.
+	 * <code>MuleMessage</code>.
 	 * </p>
 	 * 
 	 * <p>
 	 * The final step is the content extraction that will be used as the
-	 * <code>UMOMessage</code> payload. For this, the following rules apply,
+	 * <code>MuleMessage</code> payload. For this, the following rules apply,
 	 * depending on the target item:
 	 * <ul>
 	 * <li>For a single-valued property, the payload will be the property

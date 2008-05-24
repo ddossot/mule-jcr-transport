@@ -18,17 +18,16 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.Value;
 
-import junit.framework.TestCase;
-
 import org.mule.DefaultMuleMessage;
 import org.mule.api.MuleMessage;
+import org.mule.tck.AbstractMuleTestCase;
 import org.mule.transport.jcr.RepositoryTestSupport;
 import org.mule.util.StringUtils;
 
 /**
  * @author David Dossot (david@dossot.net)
  */
-public class NodeTypeHandlersTest extends TestCase {
+public class NodeTypeHandlersTest extends AbstractMuleTestCase {
 	private static final String ORIGINAL_RESOURCE_NODE_CONTENT = "foo-resource";
 
 	private static final String MODIFIED_RESOURCE_NODE_CONTENT = "resource-bar";

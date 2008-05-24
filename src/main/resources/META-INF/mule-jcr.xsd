@@ -7,10 +7,12 @@
             attributeFormDefault="unqualified">
 
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+
     <xsd:import namespace="http://www.springframework.org/schema/beans"
                 schemaLocation="http://www.springframework.org/schema/beans"/>
 
-    <xsd:import namespace="http://www.mulesource.org/schema/mule/core/2.0"/>
+    <xsd:import namespace="http://www.mulesource.org/schema/mule/core/2.0" 
+                schemaLocation="http://www.mulesource.org/schema/mule/core/2.0/mule.xsd" />
 
     <xsd:element name="connector" type="jcrConnectorType" substitutionGroup="mule:abstract-connector">
         <xsd:annotation>
@@ -21,7 +23,7 @@
     </xsd:element>
 
 
-    <xsd:complexType name="test2ConnectorType">
+    <xsd:complexType name="jcrConnectorType">
         <xsd:complexContent>
             <xsd:extension base="mule:connectorType">
             <!--

@@ -35,7 +35,7 @@ public class JcrEndpointURIBuilder extends AbstractEndpointURIBuilder {
 	 * 
 	 * @throws EndpointException
 	 *             thrown in case the path can not be transformed into a valid
-	 *             UMOEndpointURI.
+	 *             EndpointURI.
 	 */
 	public static EndpointURI newJcrEndpointURI(final String path)
 			throws EndpointException {

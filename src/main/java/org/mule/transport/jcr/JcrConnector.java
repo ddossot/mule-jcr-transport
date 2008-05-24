@@ -33,7 +33,6 @@ import org.mule.api.MuleEvent;
 import org.mule.api.MuleException;
 import org.mule.api.MuleMessage;
 import org.mule.api.MuleSession;
-import org.mule.api.endpoint.ImmutableEndpoint;
 import org.mule.api.endpoint.OutboundEndpoint;
 import org.mule.api.lifecycle.InitialisationException;
 import org.mule.api.transport.ConnectorException;
@@ -166,7 +165,8 @@ public final class JcrConnector extends AbstractConnector {
 	 * Will get the output stream for this type of transport. Typically this
 	 * will be called only when Streaming is being used on an outbound endpoint.
 	 */
-	public OutputStream getOutputStream(final ImmutableEndpoint endpoint,
+	@Override
+	public OutputStream getOutputStream(final OutboundEndpoint endpoint,
 			final MuleMessage message) throws MuleException {
 
 		if (!(endpoint instanceof OutboundEndpoint)) {
@@ -202,10 +202,9 @@ public final class JcrConnector extends AbstractConnector {
 		final Thread thread = new Thread(new Runnable() {
 			public void run() {
 				try {
-					send((OutboundEndpoint) endpoint,
-							new DefaultMuleEvent(new DefaultMuleMessage(
-									pipedInputStream, properties), endpoint,
-									session, true));
+					send(endpoint, new DefaultMuleEvent(new DefaultMuleMessage(
+							pipedInputStream, properties), endpoint, session,
+							true));
 
 				} catch (DispatchException de) {
 					logger.error("Can not send streaming message!", de);

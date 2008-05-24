@@ -479,7 +479,7 @@ public class JcrUtils {
 		return pattern;
 	}
 
-	private static String getNodeUUID(final MuleEvent event) {
+	static String getNodeUUID(final MuleEvent event) {
 		return event != null ? (String) JcrUtils.getParsableEventProperty(
 				event, JcrConnector.JCR_NODE_UUID_PROPERTY) : null;
 	}
@@ -491,12 +491,12 @@ public class JcrUtils {
 						JcrConnector.JCR_QUERY_STATEMENT_PROPERTY)) : null;
 	}
 
-	private static String getPropertyRelPath(final MuleEvent event) {
+	static String getPropertyRelPath(final MuleEvent event) {
 		return event != null ? JcrUtils.getParsableEventProperty(event,
 				JcrConnector.JCR_PROPERTY_REL_PATH_PROPERTY) : null;
 	}
 
-	private static String getNodeRelPath(final MuleEvent event) {
+	static String getNodeRelPath(final MuleEvent event) {
 		return event != null ? JcrUtils.getParsableEventProperty(event,
 				JcrConnector.JCR_NODE_RELPATH_PROPERTY) : null;
 	}
@@ -762,6 +762,36 @@ public class JcrUtils {
 								+ " did not refer to a node!");
 			}
 		}
+	}
+
+	static String getNodeTypeName(final MuleEvent event) {
+		String nodeTypeName = null;
+
+		final Object nodeTypeNameProperty = event.getProperty(
+				JcrConnector.JCR_NODE_TYPE_NAME_PROPERTY, true);
+
+		if (nodeTypeNameProperty instanceof String) {
+			nodeTypeName = (String) nodeTypeNameProperty;
+		} else if (nodeTypeNameProperty instanceof List) {
+			final List nodeTypeNameProperties = (List) nodeTypeNameProperty;
+
+			if (nodeTypeNameProperties.size() > 0) {
+				nodeTypeName = (String) nodeTypeNameProperties.get(0);
+			}
+
+			if (nodeTypeNameProperties.size() > 1) {
+				LOG.warn("Message property: "
+						+ JcrConnector.JCR_NODE_TYPE_NAME_PROPERTY
+						+ " has multiple values, the connector will use: "
+						+ nodeTypeName);
+			}
+		} else {
+			LOG.warn("Message property: "
+					+ JcrConnector.JCR_NODE_TYPE_NAME_PROPERTY
+					+ " has an unusable value: " + nodeTypeNameProperty);
+		}
+
+		return nodeTypeName;
 	}
 
 	private final static class QueryDefinition {

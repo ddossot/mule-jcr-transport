@@ -96,7 +96,7 @@ final class NtResourceHandler extends AbstractNodeTypeHandler {
 						.getPayloadAsBytes());
 			} catch (final Exception e) {
 				throw new RepositoryException(
-						"Can not extract binary content from UMOMessage: "
+						"Can not extract binary content from MuleMessage: "
 								+ message, e);
 			}
 		}

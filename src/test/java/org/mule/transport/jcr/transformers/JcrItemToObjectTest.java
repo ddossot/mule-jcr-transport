@@ -21,6 +21,19 @@ import org.mule.transport.jcr.RepositoryTestSupport;
 public class JcrItemToObjectTest extends AbstractTransformerTestCase {
 
 	@Override
+	protected void doSetUp() throws Exception {
+		super.doSetUp();
+
+		RepositoryTestSupport.resetRepository();
+
+		try {
+			RepositoryTestSupport.getSession().save();
+		} catch (final Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@Override
 	public Object getResultData() {
 		try {
 			return JcrUtils.getItemPayload(RepositoryTestSupport
@@ -37,14 +50,6 @@ public class JcrItemToObjectTest extends AbstractTransformerTestCase {
 
 	@Override
 	public Object getTestData() {
-		RepositoryTestSupport.resetRepository();
-
-		try {
-			RepositoryTestSupport.getSession().save();
-		} catch (final Exception e) {
-			throw new RuntimeException(e);
-		}
-
 		return RepositoryTestSupport.getTestDataNode();
 	}
 
