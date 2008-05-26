@@ -1,13 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mule xmlns="http://www.mulesource.org/schema/mule/core/2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:jcr="http://www.mulesource.org/schema/mule/jcr/2.0"
+	xmlns:jcr="http://www.mulesource.org/schema/mule/jcr/2.0" xmlns:spring="http://www.springframework.org/schema/beans"
 	xsi:schemaLocation="
        http://www.mulesource.org/schema/mule/core/2.0 http://www.mulesource.org/schema/mule/core/2.0/mule.xsd
-       http://www.mulesource.org/schema/mule/jcr/2.0 http://www.mulesource.org/schema/mule/jcr/2.0/mule-jcr.xsd">
+       http://www.mulesource.org/schema/mule/jcr/2.0 http://www.mulesource.org/schema/mule/jcr/2.0/mule-jcr.xsd
+       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd">
 
-	<!-- TODO Add connector specific properties here and then assert that 
-		they have been set in org.mule.transport.jcr.JcrNamespaceHandlerTestCase
-		<jcr:connector name="jcrConnector">
-		</jcr:connector>
-	-->
+	<spring:bean name="jcrRepository" class="org.apache.jackrabbit.core.TransientRepository" destroy-method="shutdown" />
+
+	<jcr:connector name="jcrConnectorMinimumConfiguration" repository-ref="jcrRepository" />
+
+	<jcr:connector name="jcrConnectorFullConfiguration" repository-ref="jcrRepository" username="admin" password="admin"
+		workspaceName="test" contentPayloadType="NOBINARY" eventTypes="31" deep="false" noLocal="true">
+		<jcr:uuid value="foo" />
+		<jcr:uuid value="bar" />
+		<jcr:nodeType name="oof"/>
+		<jcr:nodeType name="rab"/>
+	</jcr:connector>
 </mule>

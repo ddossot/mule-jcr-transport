@@ -59,9 +59,9 @@ public class JcrMessageReceiverOverridesTestCase extends
 
 		assertEquals(Boolean.TRUE, messageReceiver.isDeep());
 
-		assertEquals(UUID_LIST, messageReceiver.getUuid());
+		assertEquals(UUID_LIST, messageReceiver.getUuids());
 
-		assertEquals(NODE_TYPE_NAME, messageReceiver.getNodeTypeName());
+		assertEquals(NODE_TYPE_NAME, messageReceiver.getNodeTypeNames());
 
 		assertEquals(Boolean.FALSE, messageReceiver.isNoLocal());
 	}

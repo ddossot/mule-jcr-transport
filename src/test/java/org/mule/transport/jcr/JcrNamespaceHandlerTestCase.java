@@ -9,6 +9,8 @@
  */
 package org.mule.transport.jcr;
 
+import java.util.Arrays;
+
 import org.mule.tck.FunctionalTestCase;
 
 /**
@@ -17,22 +19,51 @@ import org.mule.tck.FunctionalTestCase;
 public class JcrNamespaceHandlerTestCase extends FunctionalTestCase {
 	@Override
 	protected String getConfigResources() {
-		// TODO You'll need to edit this file to configure the properties
-		// specific to your transport
 		return "jcr-namespace-config.xml";
 	}
 
-	public void testJcrConfig() throws Exception {
+	public void testJcrConnectorMinimumConfiguration() throws Exception {
 		final JcrConnector c = (JcrConnector) muleContext.getRegistry()
-				.lookupConnector("jcrConnector");
+				.lookupConnector("jcrConnectorMinimumConfiguration");
 
-		// TODO reactivate
+		checkCoreProperties(c);
 
-		// assertNotNull(c);
-		// assertTrue(c.isConnected());
-		// assertTrue(c.isStarted());
+		assertNull(c.getUsername());
+		assertNull(c.getPassword());
+		assertNull(c.getWorkspaceName());
+		assertEquals("NONE", c.getContentPayloadType());
+		assertEquals(0, c.getEventTypes().intValue());
+		assertTrue(c.isDeep());
+		assertFalse(c.isNoLocal());
 
-		// TODO Assert specific properties are configured correctly
-
+		assertNull(c.getNodeTypeNames());
+		assertNull(c.getUuids());
 	}
+
+	public void testJcrConnectorFullConfiguration() throws Exception {
+		final JcrConnector c = (JcrConnector) muleContext.getRegistry()
+				.lookupConnector("jcrConnectorFullConfiguration");
+
+		checkCoreProperties(c);
+
+		assertEquals("admin", c.getUsername());
+		assertEquals("admin", c.getPassword());
+		assertEquals("test", c.getWorkspaceName());
+		assertEquals("NOBINARY", c.getContentPayloadType());
+		assertEquals(31, c.getEventTypes().intValue());
+		assertFalse(c.isDeep());
+		assertTrue(c.isNoLocal());
+
+		assertEquals(Arrays.asList(new String[] { "oof", "rab" }), c
+				.getNodeTypeNames());
+
+		assertEquals(Arrays.asList(new String[] { "foo", "bar" }), c.getUuids());
+	}
+
+	private void checkCoreProperties(final JcrConnector c) {
+		assertNotNull(c);
+		assertTrue(c.isConnected());
+		assertTrue(c.isStarted());
+	}
+
 }

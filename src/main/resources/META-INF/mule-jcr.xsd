@@ -1,61 +1,165 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<xsd:schema xmlns="http://www.mulesource.org/schema/mule/jcr/2.0"
-            xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-            xmlns:mule="http://www.mulesource.org/schema/mule/core/2.0"
-            targetNamespace="http://www.mulesource.org/schema/mule/jcr/2.0"
-            elementFormDefault="qualified"
-            attributeFormDefault="unqualified">
+<xsd:schema xmlns="http://www.mulesource.org/schema/mule/jcr/2.0" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:mule="http://www.mulesource.org/schema/mule/core/2.0" targetNamespace="http://www.mulesource.org/schema/mule/jcr/2.0"
+	elementFormDefault="qualified" attributeFormDefault="unqualified">
 
-    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+	<xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
 
-    <xsd:import namespace="http://www.springframework.org/schema/beans"
-                schemaLocation="http://www.springframework.org/schema/beans"/>
+	<xsd:import namespace="http://www.springframework.org/schema/beans" schemaLocation="http://www.springframework.org/schema/beans" />
 
-    <xsd:import namespace="http://www.mulesource.org/schema/mule/core/2.0" 
-                schemaLocation="http://www.mulesource.org/schema/mule/core/2.0/mule.xsd" />
+	<xsd:import namespace="http://www.mulesource.org/schema/mule/core/2.0"
+		schemaLocation="http://www.mulesource.org/schema/mule/core/2.0/mule.xsd" />
 
-    <xsd:element name="connector" type="jcrConnectorType" substitutionGroup="mule:abstract-connector">
-        <xsd:annotation>
-            <xsd:documentation>
-                Provides connectivity to JCR repositories.
-            </xsd:documentation>
-        </xsd:annotation>
-    </xsd:element>
+	<xsd:element name="connector" type="jcrConnectorType" substitutionGroup="mule:abstract-connector">
+		<xsd:annotation>
+			<xsd:documentation>Provides connectivity to JCR repositories.</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
 
+	<xsd:complexType name="uuid">
+		<xsd:attribute name="value" type="xsd:string" />
+	</xsd:complexType>
 
-    <xsd:complexType name="jcrConnectorType">
-        <xsd:complexContent>
-            <xsd:extension base="mule:connectorType">
-            <!--
+	<xsd:complexType name="nodeTypeName">
+		<xsd:attribute name="name" type="xsd:string" />
+	</xsd:complexType>
 
-            TODO for simple property types you can just add xsd:attribute elements here
-            For complex properties with multiple values you can add custom elements and register
-            a definition parser with jcrNamespaceHandler.
+	<!-- TODO add support for specific in/out endpoint elements -->
+	<xsd:complexType name="jcrConnectorType">
+		<xsd:complexContent>
+			<xsd:extension base="mule:connectorType">
 
-            For example -
+				<xsd:sequence>
+					<xsd:element name="uuid" type="uuid" minOccurs="0" maxOccurs="unbounded">
+						<xsd:annotation>
+							<xsd:documentation>
+								Only events whose associated node has one of the UUIDs in this list will be received.
+							</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
 
-            <xsd:attribute name="swizzleSize" type="mule:substitutableInt">
-                <xsd:annotation>
-                    <xsd:documentation>
-                        Sets the amount of swizzle available for your twizzle
-                    </xsd:documentation>
-                </xsd:annotation>
-            </xsd:attribute>
+					<xsd:element name="nodeType" type="nodeTypeName" minOccurs="0" maxOccurs="unbounded">
+						<xsd:annotation>
+							<xsd:documentation>
+								Defines the node type that this connector will listen to or that the endpoint will create.
+							</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+				</xsd:sequence>
 
-            Note the type of the attribute is mule:substitutableInt.  For non-string simple
-            types you should use mule:substitutableBoolean, mule:substitutableLong, etc since
-            these types allow property placeholders to be used instead of the actual value.
-            The property can then be set according to the properties available to the MUle instance. i.e
+				<xsd:attribute name="repository-ref" type="xsd:NMTOKEN" use="required">
+					<xsd:annotation>
+						<xsd:documentation>A reference to the javax.jcr.Repository to which this connector will listen.</xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
 
-            <jcr:connector name="smallTwizzler" swizzlerSize="${small.swizzle}"/>
+				<xsd:attribute name="username" type="xsd:string">
+					<xsd:annotation>
+						<xsd:documentation>
+							If the repository requires authentication, the username to use when opening a session.
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
 
-            where small.swizzle is set in a properties files or system property.  This makes it easy
-            to use the same config file for differnet environments such as Developement, UAT and Production
+				<xsd:attribute name="password" type="xsd:string">
+					<xsd:annotation>
+						<xsd:documentation>
+							If the repository requires authentication, the password to use when opening a session.
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
 
-            -->
+				<xsd:attribute name="workspaceName" type="xsd:string">
+					<xsd:annotation>
+						<xsd:documentation>
+							The name of the workspace to use for the session. If not provided, a default workspace is automatically selected
+							by the repository implementation.
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
 
-            </xsd:extension>
-        </xsd:complexContent>
-    </xsd:complexType>
+				<xsd:attributeGroup ref="jcrSharedAttributes" />
+
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+
+	<!-- 
+		TODO endpoint attributes
+		
+		add one named "path"
+		
+		<xsd:attribute name="nodeRelPath" type="xsd:string">
+		<xsd:annotation>
+		<xsd:documentation>
+		Defines a node relative path from the one defined in the endpoint or nodeUUID.
+		</xsd:documentation>
+		</xsd:annotation>
+		</xsd:attribute>
+		
+		<xsd:attribute name="propertyRelPath" type="xsd:string">
+		<xsd:annotation>
+		<xsd:documentation>
+		Defines a property relative path from the one defined in the endpoint or nodeUUID, combined with an optional
+		nodeRelPath.
+		</xsd:documentation>
+		</xsd:annotation>
+		</xsd:attribute>
+		
+		<xsd:attribute name="nodeUUID" type="xsd:string">
+		<xsd:annotation>
+		<xsd:documentation>Defines a single node by its UUID.</xsd:documentation>
+		</xsd:annotation>
+		</xsd:attribute>
+		
+		<xsd:attribute name="queryStatement" type="xsd:string">
+		<xsd:annotation>
+		<xsd:documentation>Defines a query that will be executed to retrieve a single node.</xsd:documentation>
+		</xsd:annotation>
+		</xsd:attribute>
+		
+		<xsd:attribute name="queryLanguage" type="xsd:string">
+		<xsd:annotation>
+		<xsd:documentation>Specifies the language used in the query statement (for example 'xpath' or 'sql').</xsd:documentation>
+		</xsd:annotation>
+		</xsd:attribute>
+	-->
+
+	<xsd:attributeGroup name="jcrSharedAttributes">
+
+		<xsd:attribute name="contentPayloadType" default="NONE">
+			<xsd:simpleType>
+				<xsd:restriction base="xsd:NMTOKEN">
+					<xsd:enumeration value="NONE" />
+					<xsd:enumeration value="NOBINARY" />
+					<xsd:enumeration value="FULL" />
+				</xsd:restriction>
+			</xsd:simpleType>
+		</xsd:attribute>
+
+		<xsd:attribute name="eventTypes" type="mule:substitutableInt" default="0">
+			<xsd:annotation>
+				<xsd:documentation>
+					A combination of one or more event type constants encoded as a bitmask, as defined by the JCR API.
+				</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+
+		<xsd:attribute name="deep" type="mule:substitutableBoolean" default="true">
+			<xsd:annotation>
+				<xsd:documentation>
+					Define if events in the subtree of the path defined on the endpoint will also be received.
+				</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+
+		<xsd:attribute name="noLocal" type="mule:substitutableBoolean" default="false">
+			<xsd:annotation>
+				<xsd:documentation>
+					If noLocal is true, then events generated by the session through which the listener was registered are ignored.
+				</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:attributeGroup>
 
 </xsd:schema>

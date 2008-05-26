@@ -66,9 +66,9 @@ public final class JcrConnector extends AbstractConnector {
 
 	private Boolean deep;
 
-	private List uuid;
+	private List uuids;
 
-	private List nodeTypeName;
+	private List nodeTypeNames;
 
 	private Boolean noLocal;
 
@@ -309,8 +309,8 @@ public final class JcrConnector extends AbstractConnector {
 		setEventTypes(new Integer(0));
 		setDeep(Boolean.FALSE);
 		setNoLocal(Boolean.TRUE);
-		setUuid(null);
-		setNodeTypeName(null);
+		setUuids(null);
+		setNodeTypeNames(null);
 	}
 
 	public String getProtocol() {
@@ -440,18 +440,18 @@ public final class JcrConnector extends AbstractConnector {
 	}
 
 	/**
-	 * @return the nodeTypeName
+	 * @return the nodeTypeNames
 	 */
-	public List getNodeTypeName() {
-		return nodeTypeName;
+	public List getNodeTypeNames() {
+		return nodeTypeNames;
 	}
 
 	/**
-	 * @param nodeTypeName
-	 *            the nodeTypeName to set
+	 * @param nodeTypeNames
+	 *            the nodeTypeNames to set
 	 */
-	public void setNodeTypeName(final List nodeTypeName) {
-		this.nodeTypeName = nodeTypeName;
+	public void setNodeTypeNames(final List nodeTypeNames) {
+		this.nodeTypeNames = nodeTypeNames;
 	}
 
 	/**
@@ -472,16 +472,16 @@ public final class JcrConnector extends AbstractConnector {
 	/**
 	 * @return the uuid
 	 */
-	public List getUuid() {
-		return uuid;
+	public List getUuids() {
+		return uuids;
 	}
 
 	/**
 	 * @param uuid
 	 *            the uuid to set
 	 */
-	public void setUuid(final List uuid) {
-		this.uuid = uuid;
+	public void setUuids(final List uuids) {
+		this.uuids = uuids;
 	}
 
 	/**

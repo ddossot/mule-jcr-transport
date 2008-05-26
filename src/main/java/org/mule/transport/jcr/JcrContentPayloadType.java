@@ -10,12 +10,15 @@
 
 package org.mule.transport.jcr;
 
+import org.mule.util.StringUtils;
+
 /**
  * A typesafe enum that represents the supported content paylod types for a JCR
  * event.
  * 
  * @author David Dossot (david@dossot.net)
  */
+// TODO use an Enum
 public final class JcrContentPayloadType {
 
 	/**
@@ -48,15 +51,18 @@ public final class JcrContentPayloadType {
 		this.contentPayloadType = contentPayloadType;
 	}
 
+	@Override
 	public String toString() {
 		return contentPayloadType;
 	}
 
+	@Override
 	public int hashCode() {
 		return contentPayloadType.hashCode();
 	}
 
-	public boolean equals(Object obj) {
+	@Override
+	public boolean equals(final Object obj) {
 		if (obj == null)
 			return false;
 
@@ -68,20 +74,18 @@ public final class JcrContentPayloadType {
 		}
 	}
 
-	public static JcrContentPayloadType fromString(String type)
+	public static JcrContentPayloadType fromString(final String type)
 			throws IllegalArgumentException {
 
-		if ((type == null) || (type.trim().equals(""))) {
+		if (StringUtils.isBlank(type)) {
 			return NONE;
 		}
 
-		if (!type.equals("")) {
-			for (int i = 0; i < ALL_TYPES.length; i++) {
-				JcrContentPayloadType contentPayload = ALL_TYPES[i];
+		for (int i = 0; i < ALL_TYPES.length; i++) {
+			final JcrContentPayloadType contentPayload = ALL_TYPES[i];
 
-				if (contentPayload.contentPayloadType.equalsIgnoreCase(type)) {
-					return contentPayload;
-				}
+			if (contentPayload.contentPayloadType.equalsIgnoreCase(type)) {
+				return contentPayload;
 			}
 		}
 

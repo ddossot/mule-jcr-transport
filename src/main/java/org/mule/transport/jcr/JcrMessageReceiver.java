@@ -54,9 +54,9 @@ public final class JcrMessageReceiver extends AbstractMessageReceiver implements
 
 	private final Boolean deep;
 
-	private final List uuid;
+	private final List uuids;
 
-	private final List nodeTypeName;
+	private final List nodeTypeNames;
 
 	private final Boolean noLocal;
 
@@ -105,18 +105,18 @@ public final class JcrMessageReceiver extends AbstractMessageReceiver implements
 		final Object uuidProperty = endpoint.getProperty("uuid");
 
 		if (uuidProperty == null) {
-			uuid = jcrConnector.getUuid();
+			uuids = jcrConnector.getUuids();
 		} else {
-			uuid = (List) uuidProperty;
+			uuids = (List) uuidProperty;
 		}
 
 		final Object nodeTypeNameProperty = endpoint
 				.getProperty("nodeTypeName");
 
 		if (nodeTypeNameProperty == null) {
-			nodeTypeName = jcrConnector.getNodeTypeName();
+			nodeTypeNames = jcrConnector.getNodeTypeNames();
 		} else {
-			nodeTypeName = (List) nodeTypeNameProperty;
+			nodeTypeNames = (List) nodeTypeNameProperty;
 		}
 
 		noLocal = (Boolean) new BooleanConverter(jcrConnector.isNoLocal())
@@ -172,17 +172,17 @@ public final class JcrMessageReceiver extends AbstractMessageReceiver implements
 	public void doStart() throws MuleException {
 		try {
 			observationManager.addEventListener(this, eventTypes.intValue(),
-					absPath, deep.booleanValue(), uuid == null ? null
-							: (String[]) uuid.toArray(EMPTY_STRING_ARRAY),
-					nodeTypeName == null ? null : (String[]) nodeTypeName
+					absPath, deep.booleanValue(), uuids == null ? null
+							: (String[]) uuids.toArray(EMPTY_STRING_ARRAY),
+					nodeTypeNames == null ? null : (String[]) nodeTypeNames
 							.toArray(EMPTY_STRING_ARRAY), noLocal
 							.booleanValue());
 
 			if (logger.isInfoEnabled()) {
 				logger.info("Observing JCR for events of types: " + eventTypes
 						+ " - at: " + absPath + " - deep: " + deep
-						+ " - uuid: " + uuid + " - nodeTypeName: "
-						+ nodeTypeName + " - noLocal: " + noLocal
+						+ " - uuid: " + uuids + " - nodeTypeName: "
+						+ nodeTypeNames + " - noLocal: " + noLocal
 						+ " - contentPayloadType: " + contentPayloadType);
 			}
 
@@ -260,8 +260,8 @@ public final class JcrMessageReceiver extends AbstractMessageReceiver implements
 	/**
 	 * @return the nodeTypeName
 	 */
-	List getNodeTypeName() {
-		return nodeTypeName;
+	List getNodeTypeNames() {
+		return nodeTypeNames;
 	}
 
 	/**
@@ -274,8 +274,8 @@ public final class JcrMessageReceiver extends AbstractMessageReceiver implements
 	/**
 	 * @return the uuid
 	 */
-	List getUuid() {
-		return uuid;
+	List getUuids() {
+		return uuids;
 	}
 
 }
