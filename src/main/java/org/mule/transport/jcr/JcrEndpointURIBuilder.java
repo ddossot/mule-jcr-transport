@@ -21,7 +21,7 @@ import org.mule.endpoint.MuleEndpointURI;
 import org.mule.util.StringUtils;
 
 /**
- * <code>JcrEndpointBuilder</code> is a builder that is specific to the JCR
+ * <code>JcrEndpointURIBuilder</code> is a builder that is specific to the JCR
  * transport.
  */
 public class JcrEndpointURIBuilder extends AbstractEndpointURIBuilder {
