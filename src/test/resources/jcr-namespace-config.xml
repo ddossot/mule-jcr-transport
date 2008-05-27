@@ -14,7 +14,9 @@
 		workspaceName="test" contentPayloadType="NOBINARY" eventTypes="31" deep="false" noLocal="true">
 		<jcr:uuid value="foo" />
 		<jcr:uuid value="bar" />
-		<jcr:nodeType name="oof"/>
-		<jcr:nodeType name="rab"/>
+		<jcr:nodeType name="oof" />
+		<jcr:nodeType name="rab" />
 	</jcr:connector>
+
+	<jcr:endpoint name="jcrEndpointMinimumConfiguration" path="/min" connector-ref="jcrConnectorMinimumConfiguration" />
 </mule>

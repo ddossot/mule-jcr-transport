@@ -11,6 +11,8 @@ package org.mule.transport.jcr;
 
 import java.util.Arrays;
 
+import org.mule.api.endpoint.EndpointBuilder;
+import org.mule.api.endpoint.InboundEndpoint;
 import org.mule.tck.FunctionalTestCase;
 
 /**
@@ -26,7 +28,7 @@ public class JcrNamespaceHandlerTestCase extends FunctionalTestCase {
 		final JcrConnector c = (JcrConnector) muleContext.getRegistry()
 				.lookupConnector("jcrConnectorMinimumConfiguration");
 
-		checkCoreProperties(c);
+		checkCoreConnectorProperties(c);
 
 		assertNull(c.getUsername());
 		assertNull(c.getPassword());
@@ -44,7 +46,7 @@ public class JcrNamespaceHandlerTestCase extends FunctionalTestCase {
 		final JcrConnector c = (JcrConnector) muleContext.getRegistry()
 				.lookupConnector("jcrConnectorFullConfiguration");
 
-		checkCoreProperties(c);
+		checkCoreConnectorProperties(c);
 
 		assertEquals("admin", c.getUsername());
 		assertEquals("admin", c.getPassword());
@@ -60,10 +62,27 @@ public class JcrNamespaceHandlerTestCase extends FunctionalTestCase {
 		assertEquals(Arrays.asList(new String[] { "foo", "bar" }), c.getUuids());
 	}
 
-	private void checkCoreProperties(final JcrConnector c) {
+	private void checkCoreConnectorProperties(final JcrConnector c) {
 		assertNotNull(c);
 		assertTrue(c.isConnected());
 		assertTrue(c.isStarted());
 	}
 
+	public void testGlobalJcrEndpointMinimumConfiguration() throws Exception {
+		final EndpointBuilder endpointBuilder = muleContext.getRegistry()
+				.lookupEndpointFactory().getEndpointBuilder(
+						"jcrEndpointMinimumConfiguration");
+
+		assertNotNull(endpointBuilder);
+
+		final InboundEndpoint inboundEndpoint = endpointBuilder
+				.buildInboundEndpoint();
+
+		assertNotNull(inboundEndpoint);
+		assertEquals("/min", inboundEndpoint.getEndpointURI().getAddress());
+	}
+
+	// TODO test global w/full config
+
+	// TODO test in and out endpoints in a service
 }

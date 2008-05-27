@@ -11,6 +11,7 @@ package org.mule.transport.jcr.config;
 
 import org.mule.config.spring.parsers.collection.ChildListEntryDefinitionParser;
 import org.mule.config.spring.parsers.generic.OrphanDefinitionParser;
+import org.mule.config.spring.parsers.specific.endpoint.TransportGlobalEndpointDefinitionParser;
 import org.mule.transport.jcr.JcrConnector;
 import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
 
@@ -29,5 +30,11 @@ public class JcrNamespaceHandler extends NamespaceHandlerSupport {
 
 		registerBeanDefinitionParser("nodeType",
 				new ChildListEntryDefinitionParser("nodeTypeNames", "name"));
+
+		registerBeanDefinitionParser("endpoint",
+				new TransportGlobalEndpointDefinitionParser("jcr",
+						new String[] { "path" }));
+
+		// TODO add support for inbound and outbound
 	}
 }
