@@ -1,22 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mule xmlns="http://www.mulesource.org/schema/mule/core/2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:jcr="http://www.mulesource.org/schema/mule/jcr/2.0" xmlns:spring="http://www.springframework.org/schema/beans"
-	xsi:schemaLocation="
+<mule xmlns="http://www.mulesource.org/schema/mule/core/2.0"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xmlns:jcr="http://www.mulesource.org/schema/mule/jcr/2.0"
+		xmlns:spring="http://www.springframework.org/schema/beans"
+		xsi:schemaLocation="
        http://www.mulesource.org/schema/mule/core/2.0 http://www.mulesource.org/schema/mule/core/2.0/mule.xsd
        http://www.mulesource.org/schema/mule/jcr/2.0 http://www.mulesource.org/schema/mule/jcr/2.0/mule-jcr.xsd
        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd">
 
-	<spring:bean name="jcrRepository" class="org.apache.jackrabbit.core.TransientRepository" destroy-method="shutdown" />
+		<spring:bean name="jcrRepository" class="org.apache.jackrabbit.core.TransientRepository"
+				destroy-method="shutdown" />
 
-	<jcr:connector name="jcrConnectorMinimumConfiguration" repository-ref="jcrRepository" />
+		<jcr:connector name="jcrConnectorMinimumConfiguration" repository-ref="jcrRepository" />
 
-	<jcr:connector name="jcrConnectorFullConfiguration" repository-ref="jcrRepository" username="admin" password="admin"
-		workspaceName="test" contentPayloadType="NOBINARY" eventTypes="31" deep="false" noLocal="true">
-		<jcr:uuid value="foo" />
-		<jcr:uuid value="bar" />
-		<jcr:nodeType name="oof" />
-		<jcr:nodeType name="rab" />
-	</jcr:connector>
+		<!-- TODO review uuid/nodeTypeName lists : replace with simple whitespace tokenized attributes -->
 
-	<jcr:endpoint name="jcrEndpointMinimumConfiguration" path="/min" connector-ref="jcrConnectorMinimumConfiguration" />
+		<jcr:connector name="jcrConnectorFullConfiguration" repository-ref="jcrRepository"
+				username="admin" password="admin" workspaceName="test" contentPayloadType="NOBINARY"
+				eventTypes="31" deep="false" noLocal="true" uuids="foo bar" nodeTypeNames="oof rab" />
+
+		<jcr:endpoint name="jcrEndpointMinimumConfiguration" path="/min"
+				connector-ref="jcrConnectorMinimumConfiguration" />
+
+		<jcr:endpoint name="jcrEndpointFullConfiguration" path="/full" alwaysCreate="true"
+				contentPayloadType="FULL" deep="false" eventTypes="4" nodeRelPath="child" propertyRelPath="prop"
+				noLocal="true" nodeTypeName="name" nodeUUID="u-u-i-d" queryLanguage="xpath"
+				queryStatement="/query" uuids="foo bar" nodeTypeNames="oof rab"
+				connector-ref="jcrConnectorMinimumConfiguration" />
 </mule>

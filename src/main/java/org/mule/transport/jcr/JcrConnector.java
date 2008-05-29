@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -75,6 +76,22 @@ public final class JcrConnector extends AbstractConnector {
 	private String contentPayloadType;
 
 	private final NodeTypeHandlerManager nodeTypeHandlerManager;
+
+	// TODO comment
+	public static final String JCR_DEEP_PROPERTY = "deep";
+
+	public static final String JCR_UUID_LIST_PROPERTY = "uuids";
+
+	public static final String JCR_CONTENT_PAYLOAD_TYPE_PROPERTY = "contentPayloadType";
+
+	public static final String JCR_EVENT_TYPES_PROPERTY = "eventTypes";
+
+	public static final String JCR_NODE_TYPE_NAME_LIST_PROPERTY = "nodeTypeNames";
+
+	/**
+	 * Property that defines if local events must be ignored.
+	 */
+	public static final String JCR_NO_LOCAL_PROPERTY = "noLocal";
 
 	/**
 	 * Property that defines a relative path to append at the end of the target
@@ -342,6 +359,10 @@ public final class JcrConnector extends AbstractConnector {
 		}
 	}
 
+	static List getTokenizedValues(final String values) {
+		return values != null ? Arrays.asList(values.split("\\s")) : null;
+	}
+
 	/**
 	 * @return the nodeTypeHandlerManager
 	 */
@@ -442,7 +463,7 @@ public final class JcrConnector extends AbstractConnector {
 	/**
 	 * @return the nodeTypeNames
 	 */
-	public List getNodeTypeNames() {
+	List getNodeTypeNames() {
 		return nodeTypeNames;
 	}
 
@@ -450,8 +471,8 @@ public final class JcrConnector extends AbstractConnector {
 	 * @param nodeTypeNames
 	 *            the nodeTypeNames to set
 	 */
-	public void setNodeTypeNames(final List nodeTypeNames) {
-		this.nodeTypeNames = nodeTypeNames;
+	public void setNodeTypeNames(final String nodeTypeNames) {
+		this.nodeTypeNames = getTokenizedValues(nodeTypeNames);
 	}
 
 	/**
@@ -472,7 +493,7 @@ public final class JcrConnector extends AbstractConnector {
 	/**
 	 * @return the uuid
 	 */
-	public List getUuids() {
+	List getUuids() {
 		return uuids;
 	}
 
@@ -480,8 +501,8 @@ public final class JcrConnector extends AbstractConnector {
 	 * @param uuid
 	 *            the uuid to set
 	 */
-	public void setUuids(final List uuids) {
-		this.uuids = uuids;
+	public void setUuids(final String uuids) {
+		this.uuids = getTokenizedValues(uuids);
 	}
 
 	/**

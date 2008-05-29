@@ -17,6 +17,7 @@ import org.mule.api.endpoint.EndpointBuilder;
 import org.mule.api.endpoint.InboundEndpoint;
 import org.mule.endpoint.EndpointURIEndpointBuilder;
 import org.mule.endpoint.URIBuilder;
+import org.mule.util.StringUtils;
 
 /**
  * @author David Dossot
@@ -26,7 +27,7 @@ public class JcrMessageReceiverOverridesTestCase extends
 
 	private static final List UUID_LIST = Collections.singletonList("uuid_01");
 
-	private static final List NODE_TYPE_NAME = Collections
+	private static final List NODE_TYPE_NAME_LIST = Collections
 			.singletonList("node_type_01");
 
 	@Override
@@ -41,8 +42,10 @@ public class JcrMessageReceiverOverridesTestCase extends
 		endpoint = muleContext.getRegistry().lookupEndpointFactory()
 				.getInboundEndpoint(builder);
 
-		endpoint.getProperties().put("uuid", UUID_LIST);
-		endpoint.getProperties().put("nodeTypeName", NODE_TYPE_NAME);
+		endpoint.getProperties().put("uuids", StringUtils.join(UUID_LIST, ' '));
+
+		endpoint.getProperties().put("nodeTypeNames",
+				StringUtils.join(NODE_TYPE_NAME_LIST, ' '));
 
 		return endpoint;
 	}
@@ -61,7 +64,7 @@ public class JcrMessageReceiverOverridesTestCase extends
 
 		assertEquals(UUID_LIST, messageReceiver.getUuids());
 
-		assertEquals(NODE_TYPE_NAME, messageReceiver.getNodeTypeNames());
+		assertEquals(NODE_TYPE_NAME_LIST, messageReceiver.getNodeTypeNames());
 
 		assertEquals(Boolean.FALSE, messageReceiver.isNoLocal());
 	}

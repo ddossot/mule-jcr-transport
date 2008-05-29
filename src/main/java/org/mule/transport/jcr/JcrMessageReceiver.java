@@ -97,33 +97,37 @@ public final class JcrMessageReceiver extends AbstractMessageReceiver implements
 
 		eventTypes = (Integer) new IntegerConverter(jcrConnector
 				.getEventTypes()).convert(Integer.class, endpoint
-				.getProperty("eventTypes"));
+				.getProperty(JcrConnector.JCR_EVENT_TYPES_PROPERTY));
 
 		deep = (Boolean) new BooleanConverter(jcrConnector.isDeep()).convert(
-				Boolean.class, endpoint.getProperty("deep"));
+				Boolean.class, endpoint
+						.getProperty(JcrConnector.JCR_DEEP_PROPERTY));
 
-		final Object uuidProperty = endpoint.getProperty("uuid");
+		final String uuidProperty = (String) endpoint
+				.getProperty(JcrConnector.JCR_UUID_LIST_PROPERTY);
 
 		if (uuidProperty == null) {
 			uuids = jcrConnector.getUuids();
 		} else {
-			uuids = (List) uuidProperty;
+			uuids = JcrConnector.getTokenizedValues(uuidProperty);
 		}
 
-		final Object nodeTypeNameProperty = endpoint
-				.getProperty("nodeTypeName");
+		final String nodeTypeNameProperty = (String) endpoint
+				.getProperty(JcrConnector.JCR_NODE_TYPE_NAME_LIST_PROPERTY);
 
 		if (nodeTypeNameProperty == null) {
 			nodeTypeNames = jcrConnector.getNodeTypeNames();
 		} else {
-			nodeTypeNames = (List) nodeTypeNameProperty;
+			nodeTypeNames = JcrConnector
+					.getTokenizedValues(nodeTypeNameProperty);
 		}
 
 		noLocal = (Boolean) new BooleanConverter(jcrConnector.isNoLocal())
-				.convert(Boolean.class, endpoint.getProperty("noLocal"));
+				.convert(Boolean.class, endpoint
+						.getProperty(JcrConnector.JCR_NO_LOCAL_PROPERTY));
 
 		String contentPayloadTypeProperty = (String) endpoint
-				.getProperty("contentPayloadType");
+				.getProperty(JcrConnector.JCR_CONTENT_PAYLOAD_TYPE_PROPERTY);
 
 		if (contentPayloadTypeProperty == null) {
 			contentPayloadTypeProperty = jcrConnector.getContentPayloadType();

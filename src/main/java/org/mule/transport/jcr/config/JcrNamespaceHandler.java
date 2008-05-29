@@ -9,7 +9,6 @@
  */
 package org.mule.transport.jcr.config;
 
-import org.mule.config.spring.parsers.collection.ChildListEntryDefinitionParser;
 import org.mule.config.spring.parsers.generic.OrphanDefinitionParser;
 import org.mule.config.spring.parsers.specific.endpoint.TransportGlobalEndpointDefinitionParser;
 import org.mule.transport.jcr.JcrConnector;
@@ -24,12 +23,6 @@ public class JcrNamespaceHandler extends NamespaceHandlerSupport {
 	public void init() {
 		registerBeanDefinitionParser("connector", new OrphanDefinitionParser(
 				JcrConnector.class, true));
-
-		registerBeanDefinitionParser("uuid",
-				new ChildListEntryDefinitionParser("uuids", "value"));
-
-		registerBeanDefinitionParser("nodeType",
-				new ChildListEntryDefinitionParser("nodeTypeNames", "name"));
 
 		registerBeanDefinitionParser("endpoint",
 				new TransportGlobalEndpointDefinitionParser("jcr",

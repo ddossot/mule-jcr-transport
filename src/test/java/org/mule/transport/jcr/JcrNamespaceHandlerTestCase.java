@@ -10,6 +10,7 @@
 package org.mule.transport.jcr;
 
 import java.util.Arrays;
+import java.util.Map;
 
 import org.mule.api.endpoint.EndpointBuilder;
 import org.mule.api.endpoint.InboundEndpoint;
@@ -38,8 +39,8 @@ public class JcrNamespaceHandlerTestCase extends FunctionalTestCase {
 		assertTrue(c.isDeep());
 		assertFalse(c.isNoLocal());
 
-		assertNull(c.getNodeTypeNames());
 		assertNull(c.getUuids());
+		assertNull(c.getNodeTypeNames());
 	}
 
 	public void testJcrConnectorFullConfiguration() throws Exception {
@@ -56,10 +57,10 @@ public class JcrNamespaceHandlerTestCase extends FunctionalTestCase {
 		assertFalse(c.isDeep());
 		assertTrue(c.isNoLocal());
 
+		assertEquals(Arrays.asList(new String[] { "foo", "bar" }), c.getUuids());
+
 		assertEquals(Arrays.asList(new String[] { "oof", "rab" }), c
 				.getNodeTypeNames());
-
-		assertEquals(Arrays.asList(new String[] { "foo", "bar" }), c.getUuids());
 	}
 
 	private void checkCoreConnectorProperties(final JcrConnector c) {
@@ -80,9 +81,63 @@ public class JcrNamespaceHandlerTestCase extends FunctionalTestCase {
 
 		assertNotNull(inboundEndpoint);
 		assertEquals("/min", inboundEndpoint.getEndpointURI().getAddress());
+
+		final Map props = inboundEndpoint.getProperties();
+		// TODO factor out and call other tests from next one
+		assertNull(JcrConnector.getTokenizedValues((String) props
+				.get(JcrConnector.JCR_NODE_TYPE_NAME_LIST_PROPERTY)));
+
+		assertNull(JcrConnector.getTokenizedValues((String) props
+				.get(JcrConnector.JCR_UUID_LIST_PROPERTY)));
 	}
 
-	// TODO test global w/full config
+	public void testGlobalJcrEndpointFullConfiguration() throws Exception {
+		final EndpointBuilder endpointBuilder = muleContext.getRegistry()
+				.lookupEndpointFactory().getEndpointBuilder(
+						"jcrEndpointFullConfiguration");
 
+		assertNotNull(endpointBuilder);
+
+		final InboundEndpoint inboundEndpoint = endpointBuilder
+				.buildInboundEndpoint();
+
+		assertNotNull(inboundEndpoint);
+		assertEquals("/full", inboundEndpoint.getEndpointURI().getAddress());
+
+		final Map props = inboundEndpoint.getProperties();
+		assertEquals("true", props.get(JcrConnector.JCR_NO_LOCAL_PROPERTY));
+		assertEquals("xpath", props
+				.get(JcrConnector.JCR_QUERY_LANGUAGE_PROPERTY));
+
+		assertEquals("/query", props
+				.get(JcrConnector.JCR_QUERY_STATEMENT_PROPERTY));
+
+		assertEquals("true", props
+				.get(JcrConnector.JCR_ALWAYS_CREATE_CHILD_NODE_PROPERTY));
+
+		assertEquals("child", props.get(JcrConnector.JCR_NODE_RELPATH_PROPERTY));
+
+		assertEquals("prop", props
+				.get(JcrConnector.JCR_PROPERTY_REL_PATH_PROPERTY));
+
+		assertEquals("false", props.get(JcrConnector.JCR_DEEP_PROPERTY));
+		assertEquals("FULL", props
+				.get(JcrConnector.JCR_CONTENT_PAYLOAD_TYPE_PROPERTY));
+
+		assertEquals("4", props.get(JcrConnector.JCR_EVENT_TYPES_PROPERTY));
+
+		assertEquals("name", props
+				.get(JcrConnector.JCR_NODE_TYPE_NAME_PROPERTY));
+
+		assertEquals("u-u-i-d", props.get(JcrConnector.JCR_NODE_UUID_PROPERTY));
+
+		assertEquals(Arrays.asList(new String[] { "oof", "rab" }), JcrConnector
+				.getTokenizedValues((String) props
+						.get(JcrConnector.JCR_NODE_TYPE_NAME_LIST_PROPERTY)));
+
+		assertEquals(Arrays.asList(new String[] { "foo", "bar" }), JcrConnector
+				.getTokenizedValues((String) props
+						.get(JcrConnector.JCR_UUID_LIST_PROPERTY)));
+	}
 	// TODO test in and out endpoints in a service
 }
