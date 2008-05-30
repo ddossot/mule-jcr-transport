@@ -31,6 +31,7 @@ import org.mule.api.service.Service;
 import org.mule.api.transport.Connector;
 import org.mule.transport.AbstractMessageReceiver;
 import org.mule.transport.ConnectException;
+import org.mule.transport.jcr.config.JcrNamespaceHandler;
 import org.mule.transport.jcr.i18n.JcrMessages;
 
 import edu.emory.mathcs.backport.java.util.concurrent.atomic.AtomicReference;
@@ -109,7 +110,7 @@ public final class JcrMessageReceiver extends AbstractMessageReceiver implements
 		if (uuidProperty == null) {
 			uuids = jcrConnector.getUuids();
 		} else {
-			uuids = JcrConnector.getTokenizedValues(uuidProperty);
+			uuids = JcrNamespaceHandler.split(uuidProperty);
 		}
 
 		final String nodeTypeNameProperty = (String) endpoint
@@ -118,8 +119,8 @@ public final class JcrMessageReceiver extends AbstractMessageReceiver implements
 		if (nodeTypeNameProperty == null) {
 			nodeTypeNames = jcrConnector.getNodeTypeNames();
 		} else {
-			nodeTypeNames = JcrConnector
-					.getTokenizedValues(nodeTypeNameProperty);
+			nodeTypeNames = JcrNamespaceHandler
+					.split(nodeTypeNameProperty);
 		}
 
 		noLocal = (Boolean) new BooleanConverter(jcrConnector.isNoLocal())

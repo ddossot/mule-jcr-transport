@@ -15,6 +15,7 @@ import java.util.Map;
 import org.mule.api.endpoint.EndpointBuilder;
 import org.mule.api.endpoint.InboundEndpoint;
 import org.mule.tck.FunctionalTestCase;
+import org.mule.transport.jcr.config.JcrNamespaceHandler;
 
 /**
  * @author David Dossot (david@dossot.net)
@@ -84,10 +85,10 @@ public class JcrNamespaceHandlerTestCase extends FunctionalTestCase {
 
 		final Map props = inboundEndpoint.getProperties();
 		// TODO factor out and call other tests from next one
-		assertNull(JcrConnector.getTokenizedValues((String) props
+		assertNull(JcrNamespaceHandler.split((String) props
 				.get(JcrConnector.JCR_NODE_TYPE_NAME_LIST_PROPERTY)));
 
-		assertNull(JcrConnector.getTokenizedValues((String) props
+		assertNull(JcrNamespaceHandler.split((String) props
 				.get(JcrConnector.JCR_UUID_LIST_PROPERTY)));
 	}
 
@@ -131,12 +132,12 @@ public class JcrNamespaceHandlerTestCase extends FunctionalTestCase {
 
 		assertEquals("u-u-i-d", props.get(JcrConnector.JCR_NODE_UUID_PROPERTY));
 
-		assertEquals(Arrays.asList(new String[] { "oof", "rab" }), JcrConnector
-				.getTokenizedValues((String) props
+		assertEquals(Arrays.asList(new String[] { "oof", "rab" }), JcrNamespaceHandler
+				.split((String) props
 						.get(JcrConnector.JCR_NODE_TYPE_NAME_LIST_PROPERTY)));
 
-		assertEquals(Arrays.asList(new String[] { "foo", "bar" }), JcrConnector
-				.getTokenizedValues((String) props
+		assertEquals(Arrays.asList(new String[] { "foo", "bar" }), JcrNamespaceHandler
+				.split((String) props
 						.get(JcrConnector.JCR_UUID_LIST_PROPERTY)));
 	}
 	// TODO test in and out endpoints in a service

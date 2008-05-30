@@ -9,9 +9,13 @@
  */
 package org.mule.transport.jcr.config;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.mule.config.spring.parsers.generic.OrphanDefinitionParser;
 import org.mule.config.spring.parsers.specific.endpoint.TransportGlobalEndpointDefinitionParser;
 import org.mule.transport.jcr.JcrConnector;
+import org.mule.util.StringUtils;
 import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
 
 /**
@@ -20,14 +24,23 @@ import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
  * 
  */
 public class JcrNamespaceHandler extends NamespaceHandlerSupport {
-	public void init() {
-		registerBeanDefinitionParser("connector", new OrphanDefinitionParser(
-				JcrConnector.class, true));
+    public void init() {
+        registerBeanDefinitionParser("connector", new OrphanDefinitionParser(
+                JcrConnector.class, true));
 
-		registerBeanDefinitionParser("endpoint",
-				new TransportGlobalEndpointDefinitionParser("jcr",
-						new String[] { "path" }));
+        registerBeanDefinitionParser("endpoint",
+                new TransportGlobalEndpointDefinitionParser("jcr",
+                        new String[] { "path" }));
 
-		// TODO add support for inbound and outbound
-	}
+        // TODO add support for inbound and outbound
+    }
+
+    /**
+     * Supports configuration that uses attributes containing lists of
+     * whitespace separated values.
+     */
+    public static List split(final String values) {
+        return StringUtils.isNotBlank(values) ? Arrays.asList(StringUtils.split(values))
+                : null;
+    }
 }
