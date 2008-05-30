@@ -13,8 +13,6 @@
 
 		<jcr:connector name="jcrConnectorMinimumConfiguration" repository-ref="jcrRepository" />
 
-		<!-- TODO review uuid/nodeTypeName lists : replace with simple whitespace tokenized attributes -->
-
 		<jcr:connector name="jcrConnectorFullConfiguration" repository-ref="jcrRepository"
 				username="admin" password="admin" workspaceName="test" contentPayloadType="NOBINARY"
 				eventTypes="31" deep="false" noLocal="true" uuids="foo bar" nodeTypeNames="oof rab" />

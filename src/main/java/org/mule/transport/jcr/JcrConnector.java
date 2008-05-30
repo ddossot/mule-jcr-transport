@@ -77,18 +77,37 @@ public final class JcrConnector extends AbstractConnector {
 
     private final NodeTypeHandlerManager nodeTypeHandlerManager;
 
-    // TODO comment
+    /**
+     * Property that defines if events coming from deeper than the specified
+     * endpoint path must be listened to.
+     */
     public static final String JCR_DEEP_PROPERTY = "deep";
 
+    /**
+     * Property that defines a list of node UUIDs that will only be listened to
+     * for changes.
+     */
     public static final String JCR_UUID_LIST_PROPERTY = "uuids";
 
-    public static final String JCR_CONTENT_PAYLOAD_TYPE_PROPERTY =
-            "contentPayloadType";
-
+    /**
+     * Property that defines a combination of repository events that will only
+     * be listened to.
+     */
     public static final String JCR_EVENT_TYPES_PROPERTY = "eventTypes";
 
+    /**
+     * Property that defines a list of node types that will only be listened to
+     * for changes.
+     */
     public static final String JCR_NODE_TYPE_NAME_LIST_PROPERTY =
             "nodeTypeNames";
+
+    /**
+     * Property that defines the type of payload that a JCR
+     * <code>MuleMessage</code> will contain.
+     */
+    public static final String JCR_CONTENT_PAYLOAD_TYPE_PROPERTY =
+            "contentPayloadType";
 
     /**
      * Property that defines if local events must be ignored.
