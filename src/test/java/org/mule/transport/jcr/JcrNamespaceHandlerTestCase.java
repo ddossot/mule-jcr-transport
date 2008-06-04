@@ -21,6 +21,7 @@ import org.mule.transport.jcr.config.JcrNamespaceHandler;
  * @author David Dossot (david@dossot.net)
  */
 public class JcrNamespaceHandlerTestCase extends FunctionalTestCase {
+
     @Override
     protected String getConfigResources() {
         return "jcr-namespace-config.xml";

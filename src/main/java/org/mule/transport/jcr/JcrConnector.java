@@ -55,6 +55,8 @@ import org.mule.util.ClassUtils;
  */
 public final class JcrConnector extends AbstractConnector {
 
+    public static final String PROTOCOL = "jcr";
+
     private Repository repository;
 
     private String workspaceName;
@@ -354,7 +356,7 @@ public final class JcrConnector extends AbstractConnector {
     }
 
     public String getProtocol() {
-        return "jcr";
+        return PROTOCOL;
     }
 
     /**

@@ -12,7 +12,10 @@ package org.mule.transport.jcr.config;
 import java.util.Arrays;
 import java.util.List;
 
+import org.mule.config.spring.factories.InboundEndpointFactoryBean;
+import org.mule.config.spring.factories.OutboundEndpointFactoryBean;
 import org.mule.config.spring.parsers.generic.OrphanDefinitionParser;
+import org.mule.config.spring.parsers.specific.endpoint.TransportEndpointDefinitionParser;
 import org.mule.config.spring.parsers.specific.endpoint.TransportGlobalEndpointDefinitionParser;
 import org.mule.transport.jcr.JcrConnector;
 import org.mule.util.StringUtils;
@@ -29,10 +32,16 @@ public class JcrNamespaceHandler extends NamespaceHandlerSupport {
                 JcrConnector.class, true));
 
         registerBeanDefinitionParser("endpoint",
-                new TransportGlobalEndpointDefinitionParser("jcr",
-                        new String[] { "path" }));
+                new TransportGlobalEndpointDefinitionParser(
+                        JcrConnector.PROTOCOL, new String[] { "path" }));
 
-        // TODO add support for inbound and outbound
+        registerBeanDefinitionParser("inbound-endpoint",
+                new TransportEndpointDefinitionParser(JcrConnector.PROTOCOL,
+                        InboundEndpointFactoryBean.class, new String[0]));
+
+        registerBeanDefinitionParser("outbound-endpoint",
+                new TransportEndpointDefinitionParser(JcrConnector.PROTOCOL,
+                        OutboundEndpointFactoryBean.class, new String[0]));
     }
 
     /**
