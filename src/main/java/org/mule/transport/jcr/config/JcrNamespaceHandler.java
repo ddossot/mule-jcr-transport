@@ -27,29 +27,31 @@ import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
  * 
  */
 public class JcrNamespaceHandler extends NamespaceHandlerSupport {
-    public void init() {
-        registerBeanDefinitionParser("connector", new OrphanDefinitionParser(
-                JcrConnector.class, true));
+	public void init() {
+		registerBeanDefinitionParser("connector", new OrphanDefinitionParser(
+				JcrConnector.class, true));
 
-        registerBeanDefinitionParser("endpoint",
-                new TransportGlobalEndpointDefinitionParser(
-                        JcrConnector.PROTOCOL, new String[] { "path" }));
+		registerBeanDefinitionParser("endpoint",
+				new TransportGlobalEndpointDefinitionParser(
+						JcrConnector.PROTOCOL, new String[] { "path" }));
 
-        registerBeanDefinitionParser("inbound-endpoint",
-                new TransportEndpointDefinitionParser(JcrConnector.PROTOCOL,
-                        InboundEndpointFactoryBean.class, new String[0]));
+		registerBeanDefinitionParser("inbound-endpoint",
+				new TransportEndpointDefinitionParser(JcrConnector.PROTOCOL,
+						InboundEndpointFactoryBean.class,
+						new String[] { "path" }));
 
-        registerBeanDefinitionParser("outbound-endpoint",
-                new TransportEndpointDefinitionParser(JcrConnector.PROTOCOL,
-                        OutboundEndpointFactoryBean.class, new String[0]));
-    }
+		registerBeanDefinitionParser("outbound-endpoint",
+				new TransportEndpointDefinitionParser(JcrConnector.PROTOCOL,
+						OutboundEndpointFactoryBean.class,
+						new String[] { "path" }));
+	}
 
-    /**
-     * Supports configuration that uses attributes containing lists of
-     * whitespace separated values.
-     */
-    public static List split(final String values) {
-        return StringUtils.isNotBlank(values) ? Arrays.asList(StringUtils.split(values))
-                : null;
-    }
+	/**
+	 * Supports configuration that uses attributes containing lists of
+	 * whitespace separated values.
+	 */
+	public static List split(final String values) {
+		return StringUtils.isNotBlank(values) ? Arrays.asList(StringUtils
+				.split(values)) : null;
+	}
 }
