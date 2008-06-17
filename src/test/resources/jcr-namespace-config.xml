@@ -1,61 +1,90 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mule xmlns="http://www.mulesource.org/schema/mule/core/2.0"
-		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		xmlns:jcr="http://www.mulesource.org/schema/mule/jcr/2.0"
-		xmlns:spring="http://www.springframework.org/schema/beans"
-		xsi:schemaLocation="
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:jcr="http://www.mulesource.org/schema/mule/jcr/2.0"
+	xmlns:spring="http://www.springframework.org/schema/beans"
+	xsi:schemaLocation="
        http://www.mulesource.org/schema/mule/core/2.0 http://www.mulesource.org/schema/mule/core/2.0/mule.xsd
        http://www.mulesource.org/schema/mule/jcr/2.0 http://www.mulesource.org/schema/mule/jcr/2.0/mule-jcr.xsd
        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd">
 
-		<spring:bean id="jcrRepository"
-				class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-				<spring:property name="targetClass"
-						value="org.mule.transport.jcr.RepositoryTestSupport" />
-				<spring:property name="targetMethod" value="getRepository" />
-		</spring:bean>
+	<spring:bean id="jcrRepository"
+		class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+		<spring:property name="targetClass"
+			value="org.mule.transport.jcr.RepositoryTestSupport" />
+		<spring:property name="targetMethod" value="getRepository" />
+	</spring:bean>
 
-		<jcr:connector name="jcrConnectorMinimumConfiguration" repository-ref="jcrRepository" />
+	<jcr:connector name="jcrConnectorMinimumConfiguration"
+		repository-ref="jcrRepository" />
 
-		<jcr:connector name="jcrConnectorFullConfiguration" repository-ref="jcrRepository"
-				username="admin" password="admin" workspaceName="test" contentPayloadType="NOBINARY"
-				eventTypes="31" deep="false" noLocal="true" uuids="foo bar" nodeTypeNames="oof rab" />
+	<jcr:connector name="jcrConnectorFullConfiguration"
+		repository-ref="jcrRepository" username="admin" password="admin"
+		workspaceName="test" contentPayloadType="NOBINARY" eventTypes="31"
+		deep="false" noLocal="true" uuids="foo bar" nodeTypeNames="oof rab" />
 
-		<jcr:endpoint name="jcrEndpointMinimumConfiguration" path="/ref"
-				connector-ref="jcrConnectorMinimumConfiguration" />
+	<jcr:endpoint name="jcrEndpointMinimumConfiguration" path="/ref"
+		connector-ref="jcrConnectorMinimumConfiguration" />
 
-		<jcr:endpoint name="jcrEndpointFullConfiguration" path="/full" alwaysCreate="true"
-				contentPayloadType="FULL" deep="false" eventTypes="4" nodeRelPath="child" propertyRelPath="prop"
-				noLocal="true" nodeTypeName="name" nodeUUID="u-u-i-d" queryLanguage="xpath"
-				queryStatement="/query" uuids="foo bar" nodeTypeNames="oof rab"
-				connector-ref="jcrConnectorMinimumConfiguration" />
+	<jcr:endpoint name="jcrEndpointFullConfiguration" path="/full"
+		alwaysCreate="true" contentPayloadType="FULL" deep="false"
+		eventTypes="4" nodeRelPath="child" propertyRelPath="prop"
+		noLocal="true" nodeTypeName="name" nodeUUID="u-u-i-d"
+		queryLanguage="xpath" queryStatement="/query"
+		uuids="f81d4fae-7dec-11d0-a765-00a0c91e6bf6 e99d4fae-7dec-11d0-a765-00a0c91e6bf6"
+		nodeTypeNames="nt:resource nt:unstructured"
+		connector-ref="jcrConnectorMinimumConfiguration" />
 
-		<model>
-				<service name="jcrBridgeReferenceConfiguration">
-						<inbound>
-								<jcr:inbound-endpoint ref="jcrEndpointMinimumConfiguration" />
-						</inbound>
-						<outbound>
-								<outbound-pass-through-router>
-										<jcr:outbound-endpoint
-												ref="jcrEndpointMinimumConfiguration" />
-								</outbound-pass-through-router>
-						</outbound>
-				</service>
-		</model>
+	<model>
+		<service name="jcrBridgeReferenceConfiguration">
+			<inbound>
+				<jcr:inbound-endpoint
+					ref="jcrEndpointMinimumConfiguration" />
+			</inbound>
+			<outbound>
+				<outbound-pass-through-router>
+					<jcr:outbound-endpoint
+						ref="jcrEndpointMinimumConfiguration" />
+				</outbound-pass-through-router>
+			</outbound>
+		</service>
+	</model>
 
-		<model>
-				<service name="jcrBridgeMinimumConfiguration">
-						<inbound>
-								<jcr:inbound-endpoint path="/min"
-										connector-ref="jcrConnectorMinimumConfiguration" />
-						</inbound>
-						<outbound>
-								<outbound-pass-through-router>
-										<jcr:outbound-endpoint path="/min"
-												connector-ref="jcrConnectorMinimumConfiguration" />
-								</outbound-pass-through-router>
-						</outbound>
-				</service>
-		</model>
+	<model>
+		<service name="jcrBridgeMinimumConfiguration">
+			<inbound>
+				<jcr:inbound-endpoint path="/min"
+					connector-ref="jcrConnectorMinimumConfiguration" />
+			</inbound>
+			<outbound>
+				<outbound-pass-through-router>
+					<jcr:outbound-endpoint path="/min"
+						connector-ref="jcrConnectorMinimumConfiguration" />
+				</outbound-pass-through-router>
+			</outbound>
+		</service>
+	</model>
+
+	<model>
+		<service name="jcrBridgeFullConfiguration">
+			<inbound>
+				<jcr:inbound-endpoint path="/full"
+					contentPayloadType="FULL" deep="false" eventTypes="4"
+					nodeRelPath="child" propertyRelPath="prop" noLocal="true"
+					nodeUUID="u-u-i-d" queryLanguage="xpath" queryStatement="/query"
+					uuids="f81d4fae-7dec-11d0-a765-00a0c91e6bf6 e99d4fae-7dec-11d0-a765-00a0c91e6bf6"
+					nodeTypeNames="nt:resource nt:unstructured"
+					connector-ref="jcrConnectorMinimumConfiguration" />
+			</inbound>
+			<outbound>
+				<outbound-pass-through-router>
+					<jcr:outbound-endpoint path="/full"
+						alwaysCreate="true" nodeRelPath="child" propertyRelPath="prop"
+						nodeTypeName="name" nodeUUID="u-u-i-d" queryLanguage="xpath"
+						queryStatement="/query"
+						connector-ref="jcrConnectorMinimumConfiguration" />
+				</outbound-pass-through-router>
+			</outbound>
+		</service>
+	</model>
 </mule>
