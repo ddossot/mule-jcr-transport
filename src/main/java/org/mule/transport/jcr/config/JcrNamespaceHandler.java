@@ -27,28 +27,28 @@ import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
  * 
  */
 public class JcrNamespaceHandler extends NamespaceHandlerSupport {
+	private static final String[] JCR_ATTRIBUTES = new String[] { "path", };
+
 	public void init() {
 		registerBeanDefinitionParser("connector", new OrphanDefinitionParser(
 				JcrConnector.class, true));
 
 		registerBeanDefinitionParser("endpoint",
-				new TransportGlobalEndpointDefinitionParser(
-						JcrConnector.PROTOCOL, new String[] { "path" }));
+				new TransportGlobalEndpointDefinitionParser(JcrConnector.PROTOCOL,
+						JCR_ATTRIBUTES));
 
 		registerBeanDefinitionParser("inbound-endpoint",
 				new TransportEndpointDefinitionParser(JcrConnector.PROTOCOL,
-						InboundEndpointFactoryBean.class,
-						new String[] { "path" }));
+						InboundEndpointFactoryBean.class, JCR_ATTRIBUTES));
 
 		registerBeanDefinitionParser("outbound-endpoint",
 				new TransportEndpointDefinitionParser(JcrConnector.PROTOCOL,
-						OutboundEndpointFactoryBean.class,
-						new String[] { "path" }));
+						OutboundEndpointFactoryBean.class, JCR_ATTRIBUTES));
 	}
 
 	/**
-	 * Supports configuration that uses attributes containing lists of
-	 * whitespace separated values.
+	 * Supports configuration that uses attributes containing lists of whitespace
+	 * separated values.
 	 */
 	public static List split(final String values) {
 		return StringUtils.isNotBlank(values) ? Arrays.asList(StringUtils
