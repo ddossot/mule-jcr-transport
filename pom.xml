@@ -1,18 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>org.mule.transport.jcr</groupId>
+	<groupId>org.mule.transports</groupId>
 	<artifactId>mule-transport-jcr</artifactId>
 	<packaging>jar</packaging>
 	<name>Mule Jcr Transport</name>
 	<version>2.0.0-SNAPSHOT</version>
 	<description>Provides connectivity to JCR repositories.</description>
-
 	<properties>
-		<mule.version>2.0.1</mule.version>
+		<muleVersion>2.0.1</muleVersion>
+		<transportId>JCR</transportId>
 	</properties>
 
 	<!-- Mule Forge Configuration -->
@@ -20,21 +18,17 @@
 		<system>Jira</system>
 		<url>http://mule.mulesource.org/jira/browse/JCR</url>
 	</issueManagement>
-
 	<scm>
 		<connection>scm:svn:http://svn.muleforge.org/mule-transport-jcr/</connection>
 		<developerConnection>scm:svn:https://svn.muleforge.org/mule-transport-jcr/</developerConnection>
 		<tag>HEAD</tag>
 		<url>http://svn.mule-transport-jcr.muleforge.org/</url>
 	</scm>
-
-
 	<ciManagement>
 		<system>Bamboo</system>
 		<url>http://bamboo.muleforge.org/browse/JCR-FORGE</url>
 		<notifiers />
 	</ciManagement>
-
 	<distributionManagement>
 		<repository>
 			<id>muleforge.webdav.releases</id>
@@ -49,7 +43,6 @@
 			<url>dav:https://dav.muleforge.org/mule-transport-jcr/</url>
 		</site>
 	</distributionManagement>
-
 	<repositories>
 		<repository>
 			<id>ch-dep</id>
@@ -67,13 +60,15 @@
 			</snapshots>
 		</repository>
 		<repository>
-			<!-- local repository for this transport. Users can upload dependencies here when the artifact
-				is not available on any other repository. Its the users' responsibility to make sure that no
-				licenses are violated by uploading dependencies to this location
+			<!--
+				local repository for this transport. Users can upload dependencies
+				here when the artifact is not available on any other repository. Its
+				the users' responsibility to make sure that no licenses are violated
+				by uploading dependencies to this location
 			-->
-			<id>${thransportId}-deps</id>
+			<id>${transportId}-deps</id>
 			<name>Jcr Dependencies</name>
-			<url>http://dist.muleforge.org/${artefactId}/dependencies/maven2</url>
+			<url>http://dist.muleforge.org/${artifactId}/dependencies/maven2</url>
 			<snapshots>
 				<enabled>false</enabled>
 			</snapshots>
@@ -81,7 +76,6 @@
 	</repositories>
 
 	<!-- End of MuleForge Configuration -->
-
 	<build>
 		<extensions>
 			<extension>
@@ -175,7 +169,6 @@
 			</plugin>
 		</plugins>
 	</reporting>
-
 	<dependencies>
 		<!-- Transport Dependencies -->
 		<dependency>
@@ -186,12 +179,12 @@
 		<dependency>
 			<groupId>org.mule</groupId>
 			<artifactId>mule-core</artifactId>
-			<version>${mule.version}</version>
+			<version>${muleVersion}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mule.modules</groupId>
 			<artifactId>mule-module-spring-config</artifactId>
-			<version>${mule.version}</version>
+			<version>${muleVersion}</version>
 		</dependency>
 		<dependency>
 			<groupId>javax.activation</groupId>
@@ -203,7 +196,31 @@
 		<dependency>
 			<groupId>org.mule.tests</groupId>
 			<artifactId>mule-tests-functional</artifactId>
-			<version>${mule.version}</version>
+			<version>${muleVersion}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mule.modules</groupId>
+			<artifactId>mule-module-scripting</artifactId>
+			<version>${muleVersion}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mule.modules</groupId>
+			<artifactId>mule-module-xml</artifactId>
+			<version>${muleVersion}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mule.transports</groupId>
+			<artifactId>mule-transport-http</artifactId>
+			<version>${muleVersion}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mule.transports</groupId>
+			<artifactId>mule-transport-vm</artifactId>
+			<version>${muleVersion}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -232,5 +249,4 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-
 </project>
