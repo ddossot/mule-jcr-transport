@@ -3,21 +3,24 @@
 	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 	xmlns:mule="http://www.mulesource.org/schema/mule/core/2.0"
 	xmlns:spring="http://www.springframework.org/schema/beans"
-	targetNamespace="http://www.mulesource.org/schema/mule/jcr/2.0" elementFormDefault="qualified"
-	attributeFormDefault="unqualified">
+	targetNamespace="http://www.mulesource.org/schema/mule/jcr/2.0"
+	elementFormDefault="qualified" attributeFormDefault="unqualified">
 
 	<xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
 
 	<xsd:import namespace="http://www.springframework.org/schema/beans"
 		schemaLocation="http://www.springframework.org/schema/beans" />
 
-	<xsd:import namespace="http://www.mulesource.org/schema/mule/core/2.0"
+	<xsd:import
+		namespace="http://www.mulesource.org/schema/mule/core/2.0"
 		schemaLocation="http://www.mulesource.org/schema/mule/core/2.0/mule.xsd" />
 
 	<xsd:element name="connector" type="jcrConnectorType"
 		substitutionGroup="mule:abstract-connector">
 		<xsd:annotation>
-			<xsd:documentation>Provides connectivity to JCR repositories.</xsd:documentation>
+			<xsd:documentation>
+				Provides connectivity to JCR repositories.
+			</xsd:documentation>
 		</xsd:annotation>
 	</xsd:element>
 
@@ -34,11 +37,12 @@
 		<xsd:complexContent>
 			<xsd:extension base="mule:connectorType">
 
-				<xsd:attribute name="repository-ref" type="xsd:NMTOKEN" use="required">
+				<xsd:attribute name="repository-ref" type="xsd:NMTOKEN"
+					use="required">
 					<xsd:annotation>
 						<xsd:documentation>
-							A reference to the javax.jcr.Repository to which this connector will
-							listen.
+							A reference to the javax.jcr.Repository to
+							which this connector will listen.
 						</xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
@@ -46,8 +50,8 @@
 				<xsd:attribute name="username" type="xsd:string">
 					<xsd:annotation>
 						<xsd:documentation>
-							If the repository requires authentication, the username to use when
-							opening a session.
+							If the repository requires authentication,
+							the username to use when opening a session.
 						</xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
@@ -55,8 +59,8 @@
 				<xsd:attribute name="password" type="xsd:string">
 					<xsd:annotation>
 						<xsd:documentation>
-							If the repository requires authentication, the password to use when
-							opening a session.
+							If the repository requires authentication,
+							the password to use when opening a session.
 						</xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
@@ -64,15 +68,17 @@
 				<xsd:attribute name="workspaceName" type="xsd:string">
 					<xsd:annotation>
 						<xsd:documentation>
-							The name of the workspace to use for the session. If not provided, a
-							default workspace is automatically selected by the repository
-							implementation.
+							The name of the workspace to use for the
+							session. If not provided, a default
+							workspace is automatically selected by the
+							repository implementation.
 						</xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
 
 				<xsd:attributeGroup ref="jcrObserverCommonAttributes" />
-				<xsd:attributeGroup ref="jcrObserverExtraAttributesWithDefaults" />
+				<xsd:attributeGroup
+					ref="jcrObserverExtraAttributesWithDefaults" />
 
 			</xsd:extension>
 		</xsd:complexContent>
@@ -81,15 +87,19 @@
 	<xsd:complexType name="inboundEndpointType">
 		<xsd:complexContent>
 			<xsd:extension base="mule:abstractInboundEndpointType">
+				<xsd:group ref="defaultEndpointElements" />
+
 				<xsd:attribute name="path" type="xsd:string">
 					<xsd:annotation>
 						<xsd:documentation>
-							Defines that absolute JCR path to which this endpoint will refer to.
+							Defines that absolute JCR path to which this
+							endpoint will refer to.
 						</xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
 
-				<xsd:attributeGroup ref="mule:defaultEndpointAttributes" />
+				<xsd:attributeGroup
+					ref="mule:defaultEndpointAttributes" />
 				<xsd:attributeGroup ref="endpointAttributes" />
 				<xsd:attributeGroup ref="inboundEndpointAttributes" />
 			</xsd:extension>
@@ -99,15 +109,19 @@
 	<xsd:complexType name="outboundEndpointType">
 		<xsd:complexContent>
 			<xsd:extension base="mule:abstractOutboundEndpointType">
+				<xsd:group ref="defaultEndpointElements" />
+
 				<xsd:attribute name="path" type="xsd:string">
 					<xsd:annotation>
 						<xsd:documentation>
-							Defines that absolute JCR path to which this endpoint will refer to.
+							Defines that absolute JCR path to which this
+							endpoint will refer to.
 						</xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
 
-				<xsd:attributeGroup ref="mule:defaultEndpointAttributes" />
+				<xsd:attributeGroup
+					ref="mule:defaultEndpointAttributes" />
 				<xsd:attributeGroup ref="endpointAttributes" />
 				<xsd:attributeGroup ref="outboundEndpointAttributes" />
 			</xsd:extension>
@@ -117,15 +131,19 @@
 	<xsd:complexType name="globalEndpointType">
 		<xsd:complexContent>
 			<xsd:extension base="mule:abstractGlobalEndpointType">
+				<xsd:group ref="defaultEndpointElements" />
+
 				<xsd:attribute name="path" type="xsd:string">
 					<xsd:annotation>
 						<xsd:documentation>
-							Defines that absolute JCR path to which this endpoint will refer to.
+							Defines that absolute JCR path to which this
+							endpoint will refer to.
 						</xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
 
-				<xsd:attributeGroup ref="mule:defaultEndpointAttributes" />
+				<xsd:attributeGroup
+					ref="mule:defaultEndpointAttributes" />
 				<xsd:attributeGroup ref="endpointAttributes" />
 				<xsd:attributeGroup ref="inboundEndpointAttributes" />
 				<xsd:attributeGroup ref="outboundEndpointAttributes" />
@@ -133,12 +151,22 @@
 		</xsd:complexContent>
 	</xsd:complexType>
 
+	<xsd:group name="defaultEndpointElements">
+		<xsd:sequence>
+			<xsd:sequence minOccurs="0" maxOccurs="unbounded">
+				<xsd:group ref="mule:endpointTransformers" />
+				<xsd:element ref="mule:abstract-filter" minOccurs="0" />
+				<xsd:group ref="mule:propertiesGroup" />
+			</xsd:sequence>
+		</xsd:sequence>
+	</xsd:group>
+
 	<xsd:attributeGroup name="jcrObserverCommonAttributes">
 		<xsd:attribute name="uuids" type="xsd:string">
 			<xsd:annotation>
 				<xsd:documentation>
-					Only events whose associated node has one of the UUIDs in this list will be
-					received.
+					Only events whose associated node has one of the
+					UUIDs in this list will be received.
 				</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
@@ -146,7 +174,8 @@
 		<xsd:attribute name="nodeTypeNames" type="xsd:string">
 			<xsd:annotation>
 				<xsd:documentation>
-					Defines the node type that this connector will listen to.
+					Defines the node type that this connector will
+					listen to.
 				</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
@@ -156,10 +185,12 @@
 		<xsd:attribute name="contentPayloadType" default="NONE">
 			<xsd:annotation>
 				<xsd:documentation>
-					When an event of type PROPERTY_ADDED or PROPERTY_CHANGED is received, the
-					connector can get the content associated with the property that was source of
-					the event and add it to the Mule Message payload. This property controls what
-					content will be added to the payload.
+					When an event of type PROPERTY_ADDED or
+					PROPERTY_CHANGED is received, the connector can get
+					the content associated with the property that was
+					source of the event and add it to the Mule Message
+					payload. This property controls what content will be
+					added to the payload.
 				</xsd:documentation>
 			</xsd:annotation>
 			<xsd:simpleType>
@@ -171,42 +202,49 @@
 			</xsd:simpleType>
 		</xsd:attribute>
 
-		<xsd:attribute name="eventTypes" type="mule:substitutableInt" default="0">
+		<xsd:attribute name="eventTypes" type="mule:substitutableInt"
+			default="0">
 			<xsd:annotation>
 				<xsd:documentation>
-					A combination of one or more event type constants encoded as a bitmask, as
-					defined by the JCR API.
+					A combination of one or more event type constants
+					encoded as a bitmask, as defined by the JCR API.
 				</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 
-		<xsd:attribute name="deep" type="mule:substitutableBoolean" default="true">
+		<xsd:attribute name="deep" type="mule:substitutableBoolean"
+			default="true">
 			<xsd:annotation>
 				<xsd:documentation>
-					Define if events in the subtree of the path defined on the endpoint will also be
-					received.
+					Define if events in the subtree of the path defined
+					on the endpoint will also be received.
 				</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 
-		<xsd:attribute name="noLocal" type="mule:substitutableBoolean" default="false">
+		<xsd:attribute name="noLocal" type="mule:substitutableBoolean"
+			default="false">
 			<xsd:annotation>
 				<xsd:documentation>
-					If noLocal is true, then events generated by the session through which the
-					listener was registered are ignored.
+					If noLocal is true, then events generated by the
+					session through which the listener was registered
+					are ignored.
 				</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 	</xsd:attributeGroup>
 
-	<xsd:attributeGroup name="jcrObserverExtraAttributesWithoutDefaults">
+	<xsd:attributeGroup
+		name="jcrObserverExtraAttributesWithoutDefaults">
 		<xsd:attribute name="contentPayloadType">
 			<xsd:annotation>
 				<xsd:documentation>
-					When an event of type PROPERTY_ADDED or PROPERTY_CHANGED is received, the
-					connector can get the content associated with the property that was source of
-					the event and add it to the Mule Message payload. This property controls what
-					content will be added to the payload.
+					When an event of type PROPERTY_ADDED or
+					PROPERTY_CHANGED is received, the connector can get
+					the content associated with the property that was
+					source of the event and add it to the Mule Message
+					payload. This property controls what content will be
+					added to the payload.
 				</xsd:documentation>
 			</xsd:annotation>
 			<xsd:simpleType>
@@ -221,8 +259,8 @@
 		<xsd:attribute name="eventTypes" type="mule:substitutableInt">
 			<xsd:annotation>
 				<xsd:documentation>
-					A combination of one or more event type constants encoded as a bitmask, as
-					defined by the JCR API.
+					A combination of one or more event type constants
+					encoded as a bitmask, as defined by the JCR API.
 				</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
@@ -230,17 +268,19 @@
 		<xsd:attribute name="deep" type="mule:substitutableBoolean">
 			<xsd:annotation>
 				<xsd:documentation>
-					Define if events in the subtree of the path defined on the endpoint will also be
-					received.
+					Define if events in the subtree of the path defined
+					on the endpoint will also be received.
 				</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 
-		<xsd:attribute name="noLocal" type="mule:substitutableBoolean">
+		<xsd:attribute name="noLocal"
+			type="mule:substitutableBoolean">
 			<xsd:annotation>
 				<xsd:documentation>
-					If noLocal is true, then events generated by the session through which the
-					listener was registered are ignored.
+					If noLocal is true, then events generated by the
+					session through which the listener was registered
+					are ignored.
 				</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
@@ -250,7 +290,8 @@
 		<xsd:attribute name="nodeRelPath" type="xsd:string">
 			<xsd:annotation>
 				<xsd:documentation>
-					Defines a node relative path from the one defined in the endpoint or nodeUUID.
+					Defines a node relative path from the one defined in
+					the endpoint or nodeUUID.
 				</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
@@ -258,22 +299,26 @@
 		<xsd:attribute name="propertyRelPath" type="xsd:string">
 			<xsd:annotation>
 				<xsd:documentation>
-					Defines a property relative path from the one defined in the endpoint or
-					nodeUUID, combined with an optional nodeRelPath.
+					Defines a property relative path from the one
+					defined in the endpoint or nodeUUID, combined with
+					an optional nodeRelPath.
 				</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 
 		<xsd:attribute name="nodeUUID" type="xsd:string">
 			<xsd:annotation>
-				<xsd:documentation>Defines a single node by its UUID.</xsd:documentation>
+				<xsd:documentation>
+					Defines a single node by its UUID.
+				</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 
 		<xsd:attribute name="queryStatement" type="xsd:string">
 			<xsd:annotation>
 				<xsd:documentation>
-					Defines a query that will be executed to retrieve a single node.
+					Defines a query that will be executed to retrieve a
+					single node.
 				</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
@@ -281,24 +326,27 @@
 		<xsd:attribute name="queryLanguage" type="xsd:string">
 			<xsd:annotation>
 				<xsd:documentation>
-					Specifies the language used in the query statement (for example 'xpath' or
-					'sql').
+					Specifies the language used in the query statement
+					(for example 'xpath' or 'sql').
 				</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 	</xsd:attributeGroup>
 
 	<xsd:attributeGroup name="inboundEndpointAttributes">
-				<xsd:attributeGroup ref="jcrObserverCommonAttributes" />
-				<xsd:attributeGroup ref="jcrObserverExtraAttributesWithoutDefaults" />
+		<xsd:attributeGroup ref="jcrObserverCommonAttributes" />
+		<xsd:attributeGroup
+			ref="jcrObserverExtraAttributesWithoutDefaults" />
 	</xsd:attributeGroup>
 
 	<xsd:attributeGroup name="outboundEndpointAttributes">
-		<xsd:attribute name="alwaysCreate" type="mule:substitutableBoolean" default="false">
+		<xsd:attribute name="alwaysCreate"
+			type="mule:substitutableBoolean" default="false">
 			<xsd:annotation>
 				<xsd:documentation>
-					Forces the transport to create a new node even if one exists under the path
-					specified by the endpoint and the optional nodeRelPath.
+					Forces the transport to create a new node even if
+					one exists under the path specified by the endpoint
+					and the optional nodeRelPath.
 				</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
@@ -306,10 +354,43 @@
 		<xsd:attribute name="nodeTypeName" type="xsd:string">
 			<xsd:annotation>
 				<xsd:documentation>
-					Defines the node type that this endpoint will create.
+					Defines the node type that this endpoint will
+					create.
 				</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 	</xsd:attributeGroup>
+
+	<!-- Filters -->
+	<xsd:element name="node-name-filter"
+		substitutionGroup="mule:abstract-filter">
+		<xsd:complexType>
+			<xsd:complexContent>
+				<xsd:extension base="mule:abstractFilterType">
+					<xsd:attribute name="pattern" type="xsd:string" />
+				</xsd:extension>
+			</xsd:complexContent>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="property-name-filter"
+		substitutionGroup="mule:abstract-filter">
+		<xsd:complexType>
+			<xsd:complexContent>
+				<xsd:extension base="mule:abstractFilterType">
+					<xsd:attribute name="pattern" type="xsd:string" />
+				</xsd:extension>
+			</xsd:complexContent>
+		</xsd:complexType>
+	</xsd:element>
+
+	<!-- Transformers -->
+	<xsd:element name="event-to-object-transformer"
+		type="mule:abstractTransformerType"
+		substitutionGroup="mule:abstract-transformer" />
+	
+	<xsd:element name="item-to-object-transformer"
+		type="mule:abstractTransformerType"
+		substitutionGroup="mule:abstract-transformer" />
 
 </xsd:schema>
