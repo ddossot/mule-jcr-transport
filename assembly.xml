@@ -35,7 +35,7 @@
 		</fileSet>
 	</fileSets>
 	<dependencySets>
-		<!-- Mule libraries -->
+		<!-- Mule libraries 
 		<dependencySet>
 			<outputDirectory>lib/user</outputDirectory>
 			<outputFileNameMapping>mule-transport-jcr.${extension}</outputFileNameMapping>
@@ -44,6 +44,7 @@
 				<include>org.mule.tests:mule-tests-functional</include>
 			</includes>
 		</dependencySet>
+		-->
 		<!-- Non-Mule libraries -->
 		
 	</dependencySets>
