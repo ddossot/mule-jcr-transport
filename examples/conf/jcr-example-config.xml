@@ -1,24 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mule xmlns="http://www.mulesource.org/schema/mule/core/2.0"
+<mule xmlns="http://www.mulesource.org/schema/mule/core/2.1"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns:jcr="http://www.mulesource.org/schema/mule/jcr/2.0"
-	xmlns:tcp="http://www.mulesource.org/schema/mule/tcp/2.0"
-	xmlns:xm="http://www.mulesource.org/schema/mule/xml/2.0"
-	xmlns:vm="http://www.mulesource.org/schema/mule/vm/2.0"
-	xmlns:stdio="http://www.mulesource.org/schema/mule/stdio/2.0"
-	xmlns:http="http://www.mulesource.org/schema/mule/http/2.0"
-	xmlns:scripting="http://www.mulesource.org/schema/mule/scripting/2.0"
+	xmlns:tcp="http://www.mulesource.org/schema/mule/tcp/2.1"
+	xmlns:xm="http://www.mulesource.org/schema/mule/xml/2.1"
+	xmlns:vm="http://www.mulesource.org/schema/mule/vm/2.1"
+	xmlns:stdio="http://www.mulesource.org/schema/mule/stdio/2.1"
+	xmlns:http="http://www.mulesource.org/schema/mule/http/2.1"
+	xmlns:script="http://www.mulesource.org/schema/mule/scripting/2.1"
 	xmlns:spring="http://www.springframework.org/schema/beans"
 	xsi:schemaLocation="
-       http://www.mulesource.org/schema/mule/core/2.0 http://www.mulesource.org/schema/mule/core/2.0/mule.xsd
+       http://www.mulesource.org/schema/mule/core/2.1 http://www.mulesource.org/schema/mule/core/2.1/mule.xsd
        http://www.mulesource.org/schema/mule/jcr/2.0 http://www.mulesource.org/schema/mule/jcr/2.0/mule-jcr.xsd
-       http://www.mulesource.org/schema/mule/tcp/2.0 http://www.mulesource.org/schema/mule/tcp/2.0/mule-tcp.xsd
-       http://www.mulesource.org/schema/mule/xml/2.0 http://www.mulesource.org/schema/mule/xml/2.0/mule-xml.xsd
-       http://www.mulesource.org/schema/mule/vm/2.0 http://www.mulesource.org/schema/mule/vm/2.0/mule-vm.xsd
-       http://www.mulesource.org/schema/mule/stdio/2.0 http://www.mulesource.org/schema/mule/stdio/2.0/mule-stdio.xsd
-       http://www.mulesource.org/schema/mule/http/2.0 http://www.mulesource.org/schema/mule/http/2.0/mule-http.xsd
-       http://www.mulesource.org/schema/mule/scripting/2.0 http://www.mulesource.org/schema/mule/scripting/2.0/mule-scripting.xsd
-       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd">
+       http://www.mulesource.org/schema/mule/tcp/2.1 http://www.mulesource.org/schema/mule/tcp/2.1/mule-tcp.xsd
+       http://www.mulesource.org/schema/mule/xml/2.1 http://www.mulesource.org/schema/mule/xml/2.1/mule-xml.xsd
+       http://www.mulesource.org/schema/mule/vm/2.1 http://www.mulesource.org/schema/mule/vm/2.1/mule-vm.xsd
+       http://www.mulesource.org/schema/mule/stdio/2.1 http://www.mulesource.org/schema/mule/stdio/2.1/mule-stdio.xsd
+       http://www.mulesource.org/schema/mule/http/2.1 http://www.mulesource.org/schema/mule/http/2.1/mule-http.xsd
+       http://www.mulesource.org/schema/mule/scripting/2.1 http://www.mulesource.org/schema/mule/scripting/2.1/mule-scripting.xsd
+       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
 	
 	<spring:beans>
 		<spring:import resource="jcr-example-beans.xml" />
@@ -37,8 +37,6 @@
 	
 	<xm:object-to-xml-transformer name="ObjectToXml" />
 
-	<no-action-transformer name="NoActionTransformer"/>
-	
 	<jcr:endpoint name="jcrImages" path="/example/images">
 		<and-filter>
 			<jcr:node-name-filter pattern="jcr:content"/>
@@ -46,19 +44,23 @@
 		</and-filter>
 	</jcr:endpoint>
 	
-	<scripting:script name="httpImageFetcher"><![CDATA[
+	<script:script name="httpImageFetcher" engine="groovy">
+		<script:text><![CDATA[
 		def imageName = message.payload.substring(8)
 		message.clearProperties()
 		message.setStringProperty("nodeRelPath", imageName)
 		message.setStringProperty("Content-Type", "image/gif")
-		return eventContext.requestEvent("jcrImages", -1).payload
-	]]></scripting:script>
+		return eventContext.requestEvent("jcrImages", -1).payload	]]>
+		</script:text>
+	</script:script>
 	
-	<scripting:script name="tcpImageFetcher"><![CDATA[
+	<script:script name="tcpImageFetcher" engine="groovy">
+		<script:text><![CDATA[
 		def imageName = message.payloadAsString
 		message.setStringProperty("nodeRelPath", imageName)
-		return eventContext.requestEvent("jcrImages", -1).payload
-	]]></scripting:script>
+		return eventContext.requestEvent("jcrImages", -1).payload ]]>
+		</script:text>
+	</script:script>
 	
 	<model name="jcrExamples">
 		<!--
@@ -88,9 +90,9 @@
 				<vm:inbound-endpoint path="storeInProperty" />
 			</inbound>
 			<outbound>
-				<outbound-pass-through-router>
+				<pass-through-router>
 					<jcr:outbound-endpoint path="/example/targetProperty" />
-				</outbound-pass-through-router>
+				</pass-through-router>
 			</outbound>
 		</service>
 		<!--
@@ -102,12 +104,12 @@
 				<vm:inbound-endpoint path="storeInSingleNode" />
 			</inbound>
 			<outbound>
-				<outbound-pass-through-router>
+				<pass-through-router>
 					<jcr:outbound-endpoint path="/example" nodeRelPath="targetSingleNtResourceNode"
 						nodeTypeName="nt:resource" >
 						<property key="jcr:mimeType" value="text/plain" />
 					</jcr:outbound-endpoint>
-				</outbound-pass-through-router>
+				</pass-through-router>
 			</outbound>
 		</service>
 		<!--
@@ -119,10 +121,10 @@
 				<vm:inbound-endpoint path="storeInNewChildNodeEachTime" />
 			</inbound>
 			<outbound>
-				<outbound-pass-through-router>
+				<pass-through-router>
 					<jcr:outbound-endpoint path="/example" nodeRelPath="targetMultipleUnstructuredNode"
 						alwaysCreate="true" nodeTypeName="nt:unstructured" />
-				</outbound-pass-through-router>
+				</pass-through-router>
 			</outbound>
 		</service>
 		<!--
@@ -135,9 +137,9 @@
 			</inbound>
 			<echo-component/>
 			<outbound>
-				<outbound-pass-through-router>
+				<pass-through-router>
 					<stdio:outbound-endpoint system="OUT" transformer-refs="ObjectToXml"/>
-				</outbound-pass-through-router>
+				</pass-through-router>
 			</outbound>
 		</service>
 		<!--
@@ -158,41 +160,29 @@
 					</not-filter>
 				</http:inbound-endpoint>
 			</inbound>
-			<pooled-component>
-				<prototype-object
-					class="org.mule.module.scripting.component.ScriptComponent">
-					<property key="scriptEngineName" value="groovy" />
-					<property key="scriptText" value-ref="httpImageFetcher" />
-				</prototype-object>
-			</pooled-component>
+			<script:component script-ref="httpImageFetcher" />
 		</service>
 		<!--
-			Example of a TCP endpoint streaming JCR content. Use the main() of
-			org.mule.examples.jcr.JcrImageStreamClient to test it.
+			Examples of TCP endpoints streaming JCR content. Use the main() of
+			org.mule.examples.jcr.JcrImageStreamClient to test them.
 		-->
 		<service name="jcrStreamingHttpContentFetcher">
 			<inbound>
 				<tcp:inbound-endpoint host="localhost" port="9999" synchronous="true" />
 			</inbound>
-			<pooled-component>
-				<prototype-object
-					class="org.mule.module.scripting.component.ScriptComponent">
-					<property key="scriptEngineName" value="groovy" />
-					<property key="scriptText" value-ref="tcpImageFetcher" />
-				</prototype-object>
-			</pooled-component>			
+			<script:component script-ref="tcpImageFetcher" />
 		</service>
 		<service name="jcrStreamingStoreToNewChildNode">
 			<inbound>
 				<tcp:inbound-endpoint host="localhost" port="9998" synchronous="true" />
 			</inbound>
 			<outbound>
-				<outbound-pass-through-router>
+				<pass-through-router>
 					<jcr:outbound-endpoint path="/example" nodeRelPath="streamedData"
 						nodeTypeName="nt:resource">
 						<property key="jcr:mimeType" value="text/plain" />
 					</jcr:outbound-endpoint>
-				</outbound-pass-through-router>
+				</pass-through-router>
 			</outbound>
 		</service>
 	</model>

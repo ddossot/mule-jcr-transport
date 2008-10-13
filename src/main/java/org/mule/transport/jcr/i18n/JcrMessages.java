@@ -19,39 +19,41 @@ import org.mule.config.i18n.MessageFactory;
  * 
  * @author David Dossot (david@dossot.net)
  */
-public abstract class JcrMessages extends MessageFactory {
+public class JcrMessages extends MessageFactory {
 
-	private static final String BUNDLE_PATH = getBundlePath("jcr");
+    private static final JcrMessages INSTANCE = new JcrMessages();
 
-	public static Message missingDependency(final String name) {
-		return createMessage(BUNDLE_PATH, 0, name);
-	}
+    private static final String BUNDLE_PATH = getBundlePath("jcr");
 
-	public static Message observationsNotSupported() {
-		return createMessage(BUNDLE_PATH, 1);
-	}
+    public static Message missingDependency(final String name) {
+        return INSTANCE.createMessage(BUNDLE_PATH, 0, name);
+    }
 
-	public static Message canNotGetObservationManager(final String workspaceName) {
-		return createMessage(BUNDLE_PATH, 2, workspaceName);
-	}
+    public static Message observationsNotSupported() {
+        return INSTANCE.createMessage(BUNDLE_PATH, 1);
+    }
 
-	public static Message noNodeFor(final String criteria) {
-		return createMessage(BUNDLE_PATH, 3, criteria);
-	}
+    public static Message canNotGetObservationManager(final String workspaceName) {
+        return INSTANCE.createMessage(BUNDLE_PATH, 2, workspaceName);
+    }
 
-	public static Message badFilterType(final Class clazz) {
-		return createMessage(BUNDLE_PATH, 4, clazz);
-	}
+    public static Message noNodeFor(final String criteria) {
+        return INSTANCE.createMessage(BUNDLE_PATH, 3, criteria);
+    }
 
-	public static Message moreThanOneNodeFor(final String criteria) {
-		return createMessage(BUNDLE_PATH, 5, criteria);
-	}
+    public static Message badFilterType(final Class<?> clazz) {
+        return INSTANCE.createMessage(BUNDLE_PATH, 4, clazz);
+    }
 
-	public static Message sqlQuerySyntaxNotSupported() {
-		return createMessage(BUNDLE_PATH, 6);
-	}
+    public static Message moreThanOneNodeFor(final String criteria) {
+        return INSTANCE.createMessage(BUNDLE_PATH, 5, criteria);
+    }
 
-	public static Message notAnOutboundEndpoint(ImmutableEndpoint endpoint) {
-		return createMessage(BUNDLE_PATH, 7, endpoint);
-	}
+    public static Message sqlQuerySyntaxNotSupported() {
+        return INSTANCE.createMessage(BUNDLE_PATH, 6);
+    }
+
+    public static Message notAnOutboundEndpoint(final ImmutableEndpoint endpoint) {
+        return INSTANCE.createMessage(BUNDLE_PATH, 7, endpoint);
+    }
 }

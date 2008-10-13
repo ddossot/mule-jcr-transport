@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.jcr.Credentials;
 import javax.jcr.Repository;
@@ -25,7 +26,7 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.SimpleCredentials;
 
-import org.apache.commons.lang.UnhandledException;
+import org.apache.commons.lang.Validate;
 import org.mule.DefaultMuleEvent;
 import org.mule.DefaultMuleMessage;
 import org.mule.RequestContext;
@@ -35,12 +36,13 @@ import org.mule.api.MuleMessage;
 import org.mule.api.MuleSession;
 import org.mule.api.endpoint.OutboundEndpoint;
 import org.mule.api.lifecycle.InitialisationException;
+import org.mule.api.retry.RetryCallback;
+import org.mule.api.retry.RetryContext;
 import org.mule.api.transport.ConnectorException;
 import org.mule.api.transport.DispatchException;
 import org.mule.config.i18n.CoreMessages;
 import org.mule.model.streaming.CallbackOutputStream;
 import org.mule.transport.AbstractConnector;
-import org.mule.transport.FatalConnectException;
 import org.mule.transport.jcr.config.JcrNamespaceHandler;
 import org.mule.transport.jcr.handlers.NodeTypeHandler;
 import org.mule.transport.jcr.handlers.NodeTypeHandlerManager;
@@ -101,15 +103,13 @@ public final class JcrConnector extends AbstractConnector {
      * Property that defines a list of node types that will only be listened to
      * for changes.
      */
-    public static final String JCR_NODE_TYPE_NAME_LIST_PROPERTY =
-            "nodeTypeNames";
+    public static final String JCR_NODE_TYPE_NAME_LIST_PROPERTY = "nodeTypeNames";
 
     /**
      * Property that defines the type of payload that a JCR
      * <code>MuleMessage</code> will contain.
      */
-    public static final String JCR_CONTENT_PAYLOAD_TYPE_PROPERTY =
-            "contentPayloadType";
+    public static final String JCR_CONTENT_PAYLOAD_TYPE_PROPERTY = "contentPayloadType";
 
     /**
      * Property that defines if local events must be ignored.
@@ -120,8 +120,7 @@ public final class JcrConnector extends AbstractConnector {
      * Property that defines a relative path to append at the end of the target
      * item path.
      */
-    public static final String JCR_PROPERTY_REL_PATH_PROPERTY =
-            "propertyRelPath";
+    public static final String JCR_PROPERTY_REL_PATH_PROPERTY = "propertyRelPath";
 
     /**
      * Property that defines a relative path to append after the endpoint item
@@ -133,8 +132,7 @@ public final class JcrConnector extends AbstractConnector {
      * Property that forces the creation of a child node under the node target
      * by the endpoint URI, instead of trying first to locate an existing one.
      */
-    public static final String JCR_ALWAYS_CREATE_CHILD_NODE_PROPERTY =
-            "alwaysCreate";
+    public static final String JCR_ALWAYS_CREATE_CHILD_NODE_PROPERTY = "alwaysCreate";
 
     /**
      * Property that defines a particular node type name.
@@ -167,11 +165,12 @@ public final class JcrConnector extends AbstractConnector {
     @Override
     public void doInitialise() throws InitialisationException {
         if (getRepository() == null) {
-            throw new InitialisationException(
-                    JcrMessages.missingDependency("repository"), this);
+            throw new InitialisationException(JcrMessages
+                    .missingDependency("repository"), this);
         }
 
-        if (getRepository().getDescriptor(Repository.OPTION_QUERY_SQL_SUPPORTED) == null) {
+        if (getRepository()
+                .getDescriptor(Repository.OPTION_QUERY_SQL_SUPPORTED) == null) {
             logger.info(JcrMessages.sqlQuerySyntaxNotSupported());
         }
 
@@ -211,8 +210,8 @@ public final class JcrConnector extends AbstractConnector {
             final MuleMessage message) throws MuleException {
 
         if (!(endpoint instanceof OutboundEndpoint)) {
-            throw new ConnectorException(
-                    JcrMessages.notAnOutboundEndpoint(endpoint), this);
+            throw new ConnectorException(JcrMessages
+                    .notAnOutboundEndpoint(endpoint), this);
         }
 
         final PipedInputStream pipedInputStream = new PipedInputStream();
@@ -221,14 +220,14 @@ public final class JcrConnector extends AbstractConnector {
         try {
             pipedOutputStream = new PipedOutputStream(pipedInputStream);
         } catch (final IOException ioe) {
-            throw new ConnectorException(
-                    CoreMessages.streamingFailedForEndpoint(endpoint.toString()),
-                    this, ioe);
+            throw new ConnectorException(CoreMessages
+                    .streamingFailedForEndpoint(endpoint.toString()), this, ioe);
         }
 
         final Map properties = new HashMap();
 
-        for (final Iterator i = message.getPropertyNames().iterator(); i.hasNext();) {
+        for (final Iterator i = message.getPropertyNames().iterator(); i
+                .hasNext();) {
             final String propertyName = (String) i.next();
             properties.put(propertyName, message.getProperty(propertyName));
         }
@@ -279,10 +278,9 @@ public final class JcrConnector extends AbstractConnector {
             logger.debug("Opening new JCR session.");
         }
 
-        final Credentials credentials =
-                ((getUsername() != null) && (getPassword() != null)) ? new SimpleCredentials(
-                        getUsername(), getPassword().toCharArray())
-                        : null;
+        final Credentials credentials = ((getUsername() != null) && (getPassword() != null)) ? new SimpleCredentials(
+                getUsername(), getPassword().toCharArray())
+                : null;
 
         return getRepository().login(credentials, getWorkspaceName());
     }
@@ -303,45 +301,40 @@ public final class JcrConnector extends AbstractConnector {
 
     public Session validateSession(final Session session) {
         if ((session != null) && (session.isLive())) {
+
             return session;
+
         } else {
             logger.info("JCR session is invalid: a new one will be created.");
 
+            final AtomicReference<Session> newSessionReference = new AtomicReference<Session>();
+
             try {
-                return newSession();
-            } catch (final RepositoryException re) {
-                logger.error("Impossible to reconnect to the JCR container!",
-                        re);
+                getRetryPolicyTemplate().execute(new RetryCallback() {
 
-                if (connectionStrategy != null) {
-                    initialised.set(false);
-
-                    try {
-                        stop();
-                    } catch (final MuleException umoe) {
-                        logger.warn(umoe.getMessage(), umoe);
+                    public void doWork(final RetryContext context)
+                            throws Exception {
+                        newSessionReference.set(newSession());
                     }
 
-                    try {
-                        connectionStrategy.connect(this);
-                        initialise();
-                        start();
-                        return session;
-
-                    } catch (final FatalConnectException fce) {
-                        throw new IllegalStateException(
-                                "Failed to reconnect to JCR server. I'm giving up.");
-                    } catch (final MuleException umoe) {
-                        throw new UnhandledException(
-                                "Failed to recover a connector.", umoe);
+                    public String getWorkDescription() {
+                        return "Refreshing JCR session for: "
+                                + getConnectionDescription();
                     }
+                });
 
-                } else {
-                    throw new IllegalStateException(
-                            "Connection to the JCR container has been lost "
-                                    + "and no connection strategy has been defined on the connector!");
-                }
+            } catch (final Exception e) {
+                throw new RuntimeException(
+                        "Error when recreating a session to the JCR container!",
+                        e);
             }
+
+            final Session newSession = newSessionReference.get();
+
+            Validate.notNull(newSession,
+                    "The JCR has not be refreshed and is permanently invalid");
+
+            return newSession;
         }
     }
 
@@ -367,13 +360,12 @@ public final class JcrConnector extends AbstractConnector {
     public void setCustomNodeTypeHandlers(final List customNodeTypeHandlers) {
         if (customNodeTypeHandlers != null) {
             for (int i = 0; i < customNodeTypeHandlers.size(); i++) {
-                final String customNodeTypeHandlerClassName =
-                        customNodeTypeHandlers.get(i).toString();
+                final String customNodeTypeHandlerClassName = customNodeTypeHandlers
+                        .get(i).toString();
 
                 try {
-                    final NodeTypeHandler handler =
-                            (NodeTypeHandler) ClassUtils.instanciateClass(
-                                    customNodeTypeHandlerClassName,
+                    final NodeTypeHandler handler = (NodeTypeHandler) ClassUtils
+                            .instanciateClass(customNodeTypeHandlerClassName,
                                     ClassUtils.NO_ARGS, this.getClass());
 
                     getNodeTypeHandlerManager().registerHandler(handler);
@@ -401,7 +393,7 @@ public final class JcrConnector extends AbstractConnector {
 
     /**
      * @param password
-     *            the password to set
+     *                the password to set
      */
     public void setPassword(final String password) {
         this.password = password;
@@ -416,7 +408,7 @@ public final class JcrConnector extends AbstractConnector {
 
     /**
      * @param repository
-     *            the repository to set
+     *                the repository to set
      */
     public void setRepository(final Repository repository) {
         this.repository = repository;
@@ -431,7 +423,7 @@ public final class JcrConnector extends AbstractConnector {
 
     /**
      * @param username
-     *            the username to set
+     *                the username to set
      */
     public void setUsername(final String username) {
         this.username = username;
@@ -446,7 +438,7 @@ public final class JcrConnector extends AbstractConnector {
 
     /**
      * @param workspaceName
-     *            the workspaceName to set
+     *                the workspaceName to set
      */
     public void setWorkspaceName(final String workspaceName) {
         this.workspaceName = workspaceName;
@@ -461,7 +453,7 @@ public final class JcrConnector extends AbstractConnector {
 
     /**
      * @param deep
-     *            the deep to set
+     *                the deep to set
      */
     public void setDeep(final Boolean deep) {
         this.deep = deep;
@@ -476,7 +468,7 @@ public final class JcrConnector extends AbstractConnector {
 
     /**
      * @param eventTypes
-     *            the eventTypes to set
+     *                the eventTypes to set
      */
     public void setEventTypes(final Integer eventTypes) {
         this.eventTypes = eventTypes;
@@ -491,7 +483,7 @@ public final class JcrConnector extends AbstractConnector {
 
     /**
      * @param nodeTypeNames
-     *            the nodeTypeNames to set
+     *                the nodeTypeNames to set
      */
     public void setNodeTypeNames(final String nodeTypeNames) {
         this.nodeTypeNames = JcrNamespaceHandler.split(nodeTypeNames);
@@ -506,7 +498,7 @@ public final class JcrConnector extends AbstractConnector {
 
     /**
      * @param noLocal
-     *            the noLocal to set
+     *                the noLocal to set
      */
     public void setNoLocal(final Boolean noLocal) {
         this.noLocal = noLocal;
@@ -521,7 +513,7 @@ public final class JcrConnector extends AbstractConnector {
 
     /**
      * @param uuid
-     *            the uuid to set
+     *                the uuid to set
      */
     public void setUuids(final String uuids) {
         this.uuids = JcrNamespaceHandler.split(uuids);
@@ -536,7 +528,7 @@ public final class JcrConnector extends AbstractConnector {
 
     /**
      * @param contentPayloadType
-     *            the contentPayloadType to set
+     *                the contentPayloadType to set
      */
     public void setContentPayloadType(final String contentPayloadType) {
         this.contentPayloadType = contentPayloadType;

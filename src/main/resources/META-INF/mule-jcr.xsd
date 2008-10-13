@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <xsd:schema xmlns="http://www.mulesource.org/schema/mule/jcr/2.0"
 	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-	xmlns:mule="http://www.mulesource.org/schema/mule/core/2.0"
+	xmlns:mule="http://www.mulesource.org/schema/mule/core/2.1"
 	xmlns:spring="http://www.springframework.org/schema/beans"
 	targetNamespace="http://www.mulesource.org/schema/mule/jcr/2.0"
 	elementFormDefault="qualified" attributeFormDefault="unqualified">
@@ -12,8 +12,8 @@
 		schemaLocation="http://www.springframework.org/schema/beans" />
 
 	<xsd:import
-		namespace="http://www.mulesource.org/schema/mule/core/2.0"
-		schemaLocation="http://www.mulesource.org/schema/mule/core/2.0/mule.xsd" />
+		namespace="http://www.mulesource.org/schema/mule/core/2.1"
+		schemaLocation="http://www.mulesource.org/schema/mule/core/2.1/mule.xsd" />
 
 	<xsd:element name="connector" type="jcrConnectorType"
 		substitutionGroup="mule:abstract-connector">
