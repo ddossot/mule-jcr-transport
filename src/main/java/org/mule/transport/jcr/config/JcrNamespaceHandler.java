@@ -68,8 +68,8 @@ public class JcrNamespaceHandler extends NamespaceHandlerSupport {
      * Supports configuration that uses attributes containing lists of
      * whitespace separated values.
      */
-    public static List split(final String values) {
-        return StringUtils.isNotBlank(values) ? Arrays.asList(StringUtils.split(values))
-                : null;
+    public static List<String> split(final String values) {
+        return StringUtils.isNotBlank(values) ? Arrays.asList(StringUtils
+                .split(values)) : null;
     }
 }
