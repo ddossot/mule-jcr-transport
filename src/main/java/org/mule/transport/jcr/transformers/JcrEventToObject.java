@@ -19,6 +19,7 @@ import javax.jcr.observation.EventIterator;
 import org.mule.api.transformer.TransformerException;
 import org.mule.transformer.AbstractDiscoverableTransformer;
 import org.mule.transport.jcr.JcrContentPayloadType;
+import org.mule.transport.jcr.JcrMessage;
 import org.mule.transport.jcr.JcrMessageReceiver;
 import org.mule.transport.jcr.JcrMessageReceiverContext;
 import org.mule.transport.jcr.JcrUtils;
@@ -31,42 +32,42 @@ import org.mule.transport.jcr.JcrUtils;
  */
 public class JcrEventToObject extends AbstractDiscoverableTransformer {
 
-	private JcrContentPayloadType contentPayloadType;
+    private JcrContentPayloadType contentPayloadType;
 
-	public JcrEventToObject() {
-		super();
-		registerSourceType(EventIterator.class);
-	}
+    public JcrEventToObject() {
+        super();
+        registerSourceType(EventIterator.class);
+    }
 
-	@Override
-	protected Object doTransform(final Object src, final String encoding)
-			throws TransformerException {
+    @Override
+    protected Object doTransform(final Object src, final String encoding)
+            throws TransformerException {
 
-		final List eventList = new ArrayList();
-		final EventIterator eventIterator = (EventIterator) src;
+        final List<JcrMessage> eventList = new ArrayList<JcrMessage>();
+        final EventIterator eventIterator = (EventIterator) src;
 
-		final JcrMessageReceiverContext jcrMessageReceiverContext = JcrMessageReceiver
-				.getJcrMessageReceiverContext();
+        final JcrMessageReceiverContext jcrMessageReceiverContext = JcrMessageReceiver
+                .getJcrMessageReceiverContext();
 
-		while (eventIterator.hasNext()) {
-			try {
-				eventList.add(JcrUtils.newJcrMessage(eventIterator.nextEvent(),
-						jcrMessageReceiverContext.getObservingSession(),
-						contentPayloadType != null ? contentPayloadType
-								: jcrMessageReceiverContext
-										.getContentPayloadType()));
+        while (eventIterator.hasNext()) {
+            try {
+                eventList.add(JcrUtils.newJcrMessage(eventIterator.nextEvent(),
+                        jcrMessageReceiverContext.getObservingSession(),
+                        contentPayloadType != null ? contentPayloadType
+                                : jcrMessageReceiverContext
+                                        .getContentPayloadType()));
 
-			} catch (final RepositoryException re) {
-				logger.error("Can not process JCR event", re);
-			}
-		}
+            } catch (final RepositoryException re) {
+                logger.error("Can not process JCR event", re);
+            }
+        }
 
-		return eventList;
-	}
+        return eventList;
+    }
 
-	public void setContentPayloadType(final String contentPayloadType) {
-		this.contentPayloadType = JcrContentPayloadType
-				.fromString(contentPayloadType);
-	}
+    public void setContentPayloadType(final String contentPayloadType) {
+        this.contentPayloadType = JcrContentPayloadType
+                .fromString(contentPayloadType);
+    }
 
 }
