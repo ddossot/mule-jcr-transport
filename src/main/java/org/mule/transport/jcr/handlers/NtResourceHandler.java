@@ -29,91 +29,92 @@ import org.mule.api.MuleMessage;
  */
 final class NtResourceHandler extends AbstractNodeTypeHandler {
 
-	static final String NT_RESOURCE_NODE_TYPE = "nt:resource";
+    static final String NT_RESOURCE_NODE_TYPE = "nt:resource";
 
-	static final String JCR_LAST_MODIFIED_PROPERTY_NAME = "jcr:lastModified";
+    static final String JCR_LAST_MODIFIED_PROPERTY_NAME = "jcr:lastModified";
 
-	static final String JCR_DATA_PROPERTY_NAME = "jcr:data";
+    static final String JCR_DATA_PROPERTY_NAME = "jcr:data";
 
-	static final String JCR_MIME_TYPE_PROPERTY_NAME = "jcr:mimeType";
+    static final String JCR_MIME_TYPE_PROPERTY_NAME = "jcr:mimeType";
 
-	static final String JCR_ENCODING_PROPERTY_NAME = "jcr:encoding";
+    static final String JCR_ENCODING_PROPERTY_NAME = "jcr:encoding";
 
-	public String getNodeTypeName() {
-		return NT_RESOURCE_NODE_TYPE;
-	}
+    public String getNodeTypeName() {
+        return NT_RESOURCE_NODE_TYPE;
+    }
 
-	@Override
-	protected void createChildren(final Node node) throws RepositoryException {
-		// no children to create
-	}
+    @Override
+    protected void createChildren(final Node node) throws RepositoryException {
+        // no children to create
+    }
 
-	public void updateContent(final Session session, final Node node,
-			final MuleMessage message) throws RepositoryException, IOException {
+    public void updateContent(final Session session, final Node node,
+            final MuleMessage message) throws RepositoryException, IOException {
 
-		final Object payload = message.getPayload();
+        final Object payload = message.getPayload();
 
-		String mimeType = null;
-		String encoding = null;
-		Object data = null;
-		Calendar lastModified = null;
+        String mimeType = null;
+        String encoding = null;
+        Object data = null;
+        Calendar lastModified = null;
 
-		if (payload instanceof Map) {
-			// if the payload is a Map, we assume that the intention is to pass
-			// a map of property names and values
-			final Map mapPayload = (Map) payload;
+        if (payload instanceof Map) {
+            // if the payload is a Map, we assume that the intention is to pass
+            // a map of property names and values
+            @SuppressWarnings("unchecked")
+            final Map<String, ?> mapPayload = (Map<String, ?>) payload;
 
-			encoding = (String) mapPayload.get(JCR_ENCODING_PROPERTY_NAME);
-			mimeType = (String) mapPayload.get(JCR_MIME_TYPE_PROPERTY_NAME);
-			data = mapPayload.get(JCR_DATA_PROPERTY_NAME);
-			lastModified = (Calendar) mapPayload
-					.get(JCR_LAST_MODIFIED_PROPERTY_NAME);
-		} else {
-			// look into message props for meta and payload for data
-			encoding = (String) message.getProperty(JCR_ENCODING_PROPERTY_NAME);
-			mimeType = (String) message
-					.getProperty(JCR_MIME_TYPE_PROPERTY_NAME);
-			data = payload;
-			lastModified = (Calendar) message
-					.getProperty(JCR_LAST_MODIFIED_PROPERTY_NAME);
-		}
+            encoding = (String) mapPayload.get(JCR_ENCODING_PROPERTY_NAME);
+            mimeType = (String) mapPayload.get(JCR_MIME_TYPE_PROPERTY_NAME);
+            data = mapPayload.get(JCR_DATA_PROPERTY_NAME);
+            lastModified = (Calendar) mapPayload
+                    .get(JCR_LAST_MODIFIED_PROPERTY_NAME);
+        } else {
+            // look into message props for meta and payload for data
+            encoding = (String) message.getProperty(JCR_ENCODING_PROPERTY_NAME);
+            mimeType = (String) message
+                    .getProperty(JCR_MIME_TYPE_PROPERTY_NAME);
+            data = payload;
+            lastModified = (Calendar) message
+                    .getProperty(JCR_LAST_MODIFIED_PROPERTY_NAME);
+        }
 
-		if (mimeType == null) {
-			throw new IllegalArgumentException("Property: "
-					+ JCR_MIME_TYPE_PROPERTY_NAME
-					+ " can not be null for node type: " + getNodeTypeName());
-		}
+        if (mimeType == null) {
+            throw new IllegalArgumentException("Property: "
+                    + JCR_MIME_TYPE_PROPERTY_NAME
+                    + " can not be null for node type: " + getNodeTypeName());
+        }
 
-		node.setProperty(JCR_MIME_TYPE_PROPERTY_NAME, mimeType);
+        node.setProperty(JCR_MIME_TYPE_PROPERTY_NAME, mimeType);
 
-		InputStream binaryContent;
+        InputStream binaryContent;
 
-		if (data instanceof InputStream) {
-			binaryContent = (InputStream) data;
-		} else {
-			try {
-				binaryContent = new ByteArrayInputStream(message
-						.getPayloadAsBytes());
-			} catch (final Exception e) {
-				throw new RepositoryException(
-						"Can not extract binary content from MuleMessage: "
-								+ message, e);
-			}
-		}
+        if (data instanceof InputStream) {
+            binaryContent = (InputStream) data;
+        } else {
+            try {
+                binaryContent = new ByteArrayInputStream(message
+                        .getPayloadAsBytes());
+            } catch (final Exception e) {
+                throw new RepositoryException(
+                        "Can not extract binary content from MuleMessage: "
+                                + message, e);
+            }
+        }
 
-		node.setProperty(JCR_DATA_PROPERTY_NAME, binaryContent);
+        node.setProperty(JCR_DATA_PROPERTY_NAME, binaryContent);
 
-		// encoding is optional: do not set it, unless it has been specified as
-		// a property
-		if (encoding != null) {
-			node.setProperty(JCR_ENCODING_PROPERTY_NAME, encoding);
-		}
+        // encoding is optional: do not set it, unless it has been specified as
+        // a property
+        if (encoding != null) {
+            node.setProperty(JCR_ENCODING_PROPERTY_NAME, encoding);
+        }
 
-		// if no last modified is provided, a reasonable default is: now
-		if (lastModified == null) {
-			lastModified = Calendar.getInstance();
-		}
+        // if no last modified is provided, a reasonable default is: now
+        if (lastModified == null) {
+            lastModified = Calendar.getInstance();
+        }
 
-		node.setProperty(JCR_LAST_MODIFIED_PROPERTY_NAME, lastModified);
-	}
+        node.setProperty(JCR_LAST_MODIFIED_PROPERTY_NAME, lastModified);
+    }
 }

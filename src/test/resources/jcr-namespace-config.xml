@@ -22,6 +22,15 @@
 		repository-ref="jcrRepository" username="admin" password="admin"
 		workspaceName="test" contentPayloadType="NOBINARY" eventTypes="31"
 		deep="false" noLocal="true" uuids="foo bar" nodeTypeNames="oof rab" />
+		
+		<jcr:connector name="jcrConnectorWithCustomNodeTypeHandlers"
+		repository-ref="jcrRepository" >
+			<spring:property name="customNodeTypeHandlers">
+				<spring:list>
+					<spring:value>org.mule.transport.jcr.handlers.NtQueryNodeTypeHandler</spring:value>
+				</spring:list>
+			</spring:property>
+		</jcr:connector>
 
 	<jcr:endpoint name="jcrEndpointMinimumConfiguration" path="/ref"
 		connector-ref="jcrConnectorMinimumConfiguration" />

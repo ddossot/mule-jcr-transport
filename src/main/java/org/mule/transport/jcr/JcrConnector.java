@@ -15,9 +15,9 @@ import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.jcr.Credentials;
@@ -71,9 +71,9 @@ public final class JcrConnector extends AbstractConnector {
 
     private Boolean deep;
 
-    private List uuids;
+    private List<String> uuids;
 
-    private List nodeTypeNames;
+    private List<String> nodeTypeNames;
 
     private Boolean noLocal;
 
@@ -224,11 +224,12 @@ public final class JcrConnector extends AbstractConnector {
                     .streamingFailedForEndpoint(endpoint.toString()), this, ioe);
         }
 
-        final Map properties = new HashMap();
+        final Map<String, Object> properties = new HashMap<String, Object>();
 
-        for (final Iterator i = message.getPropertyNames().iterator(); i
-                .hasNext();) {
-            final String propertyName = (String) i.next();
+        @SuppressWarnings("unchecked")
+        final Set<String> propertyNames = message.getPropertyNames();
+
+        for (final String propertyName : propertyNames) {
             properties.put(propertyName, message.getProperty(propertyName));
         }
 
@@ -246,7 +247,7 @@ public final class JcrConnector extends AbstractConnector {
                             pipedInputStream, properties), endpoint, session,
                             true));
 
-                } catch (DispatchException de) {
+                } catch (final DispatchException de) {
                     logger.error("Can not send streaming message!", de);
                 }
             }
@@ -357,21 +358,21 @@ public final class JcrConnector extends AbstractConnector {
      * 
      * @param customNodeTypeHandlers
      */
-    public void setCustomNodeTypeHandlers(final List customNodeTypeHandlers) {
+    public void setCustomNodeTypeHandlers(
+            final List<Class<? extends NodeTypeHandler>> customNodeTypeHandlers) {
+
         if (customNodeTypeHandlers != null) {
-            for (int i = 0; i < customNodeTypeHandlers.size(); i++) {
-                final String customNodeTypeHandlerClassName = customNodeTypeHandlers
-                        .get(i).toString();
+            for (final Class<? extends NodeTypeHandler> customNodeTypeHandlerClass : customNodeTypeHandlers) {
 
                 try {
                     final NodeTypeHandler handler = (NodeTypeHandler) ClassUtils
-                            .instanciateClass(customNodeTypeHandlerClassName,
-                                    ClassUtils.NO_ARGS, this.getClass());
+                            .instanciateClass(customNodeTypeHandlerClass,
+                                    ClassUtils.NO_ARGS);
 
                     getNodeTypeHandlerManager().registerHandler(handler);
                 } catch (final Exception e) {
                     logger.error("Can not load custom type handler: "
-                            + customNodeTypeHandlerClassName, e);
+                            + customNodeTypeHandlerClass.getName(), e);
                 }
             }
         }
@@ -393,7 +394,7 @@ public final class JcrConnector extends AbstractConnector {
 
     /**
      * @param password
-     *                the password to set
+     *            the password to set
      */
     public void setPassword(final String password) {
         this.password = password;
@@ -408,7 +409,7 @@ public final class JcrConnector extends AbstractConnector {
 
     /**
      * @param repository
-     *                the repository to set
+     *            the repository to set
      */
     public void setRepository(final Repository repository) {
         this.repository = repository;
@@ -423,7 +424,7 @@ public final class JcrConnector extends AbstractConnector {
 
     /**
      * @param username
-     *                the username to set
+     *            the username to set
      */
     public void setUsername(final String username) {
         this.username = username;
@@ -438,7 +439,7 @@ public final class JcrConnector extends AbstractConnector {
 
     /**
      * @param workspaceName
-     *                the workspaceName to set
+     *            the workspaceName to set
      */
     public void setWorkspaceName(final String workspaceName) {
         this.workspaceName = workspaceName;
@@ -453,7 +454,7 @@ public final class JcrConnector extends AbstractConnector {
 
     /**
      * @param deep
-     *                the deep to set
+     *            the deep to set
      */
     public void setDeep(final Boolean deep) {
         this.deep = deep;
@@ -468,7 +469,7 @@ public final class JcrConnector extends AbstractConnector {
 
     /**
      * @param eventTypes
-     *                the eventTypes to set
+     *            the eventTypes to set
      */
     public void setEventTypes(final Integer eventTypes) {
         this.eventTypes = eventTypes;
@@ -477,13 +478,13 @@ public final class JcrConnector extends AbstractConnector {
     /**
      * @return the nodeTypeNames
      */
-    List getNodeTypeNames() {
+    List<String> getNodeTypeNames() {
         return nodeTypeNames;
     }
 
     /**
      * @param nodeTypeNames
-     *                the nodeTypeNames to set
+     *            the nodeTypeNames to set
      */
     public void setNodeTypeNames(final String nodeTypeNames) {
         this.nodeTypeNames = JcrNamespaceHandler.split(nodeTypeNames);
@@ -498,7 +499,7 @@ public final class JcrConnector extends AbstractConnector {
 
     /**
      * @param noLocal
-     *                the noLocal to set
+     *            the noLocal to set
      */
     public void setNoLocal(final Boolean noLocal) {
         this.noLocal = noLocal;
@@ -507,13 +508,13 @@ public final class JcrConnector extends AbstractConnector {
     /**
      * @return the uuid
      */
-    List getUuids() {
+    List<String> getUuids() {
         return uuids;
     }
 
     /**
      * @param uuid
-     *                the uuid to set
+     *            the uuid to set
      */
     public void setUuids(final String uuids) {
         this.uuids = JcrNamespaceHandler.split(uuids);
@@ -528,7 +529,7 @@ public final class JcrConnector extends AbstractConnector {
 
     /**
      * @param contentPayloadType
-     *                the contentPayloadType to set
+     *            the contentPayloadType to set
      */
     public void setContentPayloadType(final String contentPayloadType) {
         this.contentPayloadType = contentPayloadType;

@@ -276,11 +276,10 @@ public class JcrUtils {
     }
 
     public static void storeProperties(final Session session,
-            final Node targetNode,
-            final Map<String, Object> propertyNamesAndValues)
+            final Node targetNode, final Map<String, ?> propertyNamesAndValues)
             throws RepositoryException, IOException {
 
-        for (final Map.Entry<String, Object> propertyNameAndValue : propertyNamesAndValues
+        for (final Map.Entry<String, ?> propertyNameAndValue : propertyNamesAndValues
                 .entrySet()) {
 
             final String propertyName = propertyNameAndValue.getKey();
