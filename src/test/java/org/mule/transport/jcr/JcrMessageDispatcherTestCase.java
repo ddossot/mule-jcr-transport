@@ -63,7 +63,7 @@ public class JcrMessageDispatcherTestCase extends AbstractJcrMessagerTestCase {
     }
 
     public void testStoreMapInNode() throws Exception {
-        final Map propertyNameAndValues = new HashMap();
+        final Map<String, Object> propertyNameAndValues = new HashMap<String, Object>();
         propertyNameAndValues.put("longProperty", new Long(1234));
         final Calendar now = Calendar.getInstance();
         propertyNameAndValues.put("dateProperty", now);
@@ -323,7 +323,7 @@ public class JcrMessageDispatcherTestCase extends AbstractJcrMessagerTestCase {
     }
 
     public void testConnectorGetOutputStream() throws Exception {
-        final Map properties = new HashMap();
+        final Map<String, String> properties = new HashMap<String, String>();
         properties.put(JcrConnector.JCR_NODE_RELPATH_PROPERTY, "stored-stream");
         properties.put(JcrConnector.JCR_NODE_TYPE_NAME_PROPERTY, "nt:resource");
         properties.put("jcr:mimeType", "text/plain");

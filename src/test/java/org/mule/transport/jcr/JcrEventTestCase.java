@@ -59,14 +59,13 @@ public class JcrEventTestCase extends TestCase {
     }
 
     public void testGetEventTypeNameFromValueMarginalCases() {
-        assertEquals(JcrMessage.UNKNOWN_EVENT_TYPE,
-                JcrUtils.getEventTypeNameFromValue(Integer.MIN_VALUE));
+        assertEquals(JcrMessage.UNKNOWN_EVENT_TYPE, JcrUtils
+                .getEventTypeNameFromValue(Integer.MIN_VALUE));
     }
 
     public void testIgnoredEventTypes() throws Exception {
-        Property property =
-                RepositoryTestSupport.getTestDataNode().setProperty("ignored",
-                        "fooValue");
+        final Property property = RepositoryTestSupport.getTestDataNode()
+                .setProperty("ignored", "fooValue");
         RepositoryTestSupport.getSession().save();
 
         testContentEventType(property.getPath(), Event.NODE_ADDED, "");
@@ -75,13 +74,12 @@ public class JcrEventTestCase extends TestCase {
     }
 
     public void testKeptEventTypes() throws Exception {
-        Property property =
-                RepositoryTestSupport.getTestDataNode().setProperty("kept",
-                        "content");
+        final Property property = RepositoryTestSupport.getTestDataNode()
+                .setProperty("kept", "content");
         RepositoryTestSupport.getSession().save();
 
-        testContentEventType(property.getPath(), Event.PROPERTY_ADDED,
-                property.getString());
+        testContentEventType(property.getPath(), Event.PROPERTY_ADDED, property
+                .getString());
 
         testContentEventType(property.getPath(), Event.PROPERTY_CHANGED,
                 property.getString());
@@ -92,120 +90,114 @@ public class JcrEventTestCase extends TestCase {
     }
 
     public void testBinaryProperty() throws Exception {
-        byte[] binaryContent = "binary.content".getBytes();
+        final byte[] binaryContent = "binary.content".getBytes();
 
-        Property property =
-                RepositoryTestSupport.getTestDataNode().setProperty("binary",
-                        new ByteArrayInputStream(binaryContent));
+        final Property property = RepositoryTestSupport.getTestDataNode()
+                .setProperty("binary", new ByteArrayInputStream(binaryContent));
 
         RepositoryTestSupport.getSession().save();
 
         testContentEventType(JcrContentPayloadType.FULL, property.getPath(),
                 Event.PROPERTY_ADDED, binaryContent);
 
-        testContentEventType(JcrContentPayloadType.NO_BINARY,
-                property.getPath(), Event.PROPERTY_ADDED, "");
+        testContentEventType(JcrContentPayloadType.NO_BINARY, property
+                .getPath(), Event.PROPERTY_ADDED, "");
     }
 
     public void testBooleanProperty() throws Exception {
-        Property property =
-                RepositoryTestSupport.getTestDataNode().setProperty("boolean",
-                        true);
+        final Property property = RepositoryTestSupport.getTestDataNode()
+                .setProperty("boolean", true);
 
         RepositoryTestSupport.getSession().save();
 
-        testContentEventType(JcrContentPayloadType.NO_BINARY,
-                property.getPath(), Event.PROPERTY_ADDED, Boolean.TRUE);
+        testContentEventType(JcrContentPayloadType.NO_BINARY, property
+                .getPath(), Event.PROPERTY_ADDED, Boolean.TRUE);
     }
 
     public void testDoubleProperty() throws Exception {
-        Double doubleContent = new Double(3.14d);
+        final Double doubleContent = new Double(3.14d);
 
-        Property property =
-                RepositoryTestSupport.getTestDataNode().setProperty("double",
-                        doubleContent.doubleValue());
+        final Property property = RepositoryTestSupport.getTestDataNode()
+                .setProperty("double", doubleContent.doubleValue());
 
         RepositoryTestSupport.getSession().save();
 
-        testContentEventType(JcrContentPayloadType.NO_BINARY,
-                property.getPath(), Event.PROPERTY_ADDED, doubleContent);
+        testContentEventType(JcrContentPayloadType.NO_BINARY, property
+                .getPath(), Event.PROPERTY_ADDED, doubleContent);
     }
 
     public void testLongProperty() throws Exception {
-        Long longContent = new Long(149);
+        final Long longContent = new Long(149);
 
-        Property property =
-                RepositoryTestSupport.getTestDataNode().setProperty("long",
-                        longContent.longValue());
+        final Property property = RepositoryTestSupport.getTestDataNode()
+                .setProperty("long", longContent.longValue());
 
         RepositoryTestSupport.getSession().save();
 
-        testContentEventType(JcrContentPayloadType.NO_BINARY,
-                property.getPath(), Event.PROPERTY_ADDED, longContent);
+        testContentEventType(JcrContentPayloadType.NO_BINARY, property
+                .getPath(), Event.PROPERTY_ADDED, longContent);
     }
 
     public void testCalendarProperty() throws Exception {
-        GregorianCalendar calendar =
-                new GregorianCalendar(1969, 7, 21, 2, 56, 0);
+        final GregorianCalendar calendar = new GregorianCalendar(1969, 7, 21,
+                2, 56, 0);
 
         calendar.setTimeZone(TimeZone.getTimeZone("GMT"));
 
-        Property property =
-                RepositoryTestSupport.getTestDataNode().setProperty("calendar",
-                        calendar);
+        final Property property = RepositoryTestSupport.getTestDataNode()
+                .setProperty("calendar", calendar);
 
         RepositoryTestSupport.getSession().save();
 
-        testContentEventType(JcrContentPayloadType.NO_BINARY,
-                property.getPath(), Event.PROPERTY_ADDED, calendar);
+        testContentEventType(JcrContentPayloadType.NO_BINARY, property
+                .getPath(), Event.PROPERTY_ADDED, calendar);
     }
 
     public void testNodeProperty() throws Exception {
-        Node testDataNode = RepositoryTestSupport.getTestDataNode();
+        final Node testDataNode = RepositoryTestSupport.getTestDataNode();
 
-        Node targetNode = testDataNode.addNode("target");
+        final Node targetNode = testDataNode.addNode("target");
         targetNode.addMixin("mix:referenceable");
 
-        Property property = testDataNode.setProperty("node", targetNode);
+        final Property property = testDataNode.setProperty("node", targetNode);
 
         RepositoryTestSupport.getSession().save();
 
-        testContentEventType(JcrContentPayloadType.NO_BINARY,
-                property.getPath(), Event.PROPERTY_ADDED, targetNode.getUUID());
+        testContentEventType(JcrContentPayloadType.NO_BINARY, property
+                .getPath(), Event.PROPERTY_ADDED, targetNode.getUUID());
     }
 
     public void testMultipleProperty() throws Exception {
-        String[] values = new String[] { "one", "two" };
+        final String[] values = new String[] { "one", "two" };
 
-        Property property =
-                RepositoryTestSupport.getTestDataNode().setProperty("multi",
-                        values);
+        final Property property = RepositoryTestSupport.getTestDataNode()
+                .setProperty("multi", values);
 
         RepositoryTestSupport.getSession().save();
 
-        testContentEventType(property.getPath(), Event.PROPERTY_CHANGED,
-                Arrays.asList(values));
+        testContentEventType(property.getPath(), Event.PROPERTY_CHANGED, Arrays
+                .asList(values));
     }
 
     public void testExceptionWhenGettingValue() {
         assertEquals("", JcrUtils.outputPropertyValue("/foo/bar", null, null));
     }
 
-    private void testContentEventType(String propertyPath, int eventType,
-            Object expectedContent) throws Exception {
+    private void testContentEventType(final String propertyPath,
+            final int eventType, final Object expectedContent) throws Exception {
 
         testContentEventType(JcrContentPayloadType.FULL, propertyPath,
                 eventType, expectedContent);
     }
 
     private void testContentEventType(
-            JcrContentPayloadType jcrContentPayloadType, String propertyPath,
-            int eventType, Object expectedContent) throws Exception {
+            final JcrContentPayloadType jcrContentPayloadType,
+            final String propertyPath, final int eventType,
+            final Object expectedContent) throws Exception {
 
-        JcrMessage jcrEvent =
-                JcrUtils.newJcrMessage(new DummyEvent(propertyPath, eventType,
-                        USER_ID), RepositoryTestSupport.getSession(),
-                        jcrContentPayloadType);
+        final JcrMessage jcrEvent = JcrUtils.newJcrMessage(new DummyEvent(
+                propertyPath, eventType, USER_ID), RepositoryTestSupport
+                .getSession(), jcrContentPayloadType);
 
         testXStreamSerialization(jcrEvent);
 
@@ -215,14 +207,16 @@ public class JcrEventTestCase extends TestCase {
         assertEquals(eventType, jcrEvent.getType());
         assertNull(jcrEvent.getUuid());
 
-        assertEquals(JcrUtils.getEventTypeNameFromValue(eventType),
-                jcrEvent.getTypeAsString());
+        assertEquals(JcrUtils.getEventTypeNameFromValue(eventType), jcrEvent
+                .getTypeAsString());
 
         if (expectedContent instanceof Collection) {
             assertTrue(jcrEvent.getContent() instanceof Collection);
 
-            Collection colContent = (Collection) jcrEvent.getContent();
-            Collection colExpectedContent = (Collection) expectedContent;
+            final Collection<?> colContent = (Collection<?>) jcrEvent
+                    .getContent();
+
+            final Collection<?> colExpectedContent = (Collection<?>) expectedContent;
 
             assertTrue(colContent.containsAll(colExpectedContent));
             assertTrue(colExpectedContent.containsAll(colContent));
@@ -234,7 +228,7 @@ public class JcrEventTestCase extends TestCase {
         }
     }
 
-    private void testXStreamSerialization(JcrMessage jcrMessage) {
+    private void testXStreamSerialization(final JcrMessage jcrMessage) {
         assertEquals(jcrMessage, XSTREAM.fromXML(XSTREAM.toXML(jcrMessage)));
     }
 }

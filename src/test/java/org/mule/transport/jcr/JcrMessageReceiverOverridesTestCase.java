@@ -23,50 +23,52 @@ import org.mule.util.StringUtils;
  * @author David Dossot
  */
 public class JcrMessageReceiverOverridesTestCase extends
-		JcrMessageReceiverTestCase {
+        JcrMessageReceiverTestCase {
 
-	private static final List UUID_LIST = Collections.singletonList("uuid_01");
+    private static final List<String> UUID_LIST = Collections
+            .singletonList("uuid_01");
 
-	private static final List NODE_TYPE_NAME_LIST = Collections
-			.singletonList("node_type_01");
+    private static final List<String> NODE_TYPE_NAME_LIST = Collections
+            .singletonList("node_type_01");
 
-	@Override
-	public InboundEndpoint getEndpoint() throws Exception {
-		final EndpointBuilder builder = new EndpointURIEndpointBuilder(
-				new URIBuilder(
-						"jcr://path/to/observedNode?contentPayloadType=full&eventTypes=5&deep=true&noLocal=false"),
-				muleContext);
+    @SuppressWarnings("unchecked")
+    @Override
+    public InboundEndpoint getEndpoint() throws Exception {
+        final EndpointBuilder builder = new EndpointURIEndpointBuilder(
+                new URIBuilder(
+                        "jcr://path/to/observedNode?contentPayloadType=full&eventTypes=5&deep=true&noLocal=false"),
+                muleContext);
 
-		builder.setConnector(JcrConnectorTestCase.newJcrConnector());
+        builder.setConnector(JcrConnectorTestCase.newJcrConnector());
 
-		endpoint = muleContext.getRegistry().lookupEndpointFactory()
-				.getInboundEndpoint(builder);
+        endpoint = muleContext.getRegistry().lookupEndpointFactory()
+                .getInboundEndpoint(builder);
 
-		endpoint.getProperties().put("uuids", StringUtils.join(UUID_LIST, ' '));
+        endpoint.getProperties().put("uuids", StringUtils.join(UUID_LIST, ' '));
 
-		endpoint.getProperties().put("nodeTypeNames",
-				StringUtils.join(NODE_TYPE_NAME_LIST, ' '));
+        endpoint.getProperties().put("nodeTypeNames",
+                StringUtils.join(NODE_TYPE_NAME_LIST, ' '));
 
-		return endpoint;
-	}
+        return endpoint;
+    }
 
-	public void testReceiverProperties() throws Exception {
-		final JcrMessageReceiver messageReceiver = (JcrMessageReceiver) getMessageReceiver();
+    public void testReceiverProperties() throws Exception {
+        final JcrMessageReceiver messageReceiver = (JcrMessageReceiver) getMessageReceiver();
 
-		assertEquals("/path/to/observedNode", messageReceiver.getAbsPath());
+        assertEquals("/path/to/observedNode", messageReceiver.getAbsPath());
 
-		assertEquals(JcrContentPayloadType.FULL, messageReceiver
-				.getContentPayloadType());
+        assertEquals(JcrContentPayloadType.FULL, messageReceiver
+                .getContentPayloadType());
 
-		assertEquals(new Integer(5), messageReceiver.getEventTypes());
+        assertEquals(new Integer(5), messageReceiver.getEventTypes());
 
-		assertEquals(Boolean.TRUE, messageReceiver.isDeep());
+        assertEquals(Boolean.TRUE, messageReceiver.isDeep());
 
-		assertEquals(UUID_LIST, messageReceiver.getUuids());
+        assertEquals(UUID_LIST, messageReceiver.getUuids());
 
-		assertEquals(NODE_TYPE_NAME_LIST, messageReceiver.getNodeTypeNames());
+        assertEquals(NODE_TYPE_NAME_LIST, messageReceiver.getNodeTypeNames());
 
-		assertEquals(Boolean.FALSE, messageReceiver.isNoLocal());
-	}
+        assertEquals(Boolean.FALSE, messageReceiver.isNoLocal());
+    }
 
 }

@@ -17,6 +17,7 @@ import org.mule.api.endpoint.EndpointBuilder;
 import org.mule.api.endpoint.ImmutableEndpoint;
 import org.mule.api.endpoint.InboundEndpoint;
 import org.mule.api.routing.OutboundRouter;
+import org.mule.api.routing.filter.Filter;
 import org.mule.api.service.Service;
 import org.mule.api.transformer.Transformer;
 import org.mule.routing.filters.logic.AndFilter;
@@ -100,7 +101,8 @@ public class JcrNamespaceHandlerTestCase extends FunctionalTestCase {
         assertNotNull(inboundEndpoint);
         assertEquals(address, inboundEndpoint.getEndpointURI().getAddress());
 
-        final Map props = inboundEndpoint.getProperties();
+        @SuppressWarnings("unchecked")
+        final Map<String, String> props = inboundEndpoint.getProperties();
 
         assertNull(props.get(JcrConnector.JCR_QUERY_LANGUAGE_PROPERTY));
         assertNull(props.get(JcrConnector.JCR_QUERY_STATEMENT_PROPERTY));
@@ -121,9 +123,9 @@ public class JcrNamespaceHandlerTestCase extends FunctionalTestCase {
 
         assertNull(props.get(JcrConnector.JCR_NODE_TYPE_NAME_PROPERTY));
         assertNull(props.get(JcrConnector.JCR_NODE_UUID_PROPERTY));
-        assertNull(JcrNamespaceHandler.split((String) props
+        assertNull(JcrNamespaceHandler.split(props
                 .get(JcrConnector.JCR_NODE_TYPE_NAME_LIST_PROPERTY)));
-        assertNull(JcrNamespaceHandler.split((String) props
+        assertNull(JcrNamespaceHandler.split(props
                 .get(JcrConnector.JCR_UUID_LIST_PROPERTY)));
     }
 
@@ -146,7 +148,9 @@ public class JcrNamespaceHandlerTestCase extends FunctionalTestCase {
         assertNotNull(inboundEndpoint);
         assertEquals("/full", inboundEndpoint.getEndpointURI().getAddress());
 
-        final Map props = inboundEndpoint.getProperties();
+        @SuppressWarnings("unchecked")
+        final Map<String, String> props = inboundEndpoint.getProperties();
+
         assertEquals("xpath", props
                 .get(JcrConnector.JCR_QUERY_LANGUAGE_PROPERTY));
 
@@ -162,17 +166,14 @@ public class JcrNamespaceHandlerTestCase extends FunctionalTestCase {
 
             assertEquals("4", props.get(JcrConnector.JCR_EVENT_TYPES_PROPERTY));
 
-            assertEquals(
-                    Arrays.asList(new String[] { "nt:resource",
-                            "nt:unstructured" }),
-                    JcrNamespaceHandler
-                            .split((String) props
-                                    .get(JcrConnector.JCR_NODE_TYPE_NAME_LIST_PROPERTY)));
+            assertEquals(Arrays.asList(new String[] { "nt:resource",
+                    "nt:unstructured" }), JcrNamespaceHandler.split(props
+                    .get(JcrConnector.JCR_NODE_TYPE_NAME_LIST_PROPERTY)));
 
             assertEquals(Arrays.asList(new String[] {
                     "f81d4fae-7dec-11d0-a765-00a0c91e6bf6",
                     "e99d4fae-7dec-11d0-a765-00a0c91e6bf6" }),
-                    JcrNamespaceHandler.split((String) props
+                    JcrNamespaceHandler.split(props
                             .get(JcrConnector.JCR_UUID_LIST_PROPERTY)));
         } else {
             assertEquals("true", props
@@ -204,7 +205,8 @@ public class JcrNamespaceHandlerTestCase extends FunctionalTestCase {
         assertNotNull(inboundEndpoint);
         assertEquals("/address", inboundEndpoint.getEndpointURI().getAddress());
 
-        final Map props = inboundEndpoint.getProperties();
+        @SuppressWarnings("unchecked")
+        final Map<String, String> props = inboundEndpoint.getProperties();
 
         assertEquals("31", props.get(JcrConnector.JCR_EVENT_TYPES_PROPERTY));
     }
@@ -225,7 +227,9 @@ public class JcrNamespaceHandlerTestCase extends FunctionalTestCase {
         assertTrue(inboundEndpoint.getFilter() instanceof AndFilter);
 
         final AndFilter andFilter = (AndFilter) inboundEndpoint.getFilter();
-        final List filters = andFilter.getFilters();
+
+        @SuppressWarnings("unchecked")
+        final List<Filter> filters = andFilter.getFilters();
         assertEquals(2, filters.size());
 
         assertTrue(filters.get(0) instanceof JcrNodeNameFilter);
