@@ -322,7 +322,7 @@ public final class JcrConnector extends AbstractConnector {
                         return "Refreshing JCR session for: "
                                 + getConnectionDescription();
                     }
-                });
+                }, muleContext.getWorkManager());
 
             } catch (final Exception e) {
                 throw new RuntimeException(
