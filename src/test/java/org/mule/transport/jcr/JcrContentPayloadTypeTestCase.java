@@ -17,77 +17,72 @@ import junit.framework.TestCase;
  */
 public class JcrContentPayloadTypeTestCase extends TestCase {
 
-	public void testFromStringLowerCaseEquals() {
-		assertEquals(JcrContentPayloadType.NONE, JcrContentPayloadType
-				.fromString("none"));
+    public void testFromStringLowerCaseEquals() {
+        assertEquals(JcrContentPayloadType.NONE, JcrContentPayloadType
+                .fromString("none"));
 
-		assertEquals(JcrContentPayloadType.NO_BINARY, JcrContentPayloadType
-				.fromString("nobinary"));
+        assertEquals(JcrContentPayloadType.NO_BINARY, JcrContentPayloadType
+                .fromString("nobinary"));
 
-		assertEquals(JcrContentPayloadType.FULL, JcrContentPayloadType
-				.fromString("full"));
-	}
+        assertEquals(JcrContentPayloadType.FULL, JcrContentPayloadType
+                .fromString("full"));
+    }
 
-	public void testFromStringAnyCaseEquals() {
-		assertEquals(JcrContentPayloadType.NONE, JcrContentPayloadType
-				.fromString("nONe"));
+    public void testFromStringAnyCaseEquals() {
+        assertEquals(JcrContentPayloadType.NONE, JcrContentPayloadType
+                .fromString("nONe"));
 
-		assertEquals(JcrContentPayloadType.NO_BINARY, JcrContentPayloadType
-				.fromString("NoBinary"));
+        assertEquals(JcrContentPayloadType.NO_BINARY, JcrContentPayloadType
+                .fromString("NoBinary"));
 
-		assertEquals(JcrContentPayloadType.FULL, JcrContentPayloadType
-				.fromString("FULL"));
-	}
+        assertEquals(JcrContentPayloadType.FULL, JcrContentPayloadType
+                .fromString("FULL"));
+    }
 
-	public void testFromStringLowerCaseSame() {
-		assertSame(JcrContentPayloadType.NONE, JcrContentPayloadType
-				.fromString("none"));
+    public void testFromStringLowerCaseSame() {
+        assertSame(JcrContentPayloadType.NONE, JcrContentPayloadType
+                .fromString("none"));
 
-		assertSame(JcrContentPayloadType.NO_BINARY, JcrContentPayloadType
-				.fromString("nobinary"));
+        assertSame(JcrContentPayloadType.NO_BINARY, JcrContentPayloadType
+                .fromString("nobinary"));
 
-		assertSame(JcrContentPayloadType.FULL, JcrContentPayloadType
-				.fromString("full"));
-	}
+        assertSame(JcrContentPayloadType.FULL, JcrContentPayloadType
+                .fromString("full"));
+    }
 
-	public void testFromStringAnyCaseSame() {
-		assertSame(JcrContentPayloadType.NONE, JcrContentPayloadType
-				.fromString("nONe"));
+    public void testFromStringAnyCaseSame() {
+        assertSame(JcrContentPayloadType.NONE, JcrContentPayloadType
+                .fromString("nONe"));
 
-		assertSame(JcrContentPayloadType.NO_BINARY, JcrContentPayloadType
-				.fromString("NoBinary"));
+        assertSame(JcrContentPayloadType.NO_BINARY, JcrContentPayloadType
+                .fromString("NoBinary"));
 
-		assertSame(JcrContentPayloadType.FULL, JcrContentPayloadType
-				.fromString("FULL"));
-	}
+        assertSame(JcrContentPayloadType.FULL, JcrContentPayloadType
+                .fromString("FULL"));
+    }
 
-	public void testEqualsMarginalCases() {
-		assertFalse(JcrContentPayloadType.NONE.equals(null));
-		assertFalse(JcrContentPayloadType.NONE.equals(new Object()));
-	}
+    public void testEqualsMarginalCases() {
+        assertFalse(JcrContentPayloadType.NONE.equals(null));
+        assertFalse(JcrContentPayloadType.NONE.equals(new Object()));
+    }
 
-	public void testFromStringMarginalCases() {
-		assertEquals(JcrContentPayloadType.NONE, JcrContentPayloadType
-				.fromString(null));
+    public void testFromStringMarginalCases() {
+        assertEquals(JcrContentPayloadType.NONE, JcrContentPayloadType
+                .fromString(null));
 
-		assertEquals(JcrContentPayloadType.NONE, JcrContentPayloadType
-				.fromString(""));
+        assertEquals(JcrContentPayloadType.NONE, JcrContentPayloadType
+                .fromString(""));
 
-		assertEquals(JcrContentPayloadType.NONE, JcrContentPayloadType
-				.fromString(" "));
+        assertEquals(JcrContentPayloadType.NONE, JcrContentPayloadType
+                .fromString(" "));
 
-		try {
-			JcrContentPayloadType.fromString("foo-bar");
+        try {
+            JcrContentPayloadType.fromString("foo-bar");
 
-			fail("Should have thrown an IllegalArgumentException");
-		} catch (IllegalArgumentException iea) {
-			// expected
-		}
-	}
-
-	public void testHashCode() {
-		assertEquals(JcrContentPayloadType.NO_BINARY.hashCode(),
-				JcrContentPayloadType.NO_BINARY.toString().hashCode());
-	}
+            fail("Should have thrown an IllegalArgumentException");
+        } catch (final IllegalArgumentException iea) {
+            // expected
+        }
+    }
 
 }

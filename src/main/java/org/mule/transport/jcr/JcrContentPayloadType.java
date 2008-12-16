@@ -18,79 +18,52 @@ import org.mule.util.StringUtils;
  * 
  * @author David Dossot (david@dossot.net)
  */
-// TODO use an Enum
-public final class JcrContentPayloadType {
+public enum JcrContentPayloadType {
 
-	/**
-	 * No content will be fetched from JCR: the payload will be limited to the
-	 * event information.
-	 */
-	public static final JcrContentPayloadType NONE = new JcrContentPayloadType(
-			"none");
+    /**
+     * No content will be fetched from JCR: the payload will be limited to the
+     * event information.
+     */
+    NONE("none"),
 
-	/**
-	 * The payload will contain event information and data from the node source
-	 * of the event, only if this data is not of bynary type.
-	 */
-	public static final JcrContentPayloadType NO_BINARY = new JcrContentPayloadType(
-			"nobinary");
+    /**
+     * The payload will contain event information and data from the node source
+     * of the event, only if this data is not of bynary type.
+     */
+    NO_BINARY("nobinary"),
 
-	/**
-	 * The payload will contain event information and data from the node source
-	 * of the event.
-	 */
-	public static final JcrContentPayloadType FULL = new JcrContentPayloadType(
-			"full");
+    /**
+     * The payload will contain event information and data from the node source
+     * of the event.
+     */
+    FULL("full");
 
-	private static final JcrContentPayloadType[] ALL_TYPES = new JcrContentPayloadType[] {
-			NONE, NO_BINARY, FULL };
+    private final String name;
 
-	private final String contentPayloadType;
+    private JcrContentPayloadType(final String contentPayloadType) {
+        this.name = contentPayloadType;
+    }
 
-	private JcrContentPayloadType(final String contentPayloadType) {
-		this.contentPayloadType = contentPayloadType;
-	}
+    @Override
+    public String toString() {
+        return name;
+    }
 
-	@Override
-	public String toString() {
-		return contentPayloadType;
-	}
+    public static JcrContentPayloadType fromString(final String type)
+            throws IllegalArgumentException {
 
-	@Override
-	public int hashCode() {
-		return contentPayloadType.hashCode();
-	}
+        if (StringUtils.isBlank(type)) {
+            return NONE;
+        }
 
-	@Override
-	public boolean equals(final Object obj) {
-		if (obj == null)
-			return false;
+        for (final JcrContentPayloadType contentPayloadType : values()) {
+            if (contentPayloadType.name.equalsIgnoreCase(type)) {
+                return contentPayloadType;
+            }
+        }
 
-		if (obj instanceof JcrContentPayloadType) {
-			return contentPayloadType
-					.equals(((JcrContentPayloadType) obj).contentPayloadType);
-		} else {
-			return false;
-		}
-	}
-
-	public static JcrContentPayloadType fromString(final String type)
-			throws IllegalArgumentException {
-
-		if (StringUtils.isBlank(type)) {
-			return NONE;
-		}
-
-		for (int i = 0; i < ALL_TYPES.length; i++) {
-			final JcrContentPayloadType contentPayload = ALL_TYPES[i];
-
-			if (contentPayload.contentPayloadType.equalsIgnoreCase(type)) {
-				return contentPayload;
-			}
-		}
-
-		throw new IllegalArgumentException("Invalid content payload type: "
-				+ type);
-	}
+        throw new IllegalArgumentException("Invalid content payload type: "
+                + type);
+    }
 
 }
