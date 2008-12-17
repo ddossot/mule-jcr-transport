@@ -292,9 +292,9 @@ public class JcrUtils {
         } else if (propertyType == PropertyType.DATE) {
             result = propertyValue.getDate();
         } else if (propertyType == PropertyType.DOUBLE) {
-            result = new Double(propertyValue.getDouble());
+            result = Double.valueOf(propertyValue.getDouble());
         } else if (propertyType == PropertyType.LONG) {
-            result = new Long(propertyValue.getLong());
+            result = Long.valueOf(propertyValue.getLong());
         } else {
             result = propertyValue.getString();
         }

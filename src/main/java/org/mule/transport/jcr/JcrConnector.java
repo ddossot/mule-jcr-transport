@@ -209,11 +209,6 @@ public final class JcrConnector extends AbstractConnector {
     public OutputStream getOutputStream(final OutboundEndpoint endpoint,
             final MuleMessage message) throws MuleException {
 
-        if (!(endpoint instanceof OutboundEndpoint)) {
-            throw new ConnectorException(JcrMessages
-                    .notAnOutboundEndpoint(endpoint), this);
-        }
-
         final PipedInputStream pipedInputStream = new PipedInputStream();
         PipedOutputStream pipedOutputStream;
 
@@ -342,7 +337,7 @@ public final class JcrConnector extends AbstractConnector {
     private void setDefaultEndpointValues() {
         // any change here must be reflected in the documentation
         setContentPayloadType(JcrContentPayloadType.NONE.toString());
-        setEventTypes(new Integer(0));
+        setEventTypes(Integer.valueOf(0));
         setDeep(Boolean.FALSE);
         setNoLocal(Boolean.TRUE);
         setUuids(null);

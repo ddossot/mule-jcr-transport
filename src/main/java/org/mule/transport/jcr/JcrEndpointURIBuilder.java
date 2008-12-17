@@ -25,34 +25,34 @@ import org.mule.util.StringUtils;
  * transport.
  */
 public class JcrEndpointURIBuilder extends AbstractEndpointURIBuilder {
-	/**
-	 * Helper method for safely building a JCR endpoint URI from a node path,
-	 * which can contains the [ and ] reserved characters.
-	 * 
-	 * @param path
-	 *            a node path.
-	 * 
-	 * @return a new EndpointURI.
-	 * 
-	 * @throws EndpointException
-	 *             thrown in case the path can not be transformed into a valid
-	 *             EndpointURI.
-	 */
-	public static EndpointURI newJcrEndpointURI(final String path)
-			throws EndpointException {
+    /**
+     * Helper method for safely building a JCR endpoint URI from a node path,
+     * which can contains the [ and ] reserved characters.
+     * 
+     * @param path
+     *            a node path.
+     * 
+     * @return a new EndpointURI.
+     * 
+     * @throws EndpointException
+     *             thrown in case the path can not be transformed into a valid
+     *             EndpointURI.
+     */
+    public static EndpointURI newJcrEndpointURI(final String path)
+            throws EndpointException {
 
-		return new MuleEndpointURI("jcr://"
-				+ path.replaceAll("\\[", "%5B").replaceAll("\\]", "%5D"));
-	}
+        return new MuleEndpointURI("jcr://"
+                + path.replaceAll("\\[", "%5B").replaceAll("\\]", "%5D"));
+    }
 
-	@Override
-	protected void setEndpoint(final URI uri, final Properties props)
-			throws MalformedEndpointException {
-		address = "/"
-				+ StringUtils.stripStart(StringUtils.defaultString(uri
-						.getHost())
-						+ StringUtils.defaultString(uri.getPath()), "/");
-		;
-	}
+    @Override
+    protected void setEndpoint(final URI uri, final Properties props)
+            throws MalformedEndpointException {
+
+        address = "/"
+                + StringUtils.stripStart(StringUtils.defaultString(uri
+                        .getHost())
+                        + StringUtils.defaultString(uri.getPath()), "/");
+    }
 
 }
