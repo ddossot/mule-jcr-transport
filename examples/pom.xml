@@ -12,7 +12,7 @@
 
 	<properties>
 		<jcrTransportVersion>2.0.0-M2-SNAPSHOT</jcrTransportVersion>
-		<muleVersion>[2.1.0,2.2.0)</muleVersion>
+		<muleVersion>[2.1.2,2.2.0)</muleVersion>
 	</properties>
 
 	<dependencies>

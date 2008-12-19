@@ -25,6 +25,7 @@ import org.mule.tck.FunctionalTestCase;
 import org.mule.transport.jcr.config.JcrNamespaceHandler;
 import org.mule.transport.jcr.filters.JcrNodeNameFilter;
 import org.mule.transport.jcr.filters.JcrPropertyNameFilter;
+import org.mule.transport.jcr.handlers.NtQueryNodeTypeHandler;
 import org.mule.transport.jcr.transformers.JcrEventToObject;
 import org.mule.transport.jcr.transformers.JcrItemToObject;
 
@@ -74,6 +75,15 @@ public class JcrNamespaceHandlerTestCase extends FunctionalTestCase {
 
         assertEquals(Arrays.asList(new String[] { "oof", "rab" }), c
                 .getNodeTypeNames());
+    }
+
+    public void testJcrConnectorWithCustomNodeTypeHandlers() throws Exception {
+        final JcrConnector c = (JcrConnector) muleContext.getRegistry()
+                .lookupConnector("jcrConnectorWithCustomNodeTypeHandlers");
+
+        checkCoreConnectorProperties(c);
+
+        assertTrue(c.getNodeTypeHandlerManager().getNodeTypeHandler("nt:query") instanceof NtQueryNodeTypeHandler);
     }
 
     private void checkCoreConnectorProperties(final JcrConnector c) {
@@ -257,8 +267,6 @@ public class JcrNamespaceHandlerTestCase extends FunctionalTestCase {
     }
 
     // TODO test full configuration of in/out endpoints in a service
-
-    // TODO test jcrConnectorWithCustomNodeTypeHandlers
 
     public void testServiceEnpointsReferenceConfiguration() throws Exception {
         verifyServiceEnpointsMinimumConfiguration(

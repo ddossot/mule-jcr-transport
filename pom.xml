@@ -7,7 +7,7 @@
 	<groupId>org.mule.transports</groupId>
 	<artifactId>mule-transport-jcr</artifactId>
 	<packaging>jar</packaging>
-	<name>Mule Jcr Transport</name>
+	<name>Mule JCR Transport</name>
 	<version>2.0.0-M2-SNAPSHOT</version>
 	<description>Provides connectivity to JCR repositories.</description>
 
