@@ -25,6 +25,8 @@ import org.mule.api.transformer.Transformer;
 import org.mule.transport.AbstractMessageRequester;
 import org.mule.transport.jcr.filters.JcrNodeNameFilter;
 import org.mule.transport.jcr.filters.JcrPropertyNameFilter;
+import org.mule.transport.jcr.support.JcrPropertyUtils;
+import org.mule.transport.jcr.support.JcrUtils;
 
 /**
  * <code>JcrMessageRequester</code> is responsible for receiving messages from
@@ -36,11 +38,11 @@ public class JcrMessageRequester extends AbstractMessageRequester {
 
     private final JcrConnector jcrConnector;
 
-    private Session requesterSession;
-
     private final String nodeNamePatternFilter;
 
     private final String propertyNamePatternFilter;
+
+    private Session requesterSession;
 
     public Session getSession() {
         requesterSession = jcrConnector.validateSession(requesterSession);
@@ -54,10 +56,10 @@ public class JcrMessageRequester extends AbstractMessageRequester {
 
         final Filter filter = getEndpoint().getFilter();
 
-        nodeNamePatternFilter = JcrUtils.getPropertyNamePatternFilter(filter,
+        nodeNamePatternFilter = JcrPropertyUtils.getPropertyNamePatternFilter(filter,
                 JcrNodeNameFilter.class);
 
-        propertyNamePatternFilter = JcrUtils.getPropertyNamePatternFilter(
+        propertyNamePatternFilter = JcrPropertyUtils.getPropertyNamePatternFilter(
                 filter, JcrPropertyNameFilter.class);
     }
 

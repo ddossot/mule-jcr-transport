@@ -266,8 +266,6 @@ public class JcrNamespaceHandlerTestCase extends FunctionalTestCase {
         assertTrue(i2oT instanceof JcrItemToObject);
     }
 
-    // TODO test full configuration of in/out endpoints in a service
-
     public void testServiceEnpointsReferenceConfiguration() throws Exception {
         verifyServiceEnpointsMinimumConfiguration(
                 "jcrBridgeReferenceConfiguration", "/ref");

@@ -1,4 +1,4 @@
-package org.mule.transport.jcr;
+package org.mule.transport.jcr.support;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -13,6 +13,8 @@ import javax.naming.CompositeName;
 import org.mule.api.MuleEvent;
 import org.mule.tck.AbstractMuleTestCase;
 import org.mule.tck.MuleTestUtils;
+import org.mule.transport.jcr.RepositoryTestSupport;
+import org.mule.transport.jcr.support.JcrUtils;
 import org.mule.util.IOUtils;
 import org.mule.util.StringUtils;
 
@@ -59,7 +61,7 @@ public class JcrUtilsTestCase extends AbstractMuleTestCase {
 
 	public void testNewPropertyNullValue() throws Exception {
 		try {
-			JcrUtils.newPropertyValue(session, null);
+			JcrPropertyUtils.newPropertyValue(session, null);
 		} catch (final IllegalArgumentException iae) {
 			return;
 		}
@@ -68,7 +70,7 @@ public class JcrUtilsTestCase extends AbstractMuleTestCase {
 
 	public void testNewPropertyUnsupportedValue() throws Exception {
 		try {
-			JcrUtils.newPropertyValue(session, new Object());
+			JcrPropertyUtils.newPropertyValue(session, new Object());
 		} catch (final IllegalArgumentException iae) {
 			return;
 		}
@@ -79,7 +81,7 @@ public class JcrUtilsTestCase extends AbstractMuleTestCase {
 		for (int i = 0; i < supportedValues.length; i++) {
 			final Object supportedValue = supportedValues[i];
 
-			final Object retrievedValue = JcrUtils.getValuePayload(JcrUtils
+			final Object retrievedValue = JcrUtils.getValuePayload(JcrPropertyUtils
 					.newPropertyValue(session, supportedValue));
 
 			assertTrue(supportedValue + "!=" + retrievedValue, areEqual(
@@ -92,7 +94,7 @@ public class JcrUtilsTestCase extends AbstractMuleTestCase {
 		final Serializable s = new CompositeName("a/b");
 
 		final InputStream retrievedValue = (InputStream) JcrUtils
-				.getValuePayload(JcrUtils.newPropertyValue(session, s));
+				.getValuePayload(JcrPropertyUtils.newPropertyValue(session, s));
 
 		final ObjectInputStream ois = new ObjectInputStream(retrievedValue);
 		final Object deserializedValue = ois.readObject();

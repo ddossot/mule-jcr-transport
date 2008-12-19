@@ -22,7 +22,7 @@ import org.mule.transport.jcr.JcrContentPayloadType;
 import org.mule.transport.jcr.JcrMessage;
 import org.mule.transport.jcr.JcrMessageReceiver;
 import org.mule.transport.jcr.JcrMessageReceiverContext;
-import org.mule.transport.jcr.JcrUtils;
+import org.mule.transport.jcr.support.JcrUtils;
 
 /**
  * Transforms a JCR <code>EventIterator</code> into an object that can be used

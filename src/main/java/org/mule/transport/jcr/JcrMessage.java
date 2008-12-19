@@ -25,7 +25,6 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @author David Dossot (david@dossot.net)
  */
 public final class JcrMessage implements Event, Serializable {
-    static final String UNKNOWN_EVENT_TYPE = "UNKNOWN";
 
     private static final long serialVersionUID = -7200906980423201081L;
 
@@ -44,6 +43,7 @@ public final class JcrMessage implements Event, Serializable {
     /**
      * @deprecated Prefer using the complete constructor.
      */
+    @Deprecated
     public JcrMessage(final String path, final int type,
             final String typeAsString, final String userID,
             final Serializable content) {
@@ -62,15 +62,18 @@ public final class JcrMessage implements Event, Serializable {
         this.uuid = uuid;
     }
 
+    @Override
     public String toString() {
         return ToStringBuilder.reflectionToString(this);
     }
 
+    @Override
     public int hashCode() {
         return HashCodeBuilder.reflectionHashCode(this);
     }
 
-    public boolean equals(Object obj) {
+    @Override
+    public boolean equals(final Object obj) {
         return EqualsBuilder.reflectionEquals(this, obj);
     }
 

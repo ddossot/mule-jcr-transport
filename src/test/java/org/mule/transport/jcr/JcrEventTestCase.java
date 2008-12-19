@@ -22,6 +22,10 @@ import javax.jcr.observation.Event;
 
 import junit.framework.TestCase;
 
+import org.mule.transport.jcr.support.JcrEventUtils;
+import org.mule.transport.jcr.support.JcrPropertyUtils;
+import org.mule.transport.jcr.support.JcrUtils;
+
 import com.thoughtworks.xstream.XStream;
 
 /**
@@ -59,7 +63,7 @@ public class JcrEventTestCase extends TestCase {
     }
 
     public void testGetEventTypeNameFromValueMarginalCases() {
-        assertEquals(JcrMessage.UNKNOWN_EVENT_TYPE, JcrUtils
+        assertEquals("UNKNOWN", JcrEventUtils
                 .getEventTypeNameFromValue(Integer.MIN_VALUE));
     }
 
@@ -180,7 +184,7 @@ public class JcrEventTestCase extends TestCase {
     }
 
     public void testExceptionWhenGettingValue() {
-        assertEquals("", JcrUtils.outputPropertyValue("/foo/bar", null, null));
+        assertEquals("", JcrPropertyUtils.outputPropertyValue("/foo/bar", null, null));
     }
 
     private void testContentEventType(final String propertyPath,
@@ -207,7 +211,7 @@ public class JcrEventTestCase extends TestCase {
         assertEquals(eventType, jcrEvent.getType());
         assertNull(jcrEvent.getUuid());
 
-        assertEquals(JcrUtils.getEventTypeNameFromValue(eventType), jcrEvent
+        assertEquals(JcrEventUtils.getEventTypeNameFromValue(eventType), jcrEvent
                 .getTypeAsString());
 
         if (expectedContent instanceof Collection) {

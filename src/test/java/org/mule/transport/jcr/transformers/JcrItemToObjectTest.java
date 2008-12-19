@@ -12,8 +12,8 @@ package org.mule.transport.jcr.transformers;
 
 import org.mule.api.transformer.Transformer;
 import org.mule.transformer.AbstractTransformerTestCase;
-import org.mule.transport.jcr.JcrUtils;
 import org.mule.transport.jcr.RepositoryTestSupport;
+import org.mule.transport.jcr.support.JcrUtils;
 
 /**
  * @author David Dossot (david@dossot.net)

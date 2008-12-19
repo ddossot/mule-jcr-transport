@@ -24,6 +24,8 @@ import org.mule.api.transport.DispatchException;
 import org.mule.transport.AbstractMessageDispatcher;
 import org.mule.transport.jcr.handlers.NodeTypeHandler;
 import org.mule.transport.jcr.i18n.JcrMessages;
+import org.mule.transport.jcr.support.JcrPropertyUtils;
+import org.mule.transport.jcr.support.JcrUtils;
 import org.mule.util.StringUtils;
 
 /**
@@ -121,7 +123,7 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 
         final String nodeUUID = JcrUtils.getNodeUUID(event);
         final String nodeRelPath = JcrUtils.getNodeRelPath(event);
-        final String propertyRelPath = JcrUtils.getPropertyRelPath(event);
+        final String propertyRelPath = JcrPropertyUtils.getPropertyRelPath(event);
         final Session session = getSession();
 
         Item targetItem = alwaysCreate ? null : JcrUtils.getTargetItem(session,
@@ -146,10 +148,10 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
                 final Property targetProperty = (Property) targetItem;
 
                 if ((payload instanceof Collection)) {
-                    targetProperty.setValue(JcrUtils.newPropertyValues(session,
+                    targetProperty.setValue(JcrPropertyUtils.newPropertyValues(session,
                             (Collection<?>) payload));
                 } else {
-                    targetProperty.setValue(JcrUtils.newPropertyValue(session,
+                    targetProperty.setValue(JcrPropertyUtils.newPropertyValue(session,
                             payload));
                 }
             }

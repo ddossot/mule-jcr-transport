@@ -12,8 +12,8 @@ package org.mule.transport.jcr.transformers;
 
 import javax.jcr.RepositoryException;
 
-import org.mule.transport.jcr.JcrUtils;
 import org.mule.transport.jcr.RepositoryTestSupport;
+import org.mule.transport.jcr.support.JcrPropertyUtils;
 
 /**
  * @author David Dossot (david@dossot.net)
@@ -23,7 +23,7 @@ public class JcrItemPropertiesToObjectTest extends JcrItemToObjectTest {
 	@Override
 	public Object getResultData() {
 		try {
-			return JcrUtils.getPropertiesPayload(RepositoryTestSupport
+			return JcrPropertyUtils.getPropertiesPayload(RepositoryTestSupport
 					.getTestDataNode().getProperties());
 		} catch (final Exception e) {
 			throw new RuntimeException(e);

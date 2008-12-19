@@ -19,7 +19,7 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
 import org.mule.api.MuleMessage;
-import org.mule.transport.jcr.JcrUtils;
+import org.mule.transport.jcr.support.JcrPropertyUtils;
 
 /**
  * A handler for nt:unstructured types of nodes.
@@ -48,13 +48,13 @@ final class NtUnstructuredHandler extends AbstractNodeTypeHandler {
         if (payload instanceof Map) {
             @SuppressWarnings("unchecked")
             final Map<String, ?> mapPayload = (Map<String, ?>) payload;
-            JcrUtils.storeProperties(session, node, mapPayload);
+            JcrPropertyUtils.storeProperties(session, node, mapPayload);
 
         } else if (payload instanceof Collection) {
-            node.setProperty(NtResourceHandler.JCR_DATA_PROPERTY_NAME, JcrUtils
+            node.setProperty(NtResourceHandler.JCR_DATA_PROPERTY_NAME, JcrPropertyUtils
                     .newPropertyValues(session, (Collection<?>) payload));
         } else {
-            node.setProperty(NtResourceHandler.JCR_DATA_PROPERTY_NAME, JcrUtils
+            node.setProperty(NtResourceHandler.JCR_DATA_PROPERTY_NAME, JcrPropertyUtils
                     .newPropertyValue(session, payload));
         }
 
