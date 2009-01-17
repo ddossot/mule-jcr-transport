@@ -17,7 +17,7 @@ import javax.jcr.RepositoryException;
 import org.mule.api.transformer.TransformerException;
 import org.mule.transformer.AbstractDiscoverableTransformer;
 import org.mule.transport.jcr.support.JcrPropertyUtils;
-import org.mule.transport.jcr.support.JcrUtils;
+import org.mule.transport.jcr.support.JcrNodeUtils;
 
 /**
  * Transforms a JCR <code>Item</code> or <code>PropertyIterator</code> into
@@ -39,7 +39,7 @@ public class JcrItemToObject extends AbstractDiscoverableTransformer {
 
 		try {
 			if (src instanceof Item) {
-				return JcrUtils.getItemPayload((Item) src);
+				return JcrNodeUtils.getItemPayload((Item) src);
 			} else if (src instanceof PropertyIterator) {
 				return JcrPropertyUtils.getPropertiesPayload((PropertyIterator) src);
 			} else {

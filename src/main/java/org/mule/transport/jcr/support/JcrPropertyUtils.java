@@ -113,7 +113,7 @@ public abstract class JcrPropertyUtils {
     }
 
     public static String getPropertyRelPath(final MuleEvent event) {
-        return event != null ? JcrUtils.getParsableEventProperty(event,
+        return event != null ? JcrEventUtils.getParsableEventProperty(event,
                 JcrConnector.JCR_PROPERTY_REL_PATH_PROPERTY) : null;
     }
 
@@ -251,12 +251,25 @@ public abstract class JcrPropertyUtils {
             final Value[] propertyValues = property.getValues();
 
             for (int i = 0; i < propertyValues.length; i++) {
-                valuePayloads.add(JcrUtils.getValuePayload(propertyValues[i]));
+                valuePayloads.add(JcrPropertyUtils
+                        .getValuePayload(propertyValues[i]));
             }
 
             return valuePayloads;
         } else {
-            return JcrUtils.getValuePayload(property.getValue());
+            return JcrPropertyUtils.getValuePayload(property.getValue());
+        }
+    }
+
+    static Object getValuePayload(final Value value)
+            throws IllegalStateException, RepositoryException {
+
+        final int propertyType = value.getType();
+
+        if (propertyType == PropertyType.BINARY) {
+            return value.getStream();
+        } else {
+            return getNonBinaryPropertyValue(value, propertyType);
         }
     }
 

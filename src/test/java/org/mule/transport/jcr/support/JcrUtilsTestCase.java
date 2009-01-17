@@ -14,7 +14,6 @@ import org.mule.api.MuleEvent;
 import org.mule.tck.AbstractMuleTestCase;
 import org.mule.tck.MuleTestUtils;
 import org.mule.transport.jcr.RepositoryTestSupport;
-import org.mule.transport.jcr.support.JcrUtils;
 import org.mule.util.IOUtils;
 import org.mule.util.StringUtils;
 
@@ -37,11 +36,11 @@ public class JcrUtilsTestCase extends AbstractMuleTestCase {
 	}
 
 	public void testParsePath() throws Exception {
-		assertNull(JcrUtils.parsePath(null, null));
+		assertNull(JcrEventUtils.parsePath(null, null));
 
-		assertEquals("foo", JcrUtils.parsePath("foo", null));
+		assertEquals("foo", JcrEventUtils.parsePath("foo", null));
 
-		assertEquals("${foo}", JcrUtils.parsePath("${foo}", null));
+		assertEquals("${foo}", JcrEventUtils.parsePath("${foo}", null));
 
 		final String path = "date:${DATE};customDate:${DATE:yyyy};uuid:${UUID};systime:${SYSTIME};eventProperty:${eventProperty};missing:${foo}";
 
@@ -52,7 +51,7 @@ public class JcrUtilsTestCase extends AbstractMuleTestCase {
 				muleContext);
 		event.getMessage().setProperty("eventProperty", "bar");
 
-		final String parsedPath = JcrUtils.parsePath(path, event);
+		final String parsedPath = JcrEventUtils.parsePath(path, event);
 
 		// all placeholders should have been resolved except foo
 		assertEquals(1, StringUtils.countMatches(parsedPath, "${"));
@@ -81,7 +80,7 @@ public class JcrUtilsTestCase extends AbstractMuleTestCase {
 		for (int i = 0; i < supportedValues.length; i++) {
 			final Object supportedValue = supportedValues[i];
 
-			final Object retrievedValue = JcrUtils.getValuePayload(JcrPropertyUtils
+			final Object retrievedValue = JcrPropertyUtils.getValuePayload(JcrPropertyUtils
 					.newPropertyValue(session, supportedValue));
 
 			assertTrue(supportedValue + "!=" + retrievedValue, areEqual(
@@ -93,7 +92,7 @@ public class JcrUtilsTestCase extends AbstractMuleTestCase {
 	public void testSerializablePropertyValues() throws Exception {
 		final Serializable s = new CompositeName("a/b");
 
-		final InputStream retrievedValue = (InputStream) JcrUtils
+		final InputStream retrievedValue = (InputStream) JcrPropertyUtils
 				.getValuePayload(JcrPropertyUtils.newPropertyValue(session, s));
 
 		final ObjectInputStream ois = new ObjectInputStream(retrievedValue);

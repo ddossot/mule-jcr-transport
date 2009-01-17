@@ -13,7 +13,7 @@ package org.mule.transport.jcr.transformers;
 import org.mule.api.transformer.Transformer;
 import org.mule.transformer.AbstractTransformerTestCase;
 import org.mule.transport.jcr.RepositoryTestSupport;
-import org.mule.transport.jcr.support.JcrUtils;
+import org.mule.transport.jcr.support.JcrNodeUtils;
 
 /**
  * @author David Dossot (david@dossot.net)
@@ -36,7 +36,7 @@ public class JcrItemToObjectTest extends AbstractTransformerTestCase {
 	@Override
 	public Object getResultData() {
 		try {
-			return JcrUtils.getItemPayload(RepositoryTestSupport
+			return JcrNodeUtils.getItemPayload(RepositoryTestSupport
 					.getTestDataNode());
 		} catch (final Exception e) {
 			throw new RuntimeException(e);

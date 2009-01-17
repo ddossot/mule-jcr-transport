@@ -25,7 +25,7 @@ import org.mule.transport.AbstractMessageDispatcher;
 import org.mule.transport.jcr.handlers.NodeTypeHandler;
 import org.mule.transport.jcr.i18n.JcrMessages;
 import org.mule.transport.jcr.support.JcrPropertyUtils;
-import org.mule.transport.jcr.support.JcrUtils;
+import org.mule.transport.jcr.support.JcrNodeUtils;
 import org.mule.util.StringUtils;
 
 /**
@@ -121,12 +121,12 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
                         JcrConnector.JCR_ALWAYS_CREATE_CHILD_NODE_PROPERTY,
                         true)).booleanValue();
 
-        final String nodeUUID = JcrUtils.getNodeUUID(event);
-        final String nodeRelPath = JcrUtils.getNodeRelPath(event);
+        final String nodeUUID = JcrNodeUtils.getNodeUUID(event);
+        final String nodeRelPath = JcrNodeUtils.getNodeRelPath(event);
         final String propertyRelPath = JcrPropertyUtils.getPropertyRelPath(event);
         final Session session = getSession();
 
-        Item targetItem = alwaysCreate ? null : JcrUtils.getTargetItem(session,
+        Item targetItem = alwaysCreate ? null : JcrNodeUtils.getTargetItem(session,
                 endpoint, event, true);
 
         if (targetItem != null) {
@@ -157,7 +157,7 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
             }
 
         } else {
-            targetItem = JcrUtils
+            targetItem = JcrNodeUtils
                     .getTargetItem(session, endpoint, event, false);
 
             if (targetItem == null) {
@@ -171,7 +171,7 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
                 final Node targetParentNode = (Node) targetItem;
 
                 // create the target node, based on its type and relpath
-                final String nodeTypeName = JcrUtils.getNodeTypeName(event);
+                final String nodeTypeName = JcrNodeUtils.getNodeTypeName(event);
 
                 NodeTypeHandler nodeTypeHandler;
 

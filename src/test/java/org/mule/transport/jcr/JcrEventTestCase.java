@@ -24,7 +24,7 @@ import junit.framework.TestCase;
 
 import org.mule.transport.jcr.support.JcrEventUtils;
 import org.mule.transport.jcr.support.JcrPropertyUtils;
-import org.mule.transport.jcr.support.JcrUtils;
+import org.mule.transport.jcr.support.JcrNodeUtils;
 
 import com.thoughtworks.xstream.XStream;
 
@@ -199,7 +199,7 @@ public class JcrEventTestCase extends TestCase {
             final String propertyPath, final int eventType,
             final Object expectedContent) throws Exception {
 
-        final JcrMessage jcrEvent = JcrUtils.newJcrMessage(new DummyEvent(
+        final JcrMessage jcrEvent = JcrNodeUtils.newJcrMessage(new DummyEvent(
                 propertyPath, eventType, USER_ID), RepositoryTestSupport
                 .getSession(), jcrContentPayloadType);
 

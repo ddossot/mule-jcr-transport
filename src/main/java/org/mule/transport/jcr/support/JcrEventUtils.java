@@ -18,12 +18,19 @@ import javax.jcr.observation.Event;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.mule.api.MuleEvent;
 import org.mule.transport.jcr.JcrContentPayloadType;
+import org.mule.util.DateUtils;
+import org.mule.util.TemplateParser;
+import org.mule.util.UUID;
 
 /**
  * @author David Dossot (david@dossot.net)
  */
 public abstract class JcrEventUtils {
+    private static final TemplateParser ANT_PARSER = TemplateParser
+            .createAntStyleParser();
+
     private static final Log LOG = LogFactory.getLog(JcrEventUtils.class);
 
     // This should really be in JCR API!
@@ -48,6 +55,12 @@ public abstract class JcrEventUtils {
         default:
             return "UNKNOWN";
         }
+    }
+
+    public static String getParsableEventProperty(final MuleEvent event,
+            final String propertyName) {
+        return JcrEventUtils.parsePath((String) event.getProperty(propertyName,
+                true), event);
     }
 
     static EventContent getEventContent(final Event event,
@@ -77,8 +90,10 @@ public abstract class JcrEventUtils {
 
                     if (!item.isNode()) {
                         // is not a node == is a property
-                        result.setData(JcrPropertyUtils.outputProperty(eventPath,
-                                (Property) item, contentPayloadType));
+                        result
+                                .setData(JcrPropertyUtils.outputProperty(
+                                        eventPath, (Property) item,
+                                        contentPayloadType));
                     }
 
                 } else if (eventType == Event.NODE_ADDED) {
@@ -103,6 +118,36 @@ public abstract class JcrEventUtils {
         }
 
         return result;
+    }
+
+    static String parsePath(final String path, final MuleEvent event) {
+        if ((path == null) || (path.indexOf('{') == -1)) {
+            return path;
+        }
+
+        return ANT_PARSER.parse(new TemplateParser.TemplateCallback() {
+            public Object match(String token) {
+
+                if (token.equals("DATE")) {
+                    return DateUtils.getTimeStamp(JcrNodeUtils.DEFAULT_DATE_FORMAT);
+
+                } else if (token.startsWith("DATE:")) {
+                    token = token.substring(5);
+                    return DateUtils.getTimeStamp(token);
+
+                } else if (token.startsWith("UUID")) {
+                    return UUID.getUUID();
+
+                } else if (token.startsWith("SYSTIME")) {
+                    return String.valueOf(System.currentTimeMillis());
+
+                } else if (event != null) {
+                    return event.getProperty(token, true);
+                }
+
+                return null;
+            }
+        }, path);
     }
 
     private JcrEventUtils() {

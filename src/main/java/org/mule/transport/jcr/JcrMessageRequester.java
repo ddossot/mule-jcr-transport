@@ -26,7 +26,7 @@ import org.mule.transport.AbstractMessageRequester;
 import org.mule.transport.jcr.filters.JcrNodeNameFilter;
 import org.mule.transport.jcr.filters.JcrPropertyNameFilter;
 import org.mule.transport.jcr.support.JcrPropertyUtils;
-import org.mule.transport.jcr.support.JcrUtils;
+import org.mule.transport.jcr.support.JcrNodeUtils;
 
 /**
  * <code>JcrMessageRequester</code> is responsible for receiving messages from
@@ -151,17 +151,17 @@ public class JcrMessageRequester extends AbstractMessageRequester {
             }
         }
 
-        final Item targetItem = JcrUtils.getTargetItem(getSession(),
+        final Item targetItem = JcrNodeUtils.getTargetItem(getSession(),
                 getEndpoint(), event, true);
 
         Object rawJcrContent = null;
 
         if (targetItem != null) {
             if (targetItem.isNode()) {
-                rawJcrContent = JcrUtils.getRawContentFromNode(targetItem,
+                rawJcrContent = JcrNodeUtils.getRawContentFromNode(targetItem,
                         nodeNamePatternFilter, propertyNamePatternFilter);
             } else {
-                rawJcrContent = JcrUtils.getRawContentFromProperty(targetItem);
+                rawJcrContent = JcrNodeUtils.getRawContentFromProperty(targetItem);
             }
         }
 

@@ -22,7 +22,7 @@ import org.mule.transport.jcr.JcrContentPayloadType;
 import org.mule.transport.jcr.JcrMessage;
 import org.mule.transport.jcr.JcrMessageReceiver;
 import org.mule.transport.jcr.JcrMessageReceiverContext;
-import org.mule.transport.jcr.support.JcrUtils;
+import org.mule.transport.jcr.support.JcrNodeUtils;
 
 /**
  * Transforms a JCR <code>EventIterator</code> into an object that can be used
@@ -51,7 +51,7 @@ public class JcrEventToObject extends AbstractDiscoverableTransformer {
 
         while (eventIterator.hasNext()) {
             try {
-                eventList.add(JcrUtils.newJcrMessage(eventIterator.nextEvent(),
+                eventList.add(JcrNodeUtils.newJcrMessage(eventIterator.nextEvent(),
                         jcrMessageReceiverContext.getObservingSession(),
                         contentPayloadType != null ? contentPayloadType
                                 : jcrMessageReceiverContext

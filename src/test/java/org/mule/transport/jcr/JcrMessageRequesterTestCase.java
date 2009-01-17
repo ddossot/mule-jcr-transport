@@ -77,21 +77,6 @@ public class JcrMessageRequesterTestCase extends AbstractJcrMessagerTestCase {
         assertTrue(received.getPayload() instanceof InputStream);
     }
 
-    // JcrConnector for Mule 2.x does not supporting "forced" streaming
-    // anymore.
-    // Reactivate only if requested by end users.
-    // public void testReceiveNonInputStreamStreamingEndpoint() throws
-    // Exception
-    // {
-    // final JcrPropertyNameFilter jcrPropertyNameFilter = new
-    // JcrPropertyNameFilter();
-    // jcrPropertyNameFilter.setPattern("text");
-    // newRequesterForTestEndpoint(jcrPropertyNameFilter);
-    //
-    // final MuleMessage received = messageRequester.request(0);
-    // assertTrue(received.getPayload() instanceof InputStream);
-    // }
-
     public void testReceiveWithEventUUID() throws Exception {
         MuleEvent event = getTestEvent(null);
         event.getMessage().setStringProperty(

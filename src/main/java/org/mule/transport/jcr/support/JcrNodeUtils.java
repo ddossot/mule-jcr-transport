@@ -17,10 +17,8 @@ import javax.jcr.NodeIterator;
 import javax.jcr.PathNotFoundException;
 import javax.jcr.Property;
 import javax.jcr.PropertyIterator;
-import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
-import javax.jcr.Value;
 import javax.jcr.ValueFormatException;
 import javax.jcr.observation.Event;
 import javax.jcr.query.QueryResult;
@@ -33,9 +31,6 @@ import org.mule.transport.jcr.JcrConnector;
 import org.mule.transport.jcr.JcrContentPayloadType;
 import org.mule.transport.jcr.JcrMessage;
 import org.mule.transport.jcr.i18n.JcrMessages;
-import org.mule.util.DateUtils;
-import org.mule.util.TemplateParser;
-import org.mule.util.UUID;
 
 /**
  * Utility class that provides methods for "detaching" JCR events and content
@@ -44,15 +39,12 @@ import org.mule.util.UUID;
  * 
  * @author David Dossot (david@dossot.net)
  */
-public abstract class JcrUtils {
-    private static final TemplateParser ANT_PARSER = TemplateParser
-            .createAntStyleParser();
-
+public abstract class JcrNodeUtils {
     public static final String DEFAULT_DATE_FORMAT = "dd-MM-yy_HH-mm-ss.SSS";
 
-    private static final Log LOG = LogFactory.getLog(JcrUtils.class);
+    private static final Log LOG = LogFactory.getLog(JcrNodeUtils.class);
 
-    private JcrUtils() {
+    private JcrNodeUtils() {
         throw new UnsupportedOperationException("Do not instantiate");
     }
 
@@ -61,14 +53,15 @@ public abstract class JcrUtils {
             RepositoryException {
 
         if (item.isNode()) {
-            return JcrPropertyUtils.getPropertiesPayload(((Node) item).getProperties());
+            return JcrPropertyUtils.getPropertiesPayload(((Node) item)
+                    .getProperties());
         } else {
             return JcrPropertyUtils.getPropertyPayload((Property) item);
         }
     }
 
     public static String getNodeRelPath(final MuleEvent event) {
-        return event != null ? JcrUtils.getParsableEventProperty(event,
+        return event != null ? JcrEventUtils.getParsableEventProperty(event,
                 JcrConnector.JCR_NODE_RELPATH_PROPERTY) : null;
     }
 
@@ -105,19 +98,13 @@ public abstract class JcrUtils {
     }
 
     public static String getNodeUUID(final MuleEvent event) {
-        return event != null ? (String) JcrUtils.getParsableEventProperty(
+        return event != null ? (String) JcrEventUtils.getParsableEventProperty(
                 event, JcrConnector.JCR_NODE_UUID_PROPERTY) : null;
-    }
-
-    public static String getParsableEventProperty(final MuleEvent event,
-            final String propertyName) {
-        return JcrUtils.parsePath((String) event
-                .getProperty(propertyName, true), event);
     }
 
     private static QueryDefinition getQueryDefinition(final MuleEvent event) {
         return event != null ? new QueryDefinition((String) event.getProperty(
-                JcrConnector.JCR_QUERY_LANGUAGE_PROPERTY, true), JcrUtils
+                JcrConnector.JCR_QUERY_LANGUAGE_PROPERTY, true), JcrEventUtils
                 .getParsableEventProperty(event,
                         JcrConnector.JCR_QUERY_STATEMENT_PROPERTY)) : null;
     }
@@ -194,8 +181,8 @@ public abstract class JcrUtils {
         final String nodeRelPath = navigateRelativePaths ? getNodeRelPath(event)
                 : null;
 
-        final String propertyRelPath = navigateRelativePaths ? JcrPropertyUtils.getPropertyRelPath(event)
-                : null;
+        final String propertyRelPath = navigateRelativePaths ? JcrPropertyUtils
+                .getPropertyRelPath(event) : null;
 
         Item targetItem = null;
 
@@ -336,18 +323,6 @@ public abstract class JcrUtils {
         return null;
     }
 
-    public static Object getValuePayload(final Value value)
-            throws IllegalStateException, RepositoryException {
-
-        final int propertyType = value.getType();
-
-        if (propertyType == PropertyType.BINARY) {
-            return value.getStream();
-        } else {
-            return JcrPropertyUtils.getNonBinaryPropertyValue(value, propertyType);
-        }
-    }
-
     private static void navigateToRelativeTargetItem(
             final TargetItem targetItem, final String nodeRelpath,
             final String propertyRelPath) throws RepositoryException,
@@ -408,36 +383,6 @@ public abstract class JcrUtils {
         return new JcrMessage(event.getPath(), event.getType(), JcrEventUtils
                 .getEventTypeNameFromValue(event.getType()), event.getUserID(),
                 eventContent.getData(), eventContent.getUuid());
-    }
-
-    static String parsePath(final String path, final MuleEvent event) {
-        if ((path == null) || (path.indexOf('{') == -1)) {
-            return path;
-        }
-
-        return ANT_PARSER.parse(new TemplateParser.TemplateCallback() {
-            public Object match(String token) {
-
-                if (token.equals("DATE")) {
-                    return DateUtils.getTimeStamp(DEFAULT_DATE_FORMAT);
-
-                } else if (token.startsWith("DATE:")) {
-                    token = token.substring(5);
-                    return DateUtils.getTimeStamp(token);
-
-                } else if (token.startsWith("UUID")) {
-                    return UUID.getUUID();
-
-                } else if (token.startsWith("SYSTIME")) {
-                    return String.valueOf(System.currentTimeMillis());
-
-                } else if (event != null) {
-                    return event.getProperty(token, true);
-                }
-
-                return null;
-            }
-        }, path);
     }
 
 }
