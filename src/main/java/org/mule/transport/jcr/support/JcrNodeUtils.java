@@ -55,9 +55,9 @@ public abstract class JcrNodeUtils {
         if (item.isNode()) {
             return JcrPropertyUtils.getPropertiesPayload(((Node) item)
                     .getProperties());
-        } else {
-            return JcrPropertyUtils.getPropertyPayload((Property) item);
         }
+
+        return JcrPropertyUtils.getPropertyPayload((Property) item);
     }
 
     public static String getNodeRelPath(final MuleEvent event) {
@@ -139,7 +139,6 @@ public abstract class JcrNodeUtils {
                             targetItem.getPath() + "["
                                     + propertyNamePatternFilter + "]")
                             .getMessage());
-                    result = null;
                 } else if (properties.getSize() == 1) {
                     result = properties.next();
                 } else {
@@ -225,21 +224,20 @@ public abstract class JcrNodeUtils {
     }
 
     private static Item getTargetItemFromNodeIterator(final String pathContext,
-            final NodeIterator nodes) throws RepositoryException {
+            final NodeIterator nodes) {
 
         if (nodes.getSize() == 0) {
             LOG.warn(JcrMessages.noNodeFor(pathContext).getMessage());
 
             return null;
 
-        } else {
-            if (nodes.getSize() > 1) {
-                LOG.warn(JcrMessages.moreThanOneNodeFor(pathContext)
-                        .getMessage());
-            }
-
-            return nodes.nextNode();
         }
+
+        if (nodes.getSize() > 1) {
+            LOG.warn(JcrMessages.moreThanOneNodeFor(pathContext).getMessage());
+        }
+
+        return nodes.nextNode();
     }
 
     private static Item getTargetItemFromPath(final Session session,

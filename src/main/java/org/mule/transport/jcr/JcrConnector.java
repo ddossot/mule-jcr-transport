@@ -297,41 +297,37 @@ public final class JcrConnector extends AbstractConnector {
 
     public Session validateSession(final Session session) {
         if ((session != null) && (session.isLive())) {
-
             return session;
-
-        } else {
-            logger.info("JCR session is invalid: a new one will be created.");
-
-            final AtomicReference<Session> newSessionReference = new AtomicReference<Session>();
-
-            try {
-                getRetryPolicyTemplate().execute(new RetryCallback() {
-
-                    public void doWork(final RetryContext context)
-                            throws Exception {
-                        newSessionReference.set(newSession());
-                    }
-
-                    public String getWorkDescription() {
-                        return "Refreshing JCR session for: "
-                                + getConnectionDescription();
-                    }
-                }, muleContext.getWorkManager());
-
-            } catch (final Exception e) {
-                throw new RuntimeException(
-                        "Error when recreating a session to the JCR container!",
-                        e);
-            }
-
-            final Session newSession = newSessionReference.get();
-
-            Validate.notNull(newSession,
-                    "The JCR has not be refreshed and is permanently invalid");
-
-            return newSession;
         }
+
+        logger.info("JCR session is invalid: a new one will be created.");
+
+        final AtomicReference<Session> newSessionReference = new AtomicReference<Session>();
+
+        try {
+            getRetryPolicyTemplate().execute(new RetryCallback() {
+
+                public void doWork(final RetryContext context) throws Exception {
+                    newSessionReference.set(newSession());
+                }
+
+                public String getWorkDescription() {
+                    return "Refreshing JCR session for: "
+                            + getConnectionDescription();
+                }
+            }, muleContext.getWorkManager());
+
+        } catch (final Exception e) {
+            throw new RuntimeException(
+                    "Error when recreating a session to the JCR container!", e);
+        }
+
+        final Session newSession = newSessionReference.get();
+
+        Validate.notNull(newSession,
+                "The JCR has not be refreshed and is permanently invalid");
+
+        return newSession;
     }
 
     private void setDefaultEndpointValues() {

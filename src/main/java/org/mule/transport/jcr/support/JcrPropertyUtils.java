@@ -256,9 +256,9 @@ public abstract class JcrPropertyUtils {
             }
 
             return valuePayloads;
-        } else {
-            return JcrPropertyUtils.getValuePayload(property.getValue());
         }
+
+        return JcrPropertyUtils.getValuePayload(property.getValue());
     }
 
     static Object getValuePayload(final Value value)
@@ -268,9 +268,9 @@ public abstract class JcrPropertyUtils {
 
         if (propertyType == PropertyType.BINARY) {
             return value.getStream();
-        } else {
-            return getNonBinaryPropertyValue(value, propertyType);
         }
+
+        return getNonBinaryPropertyValue(value, propertyType);
     }
 
     static Serializable outputProperty(final String propertyPath,

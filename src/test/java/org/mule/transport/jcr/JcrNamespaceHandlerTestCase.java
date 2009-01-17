@@ -277,12 +277,10 @@ public class JcrNamespaceHandlerTestCase extends FunctionalTestCase {
     }
 
     public void testServiceEnpointsFullConfiguration() throws Exception {
-        verifyServiceEnpointsFullConfiguration("jcrBridgeFullConfiguration",
-                "/full");
+        verifyServiceEnpointsFullConfiguration("jcrBridgeFullConfiguration");
     }
 
-    private void verifyServiceEnpointsFullConfiguration(
-            final String serviceName, final String address) {
+    private void verifyServiceEnpointsFullConfiguration(final String serviceName) {
         final Service service = (Service) muleContext.getRegistry()
                 .lookupObject(serviceName);
 
