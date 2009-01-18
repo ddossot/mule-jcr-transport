@@ -47,9 +47,7 @@
 	<script:script name="httpImageFetcher" engine="groovy">
 		<script:text><![CDATA[
 		def imageName = message.payload.substring(8)
-		message.clearProperties()
 		message.setStringProperty("nodeRelPath", imageName)
-		message.setStringProperty("Content-Type", "image/gif")
 		return eventContext.requestEvent("jcrImages", -1).payload	]]>
 		</script:text>
 	</script:script>
@@ -158,6 +156,11 @@
 							<spring:property name="pattern" value="/favicon.ico"/>
 						</custom-filter>
 					</not-filter>
+					<response-transformers>
+						<message-properties-transformer>
+							<add-message-property key="Content-Type" value="image/gif"/>
+						</message-properties-transformer>
+					</response-transformers>
 				</http:inbound-endpoint>
 			</inbound>
 			<script:component script-ref="httpImageFetcher" />
