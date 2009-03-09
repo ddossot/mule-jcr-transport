@@ -20,7 +20,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mule.api.MuleEvent;
 import org.mule.transport.jcr.JcrContentPayloadType;
-import org.mule.util.expression.ExpressionEvaluatorManager;
 
 /**
  * @author David Dossot (david@dossot.net)
@@ -56,8 +55,7 @@ public abstract class JcrEventUtils {
     public static String getParsableEventProperty(final MuleEvent event,
             final String propertyName) {
 
-        final String expression = (String) event
-                .getProperty(propertyName, true);
+        final String expression = (String) event.getProperty(propertyName);
 
         return parseExpressionForEvent(expression, event);
     }
@@ -73,7 +71,8 @@ public abstract class JcrEventUtils {
             return null;
         }
 
-        return ExpressionEvaluatorManager.parse(expression, event.getMessage());
+        return event.getMuleContext().getExpressionManager().parse(expression,
+                event.getMessage(), false);
     }
 
     static EventContent getEventContent(final Event event,
@@ -103,10 +102,8 @@ public abstract class JcrEventUtils {
 
                     if (!item.isNode()) {
                         // is not a node == is a property
-                        result
-                                .setData(JcrPropertyUtils.outputProperty(
-                                        eventPath, (Property) item,
-                                        contentPayloadType));
+                        result.setData(JcrPropertyUtils.outputProperty(
+                                eventPath, (Property) item, contentPayloadType));
                     }
 
                 } else if (eventType == Event.NODE_ADDED) {

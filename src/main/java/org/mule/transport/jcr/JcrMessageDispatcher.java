@@ -24,8 +24,8 @@ import org.mule.api.transport.DispatchException;
 import org.mule.transport.AbstractMessageDispatcher;
 import org.mule.transport.jcr.handlers.NodeTypeHandler;
 import org.mule.transport.jcr.i18n.JcrMessages;
-import org.mule.transport.jcr.support.JcrPropertyUtils;
 import org.mule.transport.jcr.support.JcrNodeUtils;
+import org.mule.transport.jcr.support.JcrPropertyUtils;
 import org.mule.util.StringUtils;
 
 /**
@@ -116,18 +116,19 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
      */
     @Override
     public MuleMessage doSend(final MuleEvent event) throws Exception {
-        final boolean alwaysCreate = Boolean.valueOf(
-                (String) event.getProperty(
-                        JcrConnector.JCR_ALWAYS_CREATE_CHILD_NODE_PROPERTY,
-                        true)).booleanValue();
+        final boolean alwaysCreate =
+                Boolean.valueOf(
+                        (String) event.getProperty(JcrConnector.JCR_ALWAYS_CREATE_CHILD_NODE_PROPERTY)).booleanValue();
 
         final String nodeUUID = JcrNodeUtils.getNodeUUID(event);
         final String nodeRelPath = JcrNodeUtils.getNodeRelPath(event);
-        final String propertyRelPath = JcrPropertyUtils.getPropertyRelPath(event);
+        final String propertyRelPath =
+                JcrPropertyUtils.getPropertyRelPath(event);
         final Session session = getSession();
 
-        Item targetItem = alwaysCreate ? null : JcrNodeUtils.getTargetItem(session,
-                endpoint, event, true);
+        Item targetItem =
+                alwaysCreate ? null : JcrNodeUtils.getTargetItem(session,
+                        endpoint, event, true);
 
         if (targetItem != null) {
             // write payload to node or property
@@ -148,24 +149,24 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
                 final Property targetProperty = (Property) targetItem;
 
                 if ((payload instanceof Collection)) {
-                    targetProperty.setValue(JcrPropertyUtils.newPropertyValues(session,
-                            (Collection<?>) payload));
+                    targetProperty.setValue(JcrPropertyUtils.newPropertyValues(
+                            session, (Collection<?>) payload));
                 } else {
-                    targetProperty.setValue(JcrPropertyUtils.newPropertyValue(session,
-                            payload));
+                    targetProperty.setValue(JcrPropertyUtils.newPropertyValue(
+                            session, payload));
                 }
             }
 
         } else {
-            targetItem = JcrNodeUtils
-                    .getTargetItem(session, endpoint, event, false);
+            targetItem =
+                    JcrNodeUtils.getTargetItem(session, endpoint, event, false);
 
             if (targetItem == null) {
-                throw new DispatchException(JcrMessages
-                        .noNodeFor("Endpoint URI: "
+                throw new DispatchException(
+                        JcrMessages.noNodeFor("Endpoint URI: "
                                 + endpoint.getEndpointURI().toString()
-                                + " ; NodeUUID: " + nodeUUID), event
-                        .getMessage(), endpoint);
+                                + " ; NodeUUID: " + nodeUUID),
+                        event.getMessage(), endpoint);
 
             } else if (targetItem.isNode()) {
                 final Node targetParentNode = (Node) targetItem;
@@ -176,11 +177,13 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
                 NodeTypeHandler nodeTypeHandler;
 
                 if (StringUtils.isNotBlank(nodeTypeName)) {
-                    nodeTypeHandler = jcrConnector.getNodeTypeHandlerManager()
-                            .getNodeTypeHandler(nodeTypeName);
+                    nodeTypeHandler =
+                            jcrConnector.getNodeTypeHandlerManager().getNodeTypeHandler(
+                                    nodeTypeName);
                 } else {
-                    nodeTypeHandler = jcrConnector.getNodeTypeHandlerManager()
-                            .getChildNodeTypeHandler(targetParentNode);
+                    nodeTypeHandler =
+                            jcrConnector.getNodeTypeHandlerManager().getChildNodeTypeHandler(
+                                    targetParentNode);
                 }
 
                 if (logger.isDebugEnabled()) {

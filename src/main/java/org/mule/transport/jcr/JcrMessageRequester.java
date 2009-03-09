@@ -25,8 +25,8 @@ import org.mule.api.transformer.Transformer;
 import org.mule.transport.AbstractMessageRequester;
 import org.mule.transport.jcr.filters.JcrNodeNameFilter;
 import org.mule.transport.jcr.filters.JcrPropertyNameFilter;
-import org.mule.transport.jcr.support.JcrPropertyUtils;
 import org.mule.transport.jcr.support.JcrNodeUtils;
+import org.mule.transport.jcr.support.JcrPropertyUtils;
 
 /**
  * <code>JcrMessageRequester</code> is responsible for receiving messages from
@@ -54,13 +54,15 @@ public class JcrMessageRequester extends AbstractMessageRequester {
 
         jcrConnector = (JcrConnector) endpoint.getConnector();
 
-        final Filter filter = getEndpoint().getFilter();
+        final Filter filter = endpoint.getFilter();
 
-        nodeNamePatternFilter = JcrPropertyUtils.getPropertyNamePatternFilter(filter,
-                JcrNodeNameFilter.class);
+        nodeNamePatternFilter =
+                JcrPropertyUtils.getPropertyNamePatternFilter(filter,
+                        JcrNodeNameFilter.class);
 
-        propertyNamePatternFilter = JcrPropertyUtils.getPropertyNamePatternFilter(
-                filter, JcrPropertyNameFilter.class);
+        propertyNamePatternFilter =
+                JcrPropertyUtils.getPropertyNamePatternFilter(filter,
+                        JcrPropertyNameFilter.class);
     }
 
     @Override
@@ -151,26 +153,31 @@ public class JcrMessageRequester extends AbstractMessageRequester {
             }
         }
 
-        final Item targetItem = JcrNodeUtils.getTargetItem(getSession(),
-                getEndpoint(), event, true);
+        final Item targetItem =
+                JcrNodeUtils.getTargetItem(getSession(), endpoint, event, true);
 
         Object rawJcrContent = null;
 
         if (targetItem != null) {
             if (targetItem.isNode()) {
-                rawJcrContent = JcrNodeUtils.getRawContentFromNode(targetItem,
-                        nodeNamePatternFilter, propertyNamePatternFilter);
+                rawJcrContent =
+                        JcrNodeUtils.getRawContentFromNode(targetItem,
+                                nodeNamePatternFilter,
+                                propertyNamePatternFilter);
             } else {
-                rawJcrContent = JcrNodeUtils.getRawContentFromProperty(targetItem);
+                rawJcrContent =
+                        JcrNodeUtils.getRawContentFromProperty(targetItem);
             }
         }
 
-        final Object transformedContent = rawJcrContent == null ? null
-                : ((Transformer) jcrConnector.getDefaultResponseTransformers()
-                        .get(0)).transform(rawJcrContent);
+        final Object transformedContent =
+                rawJcrContent == null ? null
+                        : ((Transformer) jcrConnector.getDefaultResponseTransformers().get(
+                                0)).transform(rawJcrContent);
 
-        return new DefaultMuleMessage(jcrConnector
-                .getMessageAdapter(transformedContent), Collections.EMPTY_MAP);
+        return new DefaultMuleMessage(
+                jcrConnector.getMessageAdapter(transformedContent),
+                Collections.EMPTY_MAP);
     }
 
 }

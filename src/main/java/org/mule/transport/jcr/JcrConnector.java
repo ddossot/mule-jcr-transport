@@ -14,10 +14,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.jcr.Credentials;
@@ -33,7 +30,6 @@ import org.mule.RequestContext;
 import org.mule.api.MuleEvent;
 import org.mule.api.MuleException;
 import org.mule.api.MuleMessage;
-import org.mule.api.MuleSession;
 import org.mule.api.endpoint.OutboundEndpoint;
 import org.mule.api.lifecycle.InitialisationException;
 import org.mule.api.retry.RetryCallback;
@@ -103,13 +99,15 @@ public final class JcrConnector extends AbstractConnector {
      * Property that defines a list of node types that will only be listened to
      * for changes.
      */
-    public static final String JCR_NODE_TYPE_NAME_LIST_PROPERTY = "nodeTypeNames";
+    public static final String JCR_NODE_TYPE_NAME_LIST_PROPERTY =
+            "nodeTypeNames";
 
     /**
      * Property that defines the type of payload that a JCR
      * <code>MuleMessage</code> will contain.
      */
-    public static final String JCR_CONTENT_PAYLOAD_TYPE_PROPERTY = "contentPayloadType";
+    public static final String JCR_CONTENT_PAYLOAD_TYPE_PROPERTY =
+            "contentPayloadType";
 
     /**
      * Property that defines if local events must be ignored.
@@ -120,7 +118,8 @@ public final class JcrConnector extends AbstractConnector {
      * Property that defines a relative path to append at the end of the target
      * item path.
      */
-    public static final String JCR_PROPERTY_REL_PATH_PROPERTY = "propertyRelPath";
+    public static final String JCR_PROPERTY_REL_PATH_PROPERTY =
+            "propertyRelPath";
 
     /**
      * Property that defines a relative path to append after the endpoint item
@@ -132,7 +131,8 @@ public final class JcrConnector extends AbstractConnector {
      * Property that forces the creation of a child node under the node target
      * by the endpoint URI, instead of trying first to locate an existing one.
      */
-    public static final String JCR_ALWAYS_CREATE_CHILD_NODE_PROPERTY = "alwaysCreate";
+    public static final String JCR_ALWAYS_CREATE_CHILD_NODE_PROPERTY =
+            "alwaysCreate";
 
     /**
      * Property that defines a particular node type name.
@@ -165,12 +165,11 @@ public final class JcrConnector extends AbstractConnector {
     @Override
     public void doInitialise() throws InitialisationException {
         if (getRepository() == null) {
-            throw new InitialisationException(JcrMessages
-                    .missingDependency("repository"), this);
+            throw new InitialisationException(
+                    JcrMessages.missingDependency("repository"), this);
         }
 
-        if (getRepository()
-                .getDescriptor(Repository.OPTION_QUERY_SQL_SUPPORTED) == null) {
+        if (getRepository().getDescriptor(Repository.OPTION_QUERY_SQL_SUPPORTED) == null) {
             logger.info(JcrMessages.sqlQuerySyntaxNotSupported());
         }
 
@@ -215,21 +214,12 @@ public final class JcrConnector extends AbstractConnector {
         try {
             pipedOutputStream = new PipedOutputStream(pipedInputStream);
         } catch (final IOException ioe) {
-            throw new ConnectorException(CoreMessages
-                    .streamingFailedForEndpoint(endpoint.toString()), this, ioe);
-        }
-
-        final Map<String, Object> properties = new HashMap<String, Object>();
-
-        @SuppressWarnings("unchecked")
-        final Set<String> propertyNames = message.getPropertyNames();
-
-        for (final String propertyName : propertyNames) {
-            properties.put(propertyName, message.getProperty(propertyName));
+            throw new ConnectorException(
+                    CoreMessages.streamingFailedForEndpoint(endpoint.toString()),
+                    this, ioe);
         }
 
         final MuleEvent event = RequestContext.getEvent();
-        final MuleSession session = event != null ? event.getSession() : null;
 
         // It is essential to use a different thread for reading the piped input
         // stream. Doing a dispatch and relying on Mule's work manager to do so
@@ -239,8 +229,7 @@ public final class JcrConnector extends AbstractConnector {
             public void run() {
                 try {
                     send(endpoint, new DefaultMuleEvent(new DefaultMuleMessage(
-                            pipedInputStream, properties), endpoint, session,
-                            true));
+                            pipedInputStream, message), event));
 
                 } catch (final DispatchException de) {
                     logger.error("Can not send streaming message!", de);
@@ -274,9 +263,10 @@ public final class JcrConnector extends AbstractConnector {
             logger.debug("Opening new JCR session.");
         }
 
-        final Credentials credentials = ((getUsername() != null) && (getPassword() != null)) ? new SimpleCredentials(
-                getUsername(), getPassword().toCharArray())
-                : null;
+        final Credentials credentials =
+                ((getUsername() != null) && (getPassword() != null)) ? new SimpleCredentials(
+                        getUsername(), getPassword().toCharArray())
+                        : null;
 
         return getRepository().login(credentials, getWorkspaceName());
     }
@@ -302,7 +292,8 @@ public final class JcrConnector extends AbstractConnector {
 
         logger.info("JCR session is invalid: a new one will be created.");
 
-        final AtomicReference<Session> newSessionReference = new AtomicReference<Session>();
+        final AtomicReference<Session> newSessionReference =
+                new AtomicReference<Session>();
 
         try {
             getRetryPolicyTemplate().execute(new RetryCallback() {
@@ -356,8 +347,9 @@ public final class JcrConnector extends AbstractConnector {
             for (final Class<? extends NodeTypeHandler> customNodeTypeHandlerClass : customNodeTypeHandlers) {
 
                 try {
-                    final NodeTypeHandler handler = (NodeTypeHandler) ClassUtils
-                            .instanciateClass(customNodeTypeHandlerClass,
+                    final NodeTypeHandler handler =
+                            (NodeTypeHandler) ClassUtils.instanciateClass(
+                                    customNodeTypeHandlerClass,
                                     ClassUtils.NO_ARGS);
 
                     getNodeTypeHandlerManager().registerHandler(handler);

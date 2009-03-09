@@ -24,10 +24,11 @@ public class JcrUtilsTestCase extends AbstractMuleTestCase {
 
     private Session session;
 
-    private final Object[] supportedValues = new Object[] { Boolean.TRUE,
-            Calendar.getInstance(), new Double(3.14d),
-            new ByteArrayInputStream("foo".getBytes()), "bar".getBytes(),
-            new Long(123), "baz" };
+    private final Object[] supportedValues =
+            new Object[] { Boolean.TRUE, Calendar.getInstance(),
+                    new Double(3.14d),
+                    new ByteArrayInputStream("foo".getBytes()),
+                    "bar".getBytes(), new Long(123), "baz" };
 
     @Override
     protected void doSetUp() throws Exception {
@@ -40,24 +41,25 @@ public class JcrUtilsTestCase extends AbstractMuleTestCase {
 
         assertEquals("foo", JcrEventUtils.parseExpressionForEvent("foo", null));
 
-        assertEquals("${foo}", JcrEventUtils.parseExpressionForEvent("${foo}",
+        assertEquals("#[foo]", JcrEventUtils.parseExpressionForEvent("#[foo]",
                 null));
 
-        final String path = "date:#[function:date];customDate:#[function:datestamp:yyyy];uuid:#[function:uuid];systime:#[function:now];eventProperty:#[header:eventProperty];missing:#[header:foo]";
+        final String path =
+                "date:#[function:date];customDate:#[function:datestamp:yyyy];uuid:#[function:uuid];systime:#[function:now];eventProperty:#[header:eventProperty];missing:#[header:foo*]";
 
         assertNotNull(
                 "The test hasn't been configured properly, no muleContext available",
                 muleContext);
-        final MuleEvent event = MuleTestUtils.getTestEvent("payload",
-                muleContext);
+        final MuleEvent event =
+                MuleTestUtils.getTestEvent("payload", muleContext);
         event.getMessage().setProperty("eventProperty", "bar");
 
-        final String parsedPath = JcrEventUtils.parseExpressionForEvent(path,
-                event);
+        final String parsedPath =
+                JcrEventUtils.parseExpressionForEvent(path, event);
 
         // all placeholders should have been resolved except foo
         assertEquals(1, StringUtils.countMatches(parsedPath, "#["));
-        assertTrue(StringUtils.contains(parsedPath, "#[header:foo]"));
+        assertTrue(StringUtils.contains(parsedPath, "#[header:foo*]"));
     }
 
     public void testNewPropertyNullValue() throws Exception {
@@ -82,9 +84,9 @@ public class JcrUtilsTestCase extends AbstractMuleTestCase {
         for (int i = 0; i < supportedValues.length; i++) {
             final Object supportedValue = supportedValues[i];
 
-            final Object retrievedValue = JcrPropertyUtils
-                    .getValuePayload(JcrPropertyUtils.newPropertyValue(session,
-                            supportedValue));
+            final Object retrievedValue =
+                    JcrPropertyUtils.getValuePayload(JcrPropertyUtils.newPropertyValue(
+                            session, supportedValue));
 
             assertTrue(supportedValue + "!=" + retrievedValue, areEqual(
                     supportedValue, retrievedValue));
@@ -95,8 +97,9 @@ public class JcrUtilsTestCase extends AbstractMuleTestCase {
     public void testSerializablePropertyValues() throws Exception {
         final Serializable s = new CompositeName("a/b");
 
-        final InputStream retrievedValue = (InputStream) JcrPropertyUtils
-                .getValuePayload(JcrPropertyUtils.newPropertyValue(session, s));
+        final InputStream retrievedValue =
+                (InputStream) JcrPropertyUtils.getValuePayload(JcrPropertyUtils.newPropertyValue(
+                        session, s));
 
         final ObjectInputStream ois = new ObjectInputStream(retrievedValue);
         final Object deserializedValue = ois.readObject();
@@ -122,8 +125,8 @@ public class JcrUtilsTestCase extends AbstractMuleTestCase {
                     (byte[]) r);
 
         } else if ((l instanceof byte[]) && (r instanceof InputStream)) {
-            return Arrays.equals((byte[]) l, IOUtils
-                    .toByteArray((InputStream) r));
+            return Arrays.equals((byte[]) l,
+                    IOUtils.toByteArray((InputStream) r));
 
         } else if ((l instanceof byte[]) && (r instanceof byte[])) {
             return Arrays.equals((byte[]) l, (byte[]) r);

@@ -19,75 +19,83 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.SimpleCredentials;
 
+import org.springframework.beans.factory.annotation.Required;
+
 /**
  * Load test content in a JCR repository.
  * 
  * @author David Dossot
  */
 public class JcrContentLoader {
-	private Repository repository;
+    private Repository repository;
 
-	private String username;
+    private String username;
 
-	private String password;
+    private String password;
 
-	private String rootNodeName;
+    private String rootNodeName;
 
-	public void initialize() throws LoginException, RepositoryException {
-		Session session = newSession();
+    public void initialize() throws LoginException, RepositoryException {
+        final Session session = newSession();
 
-		Node repositoryRoot = session.getRootNode();
+        final Node repositoryRoot = session.getRootNode();
 
-		if (repositoryRoot.hasNode(rootNodeName)) {
-			repositoryRoot.getNode(rootNodeName).remove();
-		}
+        if (repositoryRoot.hasNode(rootNodeName)) {
+            repositoryRoot.getNode(rootNodeName).remove();
+        }
 
-		Node rootNode = repositoryRoot.addNode(rootNodeName);
+        final Node rootNode = repositoryRoot.addNode(rootNodeName);
 
-		// setup an empty target property for direct data writing
-		rootNode.setProperty("targetProperty", "");
+        // setup an empty target property for direct data writing
+        rootNode.setProperty("targetProperty", "");
 
-		// add some demo files
-		Node imagesNode = rootNode.addNode("images");
-		storeImage(imagesNode, "mule.gif");
-		storeImage(imagesNode, "jackrabbit.gif");
+        // add some demo files
+        final Node imagesNode = rootNode.addNode("images");
+        storeImage(imagesNode, "mule.gif");
+        storeImage(imagesNode, "jackrabbit.gif");
 
-		session.save();
-		session.logout();
-	}
+        session.save();
+        session.logout();
+    }
 
-	private void storeImage(Node imagesNode, String imageName)
-			throws RepositoryException {
+    private void storeImage(final Node imagesNode, final String imageName)
+            throws RepositoryException {
 
-		Node imageNode = imagesNode.addNode(imageName, "nt:file");
-		Node contentNode = imageNode.addNode("jcr:content", "nt:resource");
-		contentNode.setProperty("jcr:data", Thread.currentThread()
-				.getContextClassLoader().getResourceAsStream(
-						"images/" + imageName));
-		contentNode.setProperty("jcr:mimeType", "image/gif");
-		contentNode.setProperty("jcr:lastModified", GregorianCalendar
-				.getInstance());
-	}
+        final Node imageNode = imagesNode.addNode(imageName, "nt:file");
+        final Node contentNode =
+                imageNode.addNode("jcr:content", "nt:resource");
+        contentNode.setProperty(
+                "jcr:data",
+                Thread.currentThread().getContextClassLoader().getResourceAsStream(
+                        "images/" + imageName));
+        contentNode.setProperty("jcr:mimeType", "image/gif");
+        contentNode.setProperty("jcr:lastModified",
+                GregorianCalendar.getInstance());
+    }
 
-	private Session newSession() throws LoginException, RepositoryException {
-		return repository.login(new SimpleCredentials(username, password
-				.toCharArray()));
-	}
+    private Session newSession() throws LoginException, RepositoryException {
+        return repository.login(new SimpleCredentials(username,
+                password.toCharArray()));
+    }
 
-	public void setRepository(Repository repository) {
-		this.repository = repository;
-	}
+    @Required
+    public void setRepository(final Repository repository) {
+        this.repository = repository;
+    }
 
-	public void setPassword(String password) {
-		this.password = password;
-	}
+    @Required
+    public void setPassword(final String password) {
+        this.password = password;
+    }
 
-	public void setUsername(String username) {
-		this.username = username;
-	}
+    @Required
+    public void setUsername(final String username) {
+        this.username = username;
+    }
 
-	public void setRootNodeName(String rootNodeName) {
-		this.rootNodeName = rootNodeName;
-	}
+    @Required
+    public void setRootNodeName(final String rootNodeName) {
+        this.rootNodeName = rootNodeName;
+    }
 
 }

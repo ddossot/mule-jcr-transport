@@ -53,8 +53,7 @@ public abstract class JcrNodeUtils {
             RepositoryException {
 
         if (item.isNode()) {
-            return JcrPropertyUtils.getPropertiesPayload(((Node) item)
-                    .getProperties());
+            return JcrPropertyUtils.getPropertiesPayload(((Node) item).getProperties());
         }
 
         return JcrPropertyUtils.getPropertyPayload((Property) item);
@@ -68,15 +67,17 @@ public abstract class JcrNodeUtils {
     public static String getNodeTypeName(final MuleEvent event) {
         String nodeTypeName = null;
 
-        final Object nodeTypeNameProperty = event.getProperty(
-                JcrConnector.JCR_NODE_TYPE_NAME_PROPERTY, true);
+        final Object nodeTypeNameProperty =
+                event.getProperty(JcrConnector.JCR_NODE_TYPE_NAME_PROPERTY,
+                        true);
 
         if (nodeTypeNameProperty instanceof String) {
             nodeTypeName = (String) nodeTypeNameProperty;
 
         } else if (nodeTypeNameProperty instanceof List) {
             @SuppressWarnings("unchecked")
-            final List<String> nodeTypeNameProperties = (List<String>) nodeTypeNameProperty;
+            final List<String> nodeTypeNameProperties =
+                    (List<String>) nodeTypeNameProperty;
 
             if (nodeTypeNameProperties.size() > 0) {
                 nodeTypeName = nodeTypeNameProperties.get(0);
@@ -103,10 +104,11 @@ public abstract class JcrNodeUtils {
     }
 
     private static QueryDefinition getQueryDefinition(final MuleEvent event) {
-        return event != null ? new QueryDefinition((String) event.getProperty(
-                JcrConnector.JCR_QUERY_LANGUAGE_PROPERTY, true), JcrEventUtils
-                .getParsableEventProperty(event,
-                        JcrConnector.JCR_QUERY_STATEMENT_PROPERTY)) : null;
+        return event != null ? new QueryDefinition(
+                (String) event.getProperty(JcrConnector.JCR_QUERY_LANGUAGE_PROPERTY),
+                JcrEventUtils.getParsableEventProperty(event,
+                        JcrConnector.JCR_QUERY_STATEMENT_PROPERTY))
+                : null;
     }
 
     public static Object getRawContentFromNode(Item targetItem,
@@ -116,8 +118,9 @@ public abstract class JcrNodeUtils {
         Object result = null;
 
         if (nodeNamePatternFilter != null) {
-            targetItem = getTargetItemByNodeNamePatternFilter(targetItem,
-                    nodeNamePatternFilter);
+            targetItem =
+                    getTargetItemByNodeNamePatternFilter(targetItem,
+                            nodeNamePatternFilter);
         }
 
         if (targetItem != null) {
@@ -128,8 +131,8 @@ public abstract class JcrNodeUtils {
                             + propertyNamePatternFilter);
                 }
 
-                final PropertyIterator properties = ((Node) targetItem)
-                        .getProperties(propertyNamePatternFilter);
+                final PropertyIterator properties =
+                        ((Node) targetItem).getProperties(propertyNamePatternFilter);
 
                 // if the map contains only one property, because we
                 // have applied a filter, we assume the intention was to
@@ -137,8 +140,7 @@ public abstract class JcrNodeUtils {
                 if (properties.getSize() == 0) {
                     LOG.warn(JcrMessages.noNodeFor(
                             targetItem.getPath() + "["
-                                    + propertyNamePatternFilter + "]")
-                            .getMessage());
+                                    + propertyNamePatternFilter + "]").getMessage());
                 } else if (properties.getSize() == 1) {
                     result = properties.next();
                 } else {
@@ -177,11 +179,12 @@ public abstract class JcrNodeUtils {
 
         final QueryDefinition queryDefinition = getQueryDefinition(event);
 
-        final String nodeRelPath = navigateRelativePaths ? getNodeRelPath(event)
-                : null;
+        final String nodeRelPath =
+                navigateRelativePaths ? getNodeRelPath(event) : null;
 
-        final String propertyRelPath = navigateRelativePaths ? JcrPropertyUtils
-                .getPropertyRelPath(event) : null;
+        final String propertyRelPath =
+                navigateRelativePaths ? JcrPropertyUtils.getPropertyRelPath(event)
+                        : null;
 
         Item targetItem = null;
 
@@ -193,15 +196,18 @@ public abstract class JcrNodeUtils {
         }
 
         if (nodeUUID != null) {
-            targetItem = getTargetItemFromUUID(session, nodeUUID, nodeRelPath,
-                    propertyRelPath);
+            targetItem =
+                    getTargetItemFromUUID(session, nodeUUID, nodeRelPath,
+                            propertyRelPath);
         } else if ((queryDefinition != null)
                 && (queryDefinition.getStatement() != null)) {
-            targetItem = getTargetItemFromQuery(session, queryDefinition,
-                    nodeRelPath, propertyRelPath);
+            targetItem =
+                    getTargetItemFromQuery(session, queryDefinition,
+                            nodeRelPath, propertyRelPath);
         } else {
-            targetItem = getTargetItemFromPath(session, endpoint, nodeRelPath,
-                    propertyRelPath);
+            targetItem =
+                    getTargetItemFromPath(session, endpoint, nodeRelPath,
+                            propertyRelPath);
         }
 
         return targetItem;
@@ -216,8 +222,8 @@ public abstract class JcrNodeUtils {
                     + nodeNamePatternFilter);
         }
 
-        final NodeIterator nodes = ((Node) targetItem)
-                .getNodes(nodeNamePatternFilter);
+        final NodeIterator nodes =
+                ((Node) targetItem).getNodes(nodeNamePatternFilter);
 
         return getTargetItemFromNodeIterator(targetItem.getPath() + "["
                 + nodeNamePatternFilter + "]", nodes);
@@ -249,8 +255,8 @@ public abstract class JcrNodeUtils {
             LOG.debug("Accessing JCR container for endpoint: " + endpoint);
         }
 
-        final TargetItem targetItem = new TargetItem(null, endpoint
-                .getEndpointURI().getAddress());
+        final TargetItem targetItem =
+                new TargetItem(null, endpoint.getEndpointURI().getAddress());
 
         if (session.itemExists(targetItem.getAbsolutePath())) {
             targetItem.setItem(session.getItem(targetItem.getAbsolutePath()));
@@ -260,8 +266,7 @@ public abstract class JcrNodeUtils {
         }
 
         if ((LOG.isDebugEnabled()) && (targetItem.getItem() == null)) {
-            LOG.debug(JcrMessages.noNodeFor(targetItem.getAbsolutePath())
-                    .getMessage());
+            LOG.debug(JcrMessages.noNodeFor(targetItem.getAbsolutePath()).getMessage());
         }
 
         return targetItem.getItem();
@@ -271,23 +276,25 @@ public abstract class JcrNodeUtils {
             final QueryDefinition queryDefinition, final String nodeRelpath,
             final String propertyRelPath) throws RepositoryException {
 
-        final QueryResult queryResult = session.getWorkspace()
-                .getQueryManager().createQuery(queryDefinition.getStatement(),
+        final QueryResult queryResult =
+                session.getWorkspace().getQueryManager().createQuery(
+                        queryDefinition.getStatement(),
                         queryDefinition.getLanguage()).execute();
 
         // there is no way to get a Property out of a QueryResult so we will
         // return only a Node
-        final String context = queryDefinition.getLanguage() + ": "
-                + queryDefinition.getStatement();
+        final String context =
+                queryDefinition.getLanguage() + ": "
+                        + queryDefinition.getStatement();
 
         if (LOG.isDebugEnabled()) {
             LOG.debug("Query : " + context + " returned: "
                     + queryResult.getRows().getSize() + " rows.");
         }
 
-        final TargetItem targetItem = new TargetItem(
-                getTargetItemFromNodeIterator(context, queryResult.getNodes()),
-                context);
+        final TargetItem targetItem =
+                new TargetItem(getTargetItemFromNodeIterator(context,
+                        queryResult.getNodes()), context);
 
         navigateToRelativeTargetItem(targetItem, nodeRelpath, propertyRelPath);
 
@@ -301,8 +308,8 @@ public abstract class JcrNodeUtils {
             final Node nodeByUUID = session.getNodeByUUID(nodeUUID);
 
             if (nodeByUUID != null) {
-                final TargetItem targetItem = new TargetItem(nodeByUUID,
-                        nodeUUID);
+                final TargetItem targetItem =
+                        new TargetItem(nodeByUUID, nodeUUID);
                 navigateToRelativeTargetItem(targetItem, nodeRelpath,
                         propertyRelPath);
 
@@ -375,12 +382,14 @@ public abstract class JcrNodeUtils {
             final JcrContentPayloadType contentPayloadType)
             throws RepositoryException {
 
-        final EventContent eventContent = JcrEventUtils.getEventContent(event,
-                session, contentPayloadType);
+        final EventContent eventContent =
+                JcrEventUtils.getEventContent(event, session,
+                        contentPayloadType);
 
-        return new JcrMessage(event.getPath(), event.getType(), JcrEventUtils
-                .getEventTypeNameFromValue(event.getType()), event.getUserID(),
-                eventContent.getData(), eventContent.getUuid());
+        return new JcrMessage(event.getPath(), event.getType(),
+                JcrEventUtils.getEventTypeNameFromValue(event.getType()),
+                event.getUserID(), eventContent.getData(),
+                eventContent.getUuid());
     }
 
 }
