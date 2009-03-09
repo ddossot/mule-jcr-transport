@@ -120,7 +120,7 @@
 							<overWriteReleases>true</overWriteReleases>
 							<overWriteSnapshots>true</overWriteSnapshots>
 							<includeGroupIds>
-								javax.jcr,org.apache.jackrabbit,concurrent,org.apache.derby,org.apache.lucene,pdfbox,poi,org.textmining
+								javax.jcr,org.apache.jackrabbit,concurrent,org.apache.derby,org.apache.lucene,pdfbox,org.apache.poi,org.textmining
 							</includeGroupIds>
 							<artifactItems>
 								<artifactItem>
