@@ -46,6 +46,10 @@ public class JcrContentLoader {
 
         final Node rootNode = repositoryRoot.addNode(rootNodeName);
 
+        // setup empty nodes as targets for single and multiple node creation
+        rootNode.addNode("singleChild");
+        rootNode.addNode("multipleChildren");
+
         // setup an empty target property for direct data writing
         rootNode.setProperty("targetProperty", "");
 

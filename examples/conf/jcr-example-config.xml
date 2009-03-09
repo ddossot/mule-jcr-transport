@@ -103,7 +103,7 @@
 			</inbound>
 			<outbound>
 				<pass-through-router>
-					<jcr:outbound-endpoint path="/example" nodeRelPath="targetSingleNtResourceNode"
+					<jcr:outbound-endpoint path="/example/singleChild" nodeRelPath="targetSingleNtResourceNode"
 						nodeTypeName="nt:resource" >
 						<property key="jcr:mimeType" value="text/plain" />
 					</jcr:outbound-endpoint>
@@ -120,7 +120,7 @@
 			</inbound>
 			<outbound>
 				<pass-through-router>
-					<jcr:outbound-endpoint path="/example" nodeRelPath="targetMultipleUnstructuredNode"
+					<jcr:outbound-endpoint path="/example/multipleChildren" nodeRelPath="targetMultipleUnstructuredNode"
 						alwaysCreate="true" nodeTypeName="nt:unstructured" />
 				</pass-through-router>
 			</outbound>
@@ -131,7 +131,7 @@
 		-->
 		<service name="jcrEventDumper">
 			<inbound>
-				<jcr:inbound-endpoint path="/example" contentPayloadType="FULL" />
+				<jcr:inbound-endpoint path="/example" deep="true" contentPayloadType="FULL" />
 			</inbound>
 			<echo-component/>
 			<outbound>

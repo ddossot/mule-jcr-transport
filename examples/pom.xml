@@ -11,7 +11,7 @@
 	<description>Demonstrates JCR Transport features.</description>
 
 	<properties>
-		<jcrTransportVersion>2.2.0-SNAPSHOT</jcrTransportVersion>
+		<jcrTransportVersion>2.2.0</jcrTransportVersion>
 		<muleVersion>[2.2.0,2.3.0)</muleVersion>
 	</properties>
 
