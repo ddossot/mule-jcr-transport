@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mule xmlns="http://www.mulesource.org/schema/mule/core/2.2"
+<mule xmlns="http://www.mulesource.org/schema/mule/core"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:jcr="http://www.mulesource.org/schema/mule/jcr/2.2"
+	xmlns:jcr="http://www.mulesource.org/schema/mule/jcr"
 	xmlns:spring="http://www.springframework.org/schema/beans"
 	xsi:schemaLocation="
-       http://www.mulesource.org/schema/mule/core/2.2 http://www.mulesource.org/schema/mule/core/2.2/mule.xsd
-       http://www.mulesource.org/schema/mule/jcr/2.2 http://dist.muleforge.org/mule-transport-jcr/schema/2.2/mule-jcr.xsd
+       http://www.mulesource.org/schema/mule/core http://www.mulesource.org/schema/mule/core/3.0/mule.xsd
+       http://www.mulesource.org/schema/mule/jcr http://dist.muleforge.org/mule-transport-jcr/schema/3.0/mule-jcr.xsd
        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
 
 	<spring:bean id="jcrRepository"
