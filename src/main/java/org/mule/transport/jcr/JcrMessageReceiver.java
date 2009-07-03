@@ -38,13 +38,12 @@ import org.mule.transport.jcr.i18n.JcrMessages;
 import edu.emory.mathcs.backport.java.util.concurrent.atomic.AtomicReference;
 
 /**
- * Registers a JCR <code>javax.jcr.observation.EventListener</code> to the
- * <code>javax.jcr.observation.ObservationManager</code> of the repository.
+ * Registers a JCR <code>javax.jcr.observation.EventListener</code> to the <code>javax.jcr.observation.ObservationManager</code>
+ * of the repository.
  * 
  * @author David Dossot (david@dossot.net)
  */
-public final class JcrMessageReceiver extends AbstractMessageReceiver implements
-        EventListener {
+public final class JcrMessageReceiver extends AbstractMessageReceiver implements EventListener {
 
     private static final String[] EMPTY_STRING_ARRAY = new String[0];
 
@@ -74,13 +73,12 @@ public final class JcrMessageReceiver extends AbstractMessageReceiver implements
         return (JcrMessageReceiverContext) jcrMessageReceiverContext.get();
     }
 
-    public static void setJcrMessageReceiverContext(
-            final JcrMessageReceiverContext context) {
+    public static void setJcrMessageReceiverContext(final JcrMessageReceiverContext context) {
         jcrMessageReceiverContext.set(context);
     }
 
-    public JcrMessageReceiver(final Connector connector, final Service service,
-            final InboundEndpoint endpoint) throws CreateException {
+    public JcrMessageReceiver(final Connector connector, final Service service, final InboundEndpoint endpoint)
+            throws CreateException {
 
         super(connector, service, endpoint);
 
@@ -97,16 +95,15 @@ public final class JcrMessageReceiver extends AbstractMessageReceiver implements
 
         absPath = endpoint.getEndpointURI().getAddress();
 
-        eventTypes = (Integer) new IntegerConverter(jcrConnector
-                .getEventTypes()).convert(Integer.class, endpoint
-                .getProperty(JcrConnector.JCR_EVENT_TYPES_PROPERTY));
+        eventTypes =
+                (Integer) new IntegerConverter(jcrConnector.getEventTypes()).convert(Integer.class,
+                        endpoint.getProperty(JcrConnector.JCR_EVENT_TYPES_PROPERTY));
 
-        deep = (Boolean) new BooleanConverter(jcrConnector.isDeep()).convert(
-                Boolean.class, endpoint
-                        .getProperty(JcrConnector.JCR_DEEP_PROPERTY));
+        deep =
+                (Boolean) new BooleanConverter(jcrConnector.isDeep()).convert(Boolean.class,
+                        endpoint.getProperty(JcrConnector.JCR_DEEP_PROPERTY));
 
-        final String uuidProperty = (String) endpoint
-                .getProperty(JcrConnector.JCR_UUID_LIST_PROPERTY);
+        final String uuidProperty = (String) endpoint.getProperty(JcrConnector.JCR_UUID_LIST_PROPERTY);
 
         if (uuidProperty == null) {
             uuids = jcrConnector.getUuids();
@@ -114,8 +111,7 @@ public final class JcrMessageReceiver extends AbstractMessageReceiver implements
             uuids = JcrNamespaceHandler.split(uuidProperty);
         }
 
-        final String nodeTypeNameProperty = (String) endpoint
-                .getProperty(JcrConnector.JCR_NODE_TYPE_NAME_LIST_PROPERTY);
+        final String nodeTypeNameProperty = (String) endpoint.getProperty(JcrConnector.JCR_NODE_TYPE_NAME_LIST_PROPERTY);
 
         if (nodeTypeNameProperty == null) {
             nodeTypeNames = jcrConnector.getNodeTypeNames();
@@ -123,20 +119,18 @@ public final class JcrMessageReceiver extends AbstractMessageReceiver implements
             nodeTypeNames = JcrNamespaceHandler.split(nodeTypeNameProperty);
         }
 
-        noLocal = (Boolean) new BooleanConverter(jcrConnector.isNoLocal())
-                .convert(Boolean.class, endpoint
-                        .getProperty(JcrConnector.JCR_NO_LOCAL_PROPERTY));
+        noLocal =
+                (Boolean) new BooleanConverter(jcrConnector.isNoLocal()).convert(Boolean.class,
+                        endpoint.getProperty(JcrConnector.JCR_NO_LOCAL_PROPERTY));
 
-        String contentPayloadTypeProperty = (String) endpoint
-                .getProperty(JcrConnector.JCR_CONTENT_PAYLOAD_TYPE_PROPERTY);
+        String contentPayloadTypeProperty = (String) endpoint.getProperty(JcrConnector.JCR_CONTENT_PAYLOAD_TYPE_PROPERTY);
 
         if (contentPayloadTypeProperty == null) {
             contentPayloadTypeProperty = jcrConnector.getContentPayloadType();
         }
 
         try {
-            contentPayloadType = JcrContentPayloadType
-                    .fromString(contentPayloadTypeProperty);
+            contentPayloadType = JcrContentPayloadType.fromString(contentPayloadTypeProperty);
 
         } catch (final IllegalArgumentException iae) {
             throw new CreateException(iae, this);
@@ -145,16 +139,13 @@ public final class JcrMessageReceiver extends AbstractMessageReceiver implements
 
     @Override
     public void doConnect() throws ConnectException {
-        if (jcrConnector.getRepository().getDescriptor(
-                Repository.OPTION_OBSERVATION_SUPPORTED) == null) {
-            throw new ConnectException(JcrMessages.observationsNotSupported(),
-                    this);
+        if (jcrConnector.getRepository().getDescriptor(Repository.OPTION_OBSERVATION_SUPPORTED) == null) {
+            throw new ConnectException(JcrMessages.observationsNotSupported(), this);
         }
 
         try {
             receiverSession = jcrConnector.newSession();
-            observationManager = receiverSession.getWorkspace()
-                    .getObservationManager();
+            observationManager = receiverSession.getWorkspace().getObservationManager();
 
             setJcrMessageReceiverContext(new JcrMessageReceiverContext() {
                 public JcrContentPayloadType getContentPayloadType() {
@@ -167,27 +158,20 @@ public final class JcrMessageReceiver extends AbstractMessageReceiver implements
             });
 
         } catch (final Exception e) {
-            throw new ConnectException(JcrMessages
-                    .canNotGetObservationManager(jcrConnector
-                            .getWorkspaceName()), e, this);
+            throw new ConnectException(JcrMessages.canNotGetObservationManager(jcrConnector.getWorkspaceName()), e, this);
         }
     }
 
     @Override
     public void doStart() throws MuleException {
         try {
-            observationManager.addEventListener(this, eventTypes.intValue(),
-                    absPath, deep.booleanValue(), uuids == null ? null
-                            : (String[]) uuids.toArray(EMPTY_STRING_ARRAY),
-                    nodeTypeNames == null ? null : (String[]) nodeTypeNames
-                            .toArray(EMPTY_STRING_ARRAY), noLocal
-                            .booleanValue());
+            observationManager.addEventListener(this, eventTypes.intValue(), absPath, deep.booleanValue(),
+                    uuids == null ? null : (String[]) uuids.toArray(EMPTY_STRING_ARRAY),
+                    nodeTypeNames == null ? null : (String[]) nodeTypeNames.toArray(EMPTY_STRING_ARRAY), noLocal.booleanValue());
 
             if (logger.isInfoEnabled()) {
-                logger.info("Observing JCR for events of types: " + eventTypes
-                        + " - at: " + absPath + " - deep: " + deep
-                        + " - uuid: " + uuids + " - nodeTypeName: "
-                        + nodeTypeNames + " - noLocal: " + noLocal
+                logger.info("Observing JCR for events of types: " + eventTypes + " - at: " + absPath + " - deep: " + deep
+                        + " - uuid: " + uuids + " - nodeTypeName: " + nodeTypeNames + " - noLocal: " + noLocal
                         + " - contentPayloadType: " + contentPayloadType);
             }
 
@@ -224,8 +208,8 @@ public final class JcrMessageReceiver extends AbstractMessageReceiver implements
         }
 
         try {
-            routeMessage(new DefaultMuleMessage(jcrConnector
-                    .getMessageAdapter(eventIterator), Collections.EMPTY_MAP));
+            routeMessage(new DefaultMuleMessage(jcrConnector.getMessageAdapter(eventIterator), Collections.EMPTY_MAP,
+                    jcrConnector.getMuleContext()));
 
         } catch (final MessagingException me) {
             handleException(me);

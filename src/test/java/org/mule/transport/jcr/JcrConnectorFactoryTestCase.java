@@ -20,16 +20,17 @@ import org.mule.transport.service.TransportFactory;
  */
 public class JcrConnectorFactoryTestCase extends AbstractMuleTestCase {
 
-	public void testCreateFromFactory() throws Exception {
-		final Connector connector = TransportFactory.createConnector(
-				new MuleEndpointURI(getEndpointURI()), muleContext);
+    public void testCreateFromFactory() throws Exception {
+        final Connector connector =
+                new TransportFactory(muleContext).createConnector(new MuleEndpointURI(getEndpointURI(), muleContext),
+                        muleContext);
 
-		assertNotNull(connector);
-		assertTrue(connector instanceof JcrConnector);
-	}
+        assertNotNull(connector);
+        assertTrue(connector instanceof JcrConnector);
+    }
 
-	public String getEndpointURI() {
-		return "jcr://path/to/observedNode";
-	}
+    public String getEndpointURI() {
+        return "jcr://path/to/observedNode";
+    }
 
 }

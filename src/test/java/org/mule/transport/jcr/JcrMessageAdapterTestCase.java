@@ -10,7 +10,7 @@
 
 package org.mule.transport.jcr;
 
-import org.mule.api.MessagingException;
+import org.mule.api.MuleException;
 import org.mule.api.transport.MessageAdapter;
 import org.mule.transport.AbstractMessageAdapterTestCase;
 
@@ -19,15 +19,14 @@ import org.mule.transport.AbstractMessageAdapterTestCase;
  */
 public class JcrMessageAdapterTestCase extends AbstractMessageAdapterTestCase {
 
-	@Override
-	public Object getValidMessage() throws Exception {
-		return "foo";
-	}
+    @Override
+    public Object getValidMessage() throws Exception {
+        return "foo";
+    }
 
-	@Override
-	public MessageAdapter createAdapter(final Object payload)
-			throws MessagingException {
-		return new JcrMessageAdapter(payload);
-	}
+    @Override
+    public MessageAdapter createAdapter(final Object payload) throws MuleException {
+        return new JcrMessageAdapter(payload);
+    }
 
 }

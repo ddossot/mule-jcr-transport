@@ -28,107 +28,97 @@ import org.mule.tck.AbstractMuleTestCase;
  */
 public class JcrEndpointTestCase extends AbstractMuleTestCase {
 
-	public void testValidEndpointURI() throws Exception {
-		final EndpointURI uri = new MuleEndpointURI(
-				"jcr://path/to/observedNode?eventTypes=5");
+    public void testValidEndpointURI() throws Exception {
+        final EndpointURI uri = new MuleEndpointURI("jcr://path/to/observedNode?eventTypes=5", muleContext);
 
-		uri.initialise();
+        uri.initialise();
 
-		assertEquals("jcr", uri.getScheme());
-		assertEquals("/path/to/observedNode", uri.getAddress());
+        assertEquals("jcr", uri.getScheme());
+        assertEquals("/path/to/observedNode", uri.getAddress());
 
-		assertEquals("path/to/observedNode", uri.getHost() + uri.getPath());
-		assertEquals(1, uri.getParams().size());
-		assertEquals("5", uri.getParams().getProperty("eventTypes"));
-	}
+        assertEquals("path/to/observedNode", uri.getHost() + uri.getPath());
+        assertEquals(1, uri.getParams().size());
+        assertEquals("5", uri.getParams().getProperty("eventTypes"));
+    }
 
-	public void testValidRootEndpointURIWithParams() throws Exception {
-		EndpointURI uri = new MuleEndpointURI("jcr://?eventTypes=5");
-		uri.initialise();
+    public void testValidRootEndpointURIWithParams() throws Exception {
+        EndpointURI uri = new MuleEndpointURI("jcr://?eventTypes=5", muleContext);
+        uri.initialise();
 
-		assertEquals("jcr", uri.getScheme());
-		assertEquals("/", uri.getAddress());
-		assertEquals(1, uri.getParams().size());
-		assertEquals("5", uri.getParams().getProperty("eventTypes"));
+        assertEquals("jcr", uri.getScheme());
+        assertEquals("/", uri.getAddress());
+        assertEquals(1, uri.getParams().size());
+        assertEquals("5", uri.getParams().getProperty("eventTypes"));
 
-		uri = new MuleEndpointURI("jcr:///?eventTypes=31");
-		uri.initialise();
+        uri = new MuleEndpointURI("jcr:///?eventTypes=31", muleContext);
+        uri.initialise();
 
-		assertEquals("jcr", uri.getScheme());
-		assertEquals("/", uri.getAddress());
-		assertEquals(1, uri.getParams().size());
-		assertEquals("31", uri.getParams().getProperty("eventTypes"));
-	}
+        assertEquals("jcr", uri.getScheme());
+        assertEquals("/", uri.getAddress());
+        assertEquals(1, uri.getParams().size());
+        assertEquals("31", uri.getParams().getProperty("eventTypes"));
+    }
 
-	public void testValidRootEndpointURI() throws Exception {
-		final EndpointURI uri = new MuleEndpointURI("jcr:///");
-		uri.initialise();
+    public void testValidRootEndpointURI() throws Exception {
+        final EndpointURI uri = new MuleEndpointURI("jcr:///", muleContext);
+        uri.initialise();
 
-		assertEquals("jcr", uri.getScheme());
-		assertEquals("/", uri.getAddress());
-	}
+        assertEquals("jcr", uri.getScheme());
+        assertEquals("/", uri.getAddress());
+    }
 
-	public void testValidIndexedEndpointURI() throws Exception {
-		final EndpointURI uri = JcrEndpointURIBuilder
-				.newJcrEndpointURI("/indexed[1]/child[2]/bar");
+    public void testValidIndexedEndpointURI() throws Exception {
+        final EndpointURI uri = JcrEndpointURIBuilder.newJcrEndpointURI("/indexed[1]/child[2]/bar", muleContext);
 
-		uri.initialise();
+        uri.initialise();
 
-		assertEquals("jcr", uri.getScheme());
-		assertEquals("/indexed[1]/child[2]/bar", uri.getAddress());
-	}
+        assertEquals("jcr", uri.getScheme());
+        assertEquals("/indexed[1]/child[2]/bar", uri.getAddress());
+    }
 
-	public void testInvalidIndexedEndpointURI() throws Exception {
-		try {
-			new MuleEndpointURI("jcr:///indexed[1]/child[2]/bar").initialise();
-			fail("should have got a MalformedEndpointException");
-		} catch (final MalformedEndpointException mee) {
-			return;
-		}
-	}
+    public void testInvalidIndexedEndpointURI() throws Exception {
+        try {
+            new MuleEndpointURI("jcr:///indexed[1]/child[2]/bar", muleContext).initialise();
+            fail("should have got a MalformedEndpointException");
+        } catch (final MalformedEndpointException mee) {
+            return;
+        }
+    }
 
-	static InboundEndpoint newInboundEndpoint(final MuleContext muleContext,
-			final String address) throws Exception {
-		return newInboundEndpoint(muleContext, address, null);
-	}
+    static InboundEndpoint newInboundEndpoint(final MuleContext muleContext, final String address) throws Exception {
+        return newInboundEndpoint(muleContext, address, null);
+    }
 
-	static InboundEndpoint newInboundEndpoint(final MuleContext muleContext,
-			final String address, final Filter filter) throws Exception {
-	
-		final EndpointBuilder builder = newEndpointBuilder(muleContext,
-				address, filter);
-	
-		return muleContext.getRegistry().lookupEndpointFactory()
-				.getInboundEndpoint(builder);
-	}
+    static InboundEndpoint newInboundEndpoint(final MuleContext muleContext, final String address, final Filter filter)
+            throws Exception {
 
-	static OutboundEndpoint newOutboundEndpoint(final MuleContext muleContext,
-			final String address, final Filter filter) throws Exception {
-	
-		final EndpointBuilder builder = newEndpointBuilder(muleContext,
-				address, filter);
-	
-		return muleContext.getRegistry().lookupEndpointFactory()
-				.getOutboundEndpoint(builder);
-	}
+        final EndpointBuilder builder = newEndpointBuilder(muleContext, address, filter);
 
-	private static EndpointBuilder newEndpointBuilder(
-			final MuleContext muleContext, final String address,
-			final Filter filter) throws Exception, InitialisationException {
-		final EndpointBuilder builder = new EndpointURIEndpointBuilder(
-				new URIBuilder(address), muleContext);
-	
-		if (filter != null) {
-			builder.setFilter(filter);
-		}
-	
-		final JcrConnector jcrConnector = JcrConnectorTestCase
-				.newJcrConnector();
-	
-		jcrConnector.setMuleContext(muleContext);
-		jcrConnector.initialise();
-		builder.setConnector(jcrConnector);
-		return builder;
-	}
+        return muleContext.getRegistry().lookupEndpointFactory().getInboundEndpoint(builder);
+    }
+
+    static OutboundEndpoint newOutboundEndpoint(final MuleContext muleContext, final String address, final Filter filter)
+            throws Exception {
+
+        final EndpointBuilder builder = newEndpointBuilder(muleContext, address, filter);
+
+        return muleContext.getRegistry().lookupEndpointFactory().getOutboundEndpoint(builder);
+    }
+
+    private static EndpointBuilder newEndpointBuilder(final MuleContext muleContext, final String address, final Filter filter)
+            throws Exception, InitialisationException {
+        final EndpointBuilder builder = new EndpointURIEndpointBuilder(new URIBuilder(address, muleContext), muleContext);
+
+        if (filter != null) {
+            builder.setFilter(filter);
+        }
+
+        final JcrConnector jcrConnector = JcrConnectorTestCase.newJcrConnector();
+
+        jcrConnector.setMuleContext(muleContext);
+        jcrConnector.initialise();
+        builder.setConnector(jcrConnector);
+        return builder;
+    }
 
 }

@@ -22,32 +22,28 @@ import org.mule.util.StringUtils;
 /**
  * @author David Dossot
  */
-public class JcrMessageReceiverOverridesTestCase extends
-        JcrMessageReceiverTestCase {
+public class JcrMessageReceiverOverridesTestCase extends JcrMessageReceiverTestCase {
 
-    private static final List<String> UUID_LIST = Collections
-            .singletonList("uuid_01");
+    private static final List<String> UUID_LIST = Collections.singletonList("uuid_01");
 
-    private static final List<String> NODE_TYPE_NAME_LIST = Collections
-            .singletonList("node_type_01");
+    private static final List<String> NODE_TYPE_NAME_LIST = Collections.singletonList("node_type_01");
 
     @SuppressWarnings("unchecked")
     @Override
     public InboundEndpoint getEndpoint() throws Exception {
-        final EndpointBuilder builder = new EndpointURIEndpointBuilder(
-                new URIBuilder(
-                        "jcr://path/to/observedNode?contentPayloadType=full&eventTypes=5&deep=true&noLocal=false"),
-                muleContext);
+        final EndpointBuilder builder =
+                new EndpointURIEndpointBuilder(
+                        new URIBuilder(
+                                "jcr://path/to/observedNode?contentPayloadType=full&eventTypes=5&deep=true&noLocal=false",
+                                muleContext), muleContext);
 
         builder.setConnector(JcrConnectorTestCase.newJcrConnector());
 
-        endpoint = muleContext.getRegistry().lookupEndpointFactory()
-                .getInboundEndpoint(builder);
+        endpoint = muleContext.getRegistry().lookupEndpointFactory().getInboundEndpoint(builder);
 
         endpoint.getProperties().put("uuids", StringUtils.join(UUID_LIST, ' '));
 
-        endpoint.getProperties().put("nodeTypeNames",
-                StringUtils.join(NODE_TYPE_NAME_LIST, ' '));
+        endpoint.getProperties().put("nodeTypeNames", StringUtils.join(NODE_TYPE_NAME_LIST, ' '));
 
         return endpoint;
     }
@@ -57,8 +53,7 @@ public class JcrMessageReceiverOverridesTestCase extends
 
         assertEquals("/path/to/observedNode", messageReceiver.getAbsPath());
 
-        assertEquals(JcrContentPayloadType.FULL, messageReceiver
-                .getContentPayloadType());
+        assertEquals(JcrContentPayloadType.FULL, messageReceiver.getContentPayloadType());
 
         assertEquals(new Integer(5), messageReceiver.getEventTypes());
 

@@ -46,8 +46,7 @@ import org.mule.transport.jcr.i18n.JcrMessages;
 import org.mule.util.ClassUtils;
 
 /**
- * <code>JcrConnector</code> is a transport that connects to JCR 1.0 (aka JSR
- * 170) repositories.
+ * <code>JcrConnector</code> is a transport that connects to JCR 1.0 (aka JSR 170) repositories.
  * 
  * @author David Dossot (david@dossot.net)
  */
@@ -78,36 +77,29 @@ public final class JcrConnector extends AbstractConnector {
     private final NodeTypeHandlerManager nodeTypeHandlerManager;
 
     /**
-     * Property that defines if events coming from deeper than the specified
-     * endpoint path must be listened to.
+     * Property that defines if events coming from deeper than the specified endpoint path must be listened to.
      */
     public static final String JCR_DEEP_PROPERTY = "deep";
 
     /**
-     * Property that defines a list of node UUIDs that will only be listened to
-     * for changes.
+     * Property that defines a list of node UUIDs that will only be listened to for changes.
      */
     public static final String JCR_UUID_LIST_PROPERTY = "uuids";
 
     /**
-     * Property that defines a combination of repository events that will only
-     * be listened to.
+     * Property that defines a combination of repository events that will only be listened to.
      */
     public static final String JCR_EVENT_TYPES_PROPERTY = "eventTypes";
 
     /**
-     * Property that defines a list of node types that will only be listened to
-     * for changes.
+     * Property that defines a list of node types that will only be listened to for changes.
      */
-    public static final String JCR_NODE_TYPE_NAME_LIST_PROPERTY =
-            "nodeTypeNames";
+    public static final String JCR_NODE_TYPE_NAME_LIST_PROPERTY = "nodeTypeNames";
 
     /**
-     * Property that defines the type of payload that a JCR
-     * <code>MuleMessage</code> will contain.
+     * Property that defines the type of payload that a JCR <code>MuleMessage</code> will contain.
      */
-    public static final String JCR_CONTENT_PAYLOAD_TYPE_PROPERTY =
-            "contentPayloadType";
+    public static final String JCR_CONTENT_PAYLOAD_TYPE_PROPERTY = "contentPayloadType";
 
     /**
      * Property that defines if local events must be ignored.
@@ -115,24 +107,20 @@ public final class JcrConnector extends AbstractConnector {
     public static final String JCR_NO_LOCAL_PROPERTY = "noLocal";
 
     /**
-     * Property that defines a relative path to append at the end of the target
-     * item path.
+     * Property that defines a relative path to append at the end of the target item path.
      */
-    public static final String JCR_PROPERTY_REL_PATH_PROPERTY =
-            "propertyRelPath";
+    public static final String JCR_PROPERTY_REL_PATH_PROPERTY = "propertyRelPath";
 
     /**
-     * Property that defines a relative path to append after the endpoint item
-     * path.
+     * Property that defines a relative path to append after the endpoint item path.
      */
     public static final String JCR_NODE_RELPATH_PROPERTY = "nodeRelPath";
 
     /**
-     * Property that forces the creation of a child node under the node target
-     * by the endpoint URI, instead of trying first to locate an existing one.
+     * Property that forces the creation of a child node under the node target by the endpoint URI, instead of trying first to
+     * locate an existing one.
      */
-    public static final String JCR_ALWAYS_CREATE_CHILD_NODE_PROPERTY =
-            "alwaysCreate";
+    public static final String JCR_ALWAYS_CREATE_CHILD_NODE_PROPERTY = "alwaysCreate";
 
     /**
      * Property that defines a particular node type name.
@@ -165,8 +153,7 @@ public final class JcrConnector extends AbstractConnector {
     @Override
     public void doInitialise() throws InitialisationException {
         if (getRepository() == null) {
-            throw new InitialisationException(
-                    JcrMessages.missingDependency("repository"), this);
+            throw new InitialisationException(JcrMessages.missingDependency("repository"), this);
         }
 
         if (getRepository().getDescriptor(Repository.OPTION_QUERY_SQL_SUPPORTED) == null) {
@@ -201,12 +188,11 @@ public final class JcrConnector extends AbstractConnector {
     }
 
     /**
-     * Will get the output stream for this type of transport. Typically this
-     * will be called only when Streaming is being used on an outbound endpoint.
+     * Will get the output stream for this type of transport. Typically this will be called only when Streaming is being used on
+     * an outbound endpoint.
      */
     @Override
-    public OutputStream getOutputStream(final OutboundEndpoint endpoint,
-            final MuleMessage message) throws MuleException {
+    public OutputStream getOutputStream(final OutboundEndpoint endpoint, final MuleMessage message) throws MuleException {
 
         final PipedInputStream pipedInputStream = new PipedInputStream();
         PipedOutputStream pipedOutputStream;
@@ -214,9 +200,7 @@ public final class JcrConnector extends AbstractConnector {
         try {
             pipedOutputStream = new PipedOutputStream(pipedInputStream);
         } catch (final IOException ioe) {
-            throw new ConnectorException(
-                    CoreMessages.streamingFailedForEndpoint(endpoint.toString()),
-                    this, ioe);
+            throw new ConnectorException(CoreMessages.streamingFailedForEndpoint(endpoint.toString()), this, ioe);
         }
 
         final MuleEvent event = RequestContext.getEvent();
@@ -228,8 +212,8 @@ public final class JcrConnector extends AbstractConnector {
         final Thread thread = new Thread(new Runnable() {
             public void run() {
                 try {
-                    send(endpoint, new DefaultMuleEvent(new DefaultMuleMessage(
-                            pipedInputStream, message), event));
+                    send(endpoint, new DefaultMuleEvent(new DefaultMuleMessage(pipedInputStream, message, getMuleContext()),
+                            event));
 
                 } catch (final DispatchException de) {
                     logger.error("Can not send streaming message!", de);
@@ -239,12 +223,10 @@ public final class JcrConnector extends AbstractConnector {
 
         thread.start();
 
-        return new CallbackOutputStream(pipedOutputStream,
-                new JoinThreadCallback(thread));
+        return new CallbackOutputStream(pipedOutputStream, new JoinThreadCallback(thread));
     }
 
-    private static final class JoinThreadCallback implements
-            CallbackOutputStream.Callback {
+    private static final class JoinThreadCallback implements CallbackOutputStream.Callback {
 
         private final Thread thread;
 
@@ -264,9 +246,8 @@ public final class JcrConnector extends AbstractConnector {
         }
 
         final Credentials credentials =
-                ((getUsername() != null) && (getPassword() != null)) ? new SimpleCredentials(
-                        getUsername(), getPassword().toCharArray())
-                        : null;
+                ((getUsername() != null) && (getPassword() != null)) ? new SimpleCredentials(getUsername(),
+                        getPassword().toCharArray()) : null;
 
         return getRepository().login(credentials, getWorkspaceName());
     }
@@ -292,8 +273,7 @@ public final class JcrConnector extends AbstractConnector {
 
         logger.info("JCR session is invalid: a new one will be created.");
 
-        final AtomicReference<Session> newSessionReference =
-                new AtomicReference<Session>();
+        final AtomicReference<Session> newSessionReference = new AtomicReference<Session>();
 
         try {
             getRetryPolicyTemplate().execute(new RetryCallback() {
@@ -303,20 +283,17 @@ public final class JcrConnector extends AbstractConnector {
                 }
 
                 public String getWorkDescription() {
-                    return "Refreshing JCR session for: "
-                            + getConnectionDescription();
+                    return "Refreshing JCR session for: " + getConnectionDescription();
                 }
             }, muleContext.getWorkManager());
 
         } catch (final Exception e) {
-            throw new RuntimeException(
-                    "Error when recreating a session to the JCR container!", e);
+            throw new RuntimeException("Error when recreating a session to the JCR container!", e);
         }
 
         final Session newSession = newSessionReference.get();
 
-        Validate.notNull(newSession,
-                "The JCR has not be refreshed and is permanently invalid");
+        Validate.notNull(newSession, "The JCR has not be refreshed and is permanently invalid");
 
         return newSession;
     }
@@ -340,22 +317,18 @@ public final class JcrConnector extends AbstractConnector {
      * 
      * @param customNodeTypeHandlers
      */
-    public void setCustomNodeTypeHandlers(
-            final List<Class<? extends NodeTypeHandler>> customNodeTypeHandlers) {
+    public void setCustomNodeTypeHandlers(final List<Class<? extends NodeTypeHandler>> customNodeTypeHandlers) {
 
         if (customNodeTypeHandlers != null) {
             for (final Class<? extends NodeTypeHandler> customNodeTypeHandlerClass : customNodeTypeHandlers) {
 
                 try {
                     final NodeTypeHandler handler =
-                            (NodeTypeHandler) ClassUtils.instanciateClass(
-                                    customNodeTypeHandlerClass,
-                                    ClassUtils.NO_ARGS);
+                            (NodeTypeHandler) ClassUtils.instanciateClass(customNodeTypeHandlerClass, ClassUtils.NO_ARGS);
 
                     getNodeTypeHandlerManager().registerHandler(handler);
                 } catch (final Exception e) {
-                    logger.error("Can not load custom type handler: "
-                            + customNodeTypeHandlerClass.getName(), e);
+                    logger.error("Can not load custom type handler: " + customNodeTypeHandlerClass.getName(), e);
                 }
             }
         }

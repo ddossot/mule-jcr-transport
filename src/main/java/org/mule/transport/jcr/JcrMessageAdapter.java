@@ -17,7 +17,6 @@ import java.io.UnsupportedEncodingException;
 import javax.jcr.observation.EventIterator;
 
 import org.apache.commons.lang.SerializationUtils;
-import org.mule.api.MessagingException;
 import org.mule.api.ThreadSafeAccess;
 import org.mule.api.transformer.TransformerException;
 import org.mule.api.transport.MessageTypeNotSupportedException;
@@ -26,12 +25,10 @@ import org.mule.transport.AbstractMessageAdapter;
 import org.mule.util.IOUtils;
 
 /**
- * <code>JcrMessageAdapter</code> allows a <code>MuleEvent</code> to access the
- * properties and payload of a JCR Event in a uniform way. The
- * <code>JcrMessageAdapter</code> expects a message of type
- * <i>java.util.Collection</i> that only contains objects of type
- * <code>SerializableJcrEvent</code>. It will throw an IllegalArgumentException
- * if the source message type is not compatible.
+ * <code>JcrMessageAdapter</code> allows a <code>MuleEvent</code> to access the properties and payload of a JCR Event in a
+ * uniform way. The <code>JcrMessageAdapter</code> expects a message of type <i>java.util.Collection</i> that only contains
+ * objects of type <code>SerializableJcrEvent</code>. It will throw an IllegalArgumentException if the source message type is
+ * not compatible.
  * 
  * @author David Dossot (david@dossot.net)
  */
@@ -42,10 +39,8 @@ public final class JcrMessageAdapter extends AbstractMessageAdapter {
 
     private byte[] contents;
 
-    public JcrMessageAdapter(final Object message) throws MessagingException {
-        if ((message instanceof Serializable)
-                || (message instanceof InputStream)
-                || (message instanceof EventIterator)) {
+    public JcrMessageAdapter(final Object message) throws MessageTypeNotSupportedException {
+        if ((message instanceof Serializable) || (message instanceof InputStream) || (message instanceof EventIterator)) {
 
             payload = message;
 
@@ -66,8 +61,7 @@ public final class JcrMessageAdapter extends AbstractMessageAdapter {
         return new JcrMessageAdapter(this);
     }
 
-    protected byte[] convertToBytes(final Object object)
-            throws TransformerException, UnsupportedEncodingException {
+    protected byte[] convertToBytes(final Object object) throws TransformerException, UnsupportedEncodingException {
 
         assertAccess(READ);
 
@@ -88,14 +82,11 @@ public final class JcrMessageAdapter extends AbstractMessageAdapter {
             try {
                 return SerializationUtils.serialize((Serializable) object);
             } catch (final Exception e) {
-                throw new TransformerException(CoreMessages.transformFailed(
-                        object.getClass().getName(), "byte[]"), e);
+                throw new TransformerException(CoreMessages.transformFailed(object.getClass().getName(), "byte[]"), e);
             }
         } else {
-            throw new TransformerException(CoreMessages
-                    .transformOnObjectNotOfSpecifiedType(object.getClass()
-                            .getName(), "byte[] or "
-                            + Serializable.class.getName()));
+            throw new TransformerException(CoreMessages.transformOnObjectNotOfSpecifiedType(object.getClass().getName(),
+                    "byte[] or " + Serializable.class.getName()));
         }
     }
 
