@@ -9,7 +9,7 @@
   <xsd:import namespace="http://www.mulesource.org/schema/mule/core" schemaLocation="http://www.mulesource.org/schema/mule/core/3.0/mule.xsd" />
   <xsd:import namespace="http://www.mulesource.org/schema/mule/schemadoc" schemaLocation="http://www.mulesource.org/schema/mule/schemadoc/3.0/mule-schemadoc.xsd" />
 
-  <!-- TODO: review -->
+  <!-- TODO review -->
   <xsd:annotation>
     <xsd:documentation>A transport that reads from, writes to and observes JCR 1.0 containers.
 		</xsd:documentation>

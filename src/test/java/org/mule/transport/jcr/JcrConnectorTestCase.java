@@ -18,50 +18,50 @@ import org.mule.transport.AbstractConnectorTestCase;
  * @author David Dossot (david@dossot.net)
  */
 public class JcrConnectorTestCase extends AbstractConnectorTestCase {
-	@Override
-	public Connector createConnector() throws Exception {
-		return newJcrConnector();
-	}
+    @Override
+    public Connector createConnector() throws Exception {
+        return newJcrConnector();
+    }
 
-	static JcrConnector newJcrConnector() throws Exception,
-			InitialisationException {
+    static JcrConnector newJcrConnector() throws Exception, InitialisationException {
 
-		final JcrConnector c = new JcrConnector();
+        final JcrConnector c = new JcrConnector();
+        c.setMuleContext(muleContext);
 
-		c.setName("Test-Jcr");
-		c.setRepository(RepositoryTestSupport.getRepository());
-		c.setUsername(RepositoryTestSupport.USERNAME);
-		c.setPassword(RepositoryTestSupport.PASSWORD);
-		c.setWorkspaceName(null);
+        c.setName("Test-Jcr");
+        c.setRepository(RepositoryTestSupport.getRepository());
+        c.setUsername(RepositoryTestSupport.USERNAME);
+        c.setPassword(RepositoryTestSupport.PASSWORD);
+        c.setWorkspaceName(null);
 
-		return c;
-	}
+        return c;
+    }
 
-	@Override
-	public String getTestEndpointURI() {
-		return "jcr://path/to/observedFolder";
-	}
+    @Override
+    public String getTestEndpointURI() {
+        return "jcr://path/to/observedFolder";
+    }
 
-	@Override
-	public Object getValidMessage() throws Exception {
-		return "foo";
-	}
+    @Override
+    public Object getValidMessage() throws Exception {
+        return "foo";
+    }
 
-	public void testInitializingWithoutConnector() {
-		try {
-			new JcrConnector().doInitialise();
-			fail("An InitialisationException should have been thrown");
-		} catch (final InitialisationException ie) {
-			// expected
-		}
-	}
+    public void testInitializingWithoutConnector() {
+        try {
+            new JcrConnector().doInitialise();
+            fail("An InitialisationException should have been thrown");
+        } catch (final InitialisationException ie) {
+            // expected
+        }
+    }
 
-	public void testProperties() throws Exception {
-		final JcrConnector jcrConnector = (JcrConnector) getConnector();
+    public void testProperties() throws Exception {
+        final JcrConnector jcrConnector = (JcrConnector) getConnector();
 
-		assertEquals(RepositoryTestSupport.USERNAME, jcrConnector.getUsername());
-		assertEquals(RepositoryTestSupport.PASSWORD, jcrConnector.getPassword());
-		assertNull(jcrConnector.getWorkspaceName());
-	}
+        assertEquals(RepositoryTestSupport.USERNAME, jcrConnector.getUsername());
+        assertEquals(RepositoryTestSupport.PASSWORD, jcrConnector.getPassword());
+        assertNull(jcrConnector.getWorkspaceName());
+    }
 
 }

@@ -12,64 +12,35 @@ package org.mule.transport.jcr.config;
 import java.util.Arrays;
 import java.util.List;
 
-import org.mule.config.spring.factories.InboundEndpointFactoryBean;
-import org.mule.config.spring.factories.OutboundEndpointFactoryBean;
-import org.mule.config.spring.parsers.generic.OrphanDefinitionParser;
+import org.mule.config.spring.handlers.AbstractMuleNamespaceHandler;
 import org.mule.config.spring.parsers.specific.FilterDefinitionParser;
 import org.mule.config.spring.parsers.specific.TransformerDefinitionParser;
-import org.mule.config.spring.parsers.specific.endpoint.TransportEndpointDefinitionParser;
-import org.mule.config.spring.parsers.specific.endpoint.TransportGlobalEndpointDefinitionParser;
 import org.mule.transport.jcr.JcrConnector;
 import org.mule.transport.jcr.filters.JcrNodeNameFilter;
 import org.mule.transport.jcr.filters.JcrPropertyNameFilter;
 import org.mule.transport.jcr.transformers.JcrEventToObject;
 import org.mule.transport.jcr.transformers.JcrItemToObject;
 import org.mule.util.StringUtils;
-import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
 
 /**
- * Registers a Bean Definition Parser for handling <code><jcr:connector></code>
- * elements.
- * 
+ * Registers a Bean Definition Parser for handling <code><jcr:connector></code> elements.
  */
-public class JcrNamespaceHandler extends NamespaceHandlerSupport {
-    private static final String[] JCR_ATTRIBUTES = new String[] { "path", };
+public class JcrNamespaceHandler extends AbstractMuleNamespaceHandler {
+    private static final String[] JCR_ATTRIBUTES = new String[] { "path" };
 
     public void init() {
-        registerBeanDefinitionParser("connector", new OrphanDefinitionParser(
-                JcrConnector.class, true));
-
-        registerBeanDefinitionParser("endpoint",
-                new TransportGlobalEndpointDefinitionParser(
-                        JcrConnector.PROTOCOL, JCR_ATTRIBUTES));
-
-        registerBeanDefinitionParser("inbound-endpoint",
-                new TransportEndpointDefinitionParser(JcrConnector.PROTOCOL,
-                        InboundEndpointFactoryBean.class, JCR_ATTRIBUTES));
-
-        registerBeanDefinitionParser("outbound-endpoint",
-                new TransportEndpointDefinitionParser(JcrConnector.PROTOCOL,
-                        OutboundEndpointFactoryBean.class, JCR_ATTRIBUTES));
-
-        registerBeanDefinitionParser("node-name-filter",
-                new FilterDefinitionParser(JcrNodeNameFilter.class));
-
-        registerBeanDefinitionParser("property-name-filter",
-                new FilterDefinitionParser(JcrPropertyNameFilter.class));
-
-        registerBeanDefinitionParser("event-to-object-transformer",
-                new TransformerDefinitionParser(JcrEventToObject.class));
-
-        registerBeanDefinitionParser("item-to-object-transformer",
-                new TransformerDefinitionParser(JcrItemToObject.class));
+        registerStandardTransportEndpoints(JcrConnector.PROTOCOL, JCR_ATTRIBUTES);
+        registerConnectorDefinitionParser(JcrConnector.class);
+        registerBeanDefinitionParser("node-name-filter", new FilterDefinitionParser(JcrNodeNameFilter.class));
+        registerBeanDefinitionParser("property-name-filter", new FilterDefinitionParser(JcrPropertyNameFilter.class));
+        registerBeanDefinitionParser("event-to-object-transformer", new TransformerDefinitionParser(JcrEventToObject.class));
+        registerBeanDefinitionParser("item-to-object-transformer", new TransformerDefinitionParser(JcrItemToObject.class));
     }
 
     /**
-     * Supports configuration that uses attributes containing lists of
-     * whitespace separated values.
+     * Supports configuration that uses attributes containing lists of whitespace separated values.
      */
     public static List<String> split(final String values) {
-        return StringUtils.isNotBlank(values) ? Arrays.asList(StringUtils
-                .split(values)) : null;
+        return StringUtils.isNotBlank(values) ? Arrays.asList(StringUtils.split(values)) : null;
     }
 }
