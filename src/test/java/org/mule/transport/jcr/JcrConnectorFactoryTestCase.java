@@ -22,8 +22,7 @@ public class JcrConnectorFactoryTestCase extends AbstractMuleTestCase {
 
     public void testCreateFromFactory() throws Exception {
         final Connector connector =
-                new TransportFactory(muleContext).createConnector(new MuleEndpointURI(getEndpointURI(), muleContext),
-                        muleContext);
+                new TransportFactory(muleContext).createConnector(new MuleEndpointURI(getEndpointURI(), muleContext));
 
         assertNotNull(connector);
         assertTrue(connector instanceof JcrConnector);
