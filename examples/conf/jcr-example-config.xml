@@ -1,17 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mule xmlns="http://www.mulesource.org/schema/mule/core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:jcr="http://www.mulesource.org/schema/mule/jcr"
-  xmlns:tcp="http://www.mulesource.org/schema/mule/tcp" xmlns:xm="http://www.mulesource.org/schema/mule/xml" xmlns:vm="http://www.mulesource.org/schema/mule/vm"
-  xmlns:stdio="http://www.mulesource.org/schema/mule/stdio" xmlns:http="http://www.mulesource.org/schema/mule/http"
-  xmlns:script="http://www.mulesource.org/schema/mule/scripting" xmlns:spring="http://www.springframework.org/schema/beans"
+<mule xmlns="http://www.mulesoft.org/schema/mule/core"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:jcr="http://www.mulesoft.org/schema/mule/jcr"
+  xmlns:tcp="http://www.mulesoft.org/schema/mule/tcp"
+  xmlns:xm="http://www.mulesoft.org/schema/mule/xml"
+  xmlns:vm="http://www.mulesoft.org/schema/mule/vm"
+  xmlns:stdio="http://www.mulesoft.org/schema/mule/stdio"
+  xmlns:http="http://www.mulesoft.org/schema/mule/http"
+  xmlns:script="http://www.mulesoft.org/schema/mule/scripting"
+  xmlns:spring="http://www.springframework.org/schema/beans"
   xsi:schemaLocation="
-       http://www.mulesource.org/schema/mule/core http://www.mulesource.org/schema/mule/core/3.0/mule.xsd
-       http://www.mulesource.org/schema/mule/jcr http://dist.muleforge.org/mule-transport-jcr/schema/3.0/mule-jcr.xsd
-       http://www.mulesource.org/schema/mule/tcp http://www.mulesource.org/schema/mule/tcp/3.0/mule-tcp.xsd
-       http://www.mulesource.org/schema/mule/xml http://www.mulesource.org/schema/mule/xml/3.0/mule-xml.xsd
-       http://www.mulesource.org/schema/mule/vm http://www.mulesource.org/schema/mule/vm/3.0/mule-vm.xsd
-       http://www.mulesource.org/schema/mule/stdio http://www.mulesource.org/schema/mule/stdio/3.0/mule-stdio.xsd
-       http://www.mulesource.org/schema/mule/http http://www.mulesource.org/schema/mule/http/3.0/mule-http.xsd
-       http://www.mulesource.org/schema/mule/scripting http://www.mulesource.org/schema/mule/scripting/3.0/mule-scripting.xsd
+       http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/3.0/mule.xsd
+       http://www.mulesoft.org/schema/mule/jcr http://dist.muleforge.org/mule-transport-jcr/schema/3.0/mule-jcr.xsd
+       http://www.mulesoft.org/schema/mule/tcp http://www.mulesoft.org/schema/mule/tcp/3.0/mule-tcp.xsd
+       http://www.mulesoft.org/schema/mule/xml http://www.mulesoft.org/schema/mule/xml/3.0/mule-xml.xsd
+       http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/3.0/mule-vm.xsd
+       http://www.mulesoft.org/schema/mule/stdio http://www.mulesoft.org/schema/mule/stdio/3.0/mule-stdio.xsd
+       http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/3.0/mule-http.xsd
+       http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/3.0/mule-scripting.xsd
        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
 
   <spring:beans>

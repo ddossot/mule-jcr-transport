@@ -1,1 +1,1 @@
-http\://www.mulesource.org/schema/mule/jcr=org.mule.transport.jcr.config.JcrNamespaceHandler
+http\://www.mulesoft.org/schema/mule/jcr=org.mule.transport.jcr.config.JcrNamespaceHandler
