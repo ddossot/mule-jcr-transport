@@ -31,11 +31,8 @@ public class JcrMessageReceiverOverridesTestCase extends JcrMessageReceiverTestC
     @SuppressWarnings("unchecked")
     @Override
     public InboundEndpoint getEndpoint() throws Exception {
-        final EndpointBuilder builder =
-                new EndpointURIEndpointBuilder(
-                        new URIBuilder(
-                                "jcr://path/to/observedNode?contentPayloadType=full&eventTypes=5&deep=true&noLocal=false",
-                                muleContext), muleContext);
+        final EndpointBuilder builder = new EndpointURIEndpointBuilder(new URIBuilder(
+                "jcr://path/to/observedNode?contentPayloadType=full&eventTypes=5&deep=true&noLocal=false", muleContext));
 
         builder.setConnector(JcrConnectorTestCase.newJcrConnector());
 

@@ -107,7 +107,7 @@ public class JcrEndpointTestCase extends AbstractMuleTestCase {
 
     private static EndpointBuilder newEndpointBuilder(final MuleContext muleContext, final String address, final Filter filter)
             throws Exception, InitialisationException {
-        final EndpointBuilder builder = new EndpointURIEndpointBuilder(new URIBuilder(address, muleContext), muleContext);
+        final EndpointBuilder builder = new EndpointURIEndpointBuilder(new URIBuilder(address, muleContext));
 
         if (filter != null) {
             builder.setFilter(filter);
