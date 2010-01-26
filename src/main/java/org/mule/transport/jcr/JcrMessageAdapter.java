@@ -25,10 +25,12 @@ import org.mule.transport.AbstractMessageAdapter;
 import org.mule.util.IOUtils;
 
 /**
- * <code>JcrMessageAdapter</code> allows a <code>MuleEvent</code> to access the properties and payload of a JCR Event in a
- * uniform way. The <code>JcrMessageAdapter</code> expects a message of type <i>java.util.Collection</i> that only contains
- * objects of type <code>SerializableJcrEvent</code>. It will throw an IllegalArgumentException if the source message type is
- * not compatible.
+ * <code>JcrMessageAdapter</code> allows a <code>MuleEvent</code> to access the
+ * properties and payload of a JCR Event in a uniform way. The
+ * <code>JcrMessageAdapter</code> expects a message of type
+ * <i>java.util.Collection</i> that only contains objects of type
+ * <code>SerializableJcrEvent</code>. It will throw an IllegalArgumentException
+ * if the source message type is not compatible.
  * 
  * @author David Dossot (david@dossot.net)
  */
@@ -85,8 +87,8 @@ public final class JcrMessageAdapter extends AbstractMessageAdapter {
                 throw new TransformerException(CoreMessages.transformFailed(object.getClass().getName(), "byte[]"), e);
             }
         } else {
-            throw new TransformerException(CoreMessages.transformOnObjectNotOfSpecifiedType(object.getClass().getName(),
-                    "byte[] or " + Serializable.class.getName()));
+            throw new TransformerException(CoreMessages.transformFailed(object.getClass().getName(), "byte[] or "
+                    + Serializable.class.getName()));
         }
     }
 
