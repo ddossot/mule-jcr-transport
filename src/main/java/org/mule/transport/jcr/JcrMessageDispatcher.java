@@ -74,40 +74,34 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
 
     /**
      * <p>
-     * Sends content to the configured JCR endpoint, using optional event
-     * properties to define the target repository item and the node type name to
-     * use.
+     * Sends content to the configured JCR endpoint, using optional event properties to define the target repository item and
+     * the node type name to use.
      * </p>
      * 
      * <p>
-     * Unless the creation of child nodes is forced by an event or endpoint
-     * property (<code>JcrConnector.JCR_ALWAYS_CREATE_CHILD_NODE</code>), the
-     * target item where content will be stored will determined the same way as
-     * explained in the <code>doReceive</code> method.
+     * Unless the creation of child nodes is forced by an event or endpoint property (
+     * <code>JcrConnector.JCR_ALWAYS_CREATE_CHILD_NODE</code>), the target item where content will be stored will determined the
+     * same way as explained in the <code>doReceive</code> method.
      * </p>
      * 
      * <p>
      * If an existing target item is found and is a node, the appropriate
-     * {@link org.mule.transport.jcr.handlers.NodeTypeHandler NodeTypeHandler}
-     * will be used to convert the <code>MuleMessage</code> payload into valid
-     * JCR content (nodes and properties).
+     * {@link org.mule.transport.jcr.handlers.NodeTypeHandler NodeTypeHandler} will be used to convert the
+     * <code>MuleMessage</code> payload into valid JCR content (nodes and properties).
      * </p>
      * 
      * <p>
-     * If an existing target item is found and is a property, the
-     * <code>MuleMessage</code> payload will be directly written to it, using a
-     * simple conversion mechanism. Note that if the payload is a
-     * <code>Collection</code>, the property will be multi-valued.
+     * If an existing target item is found and is a property, the <code>MuleMessage</code> payload will be directly written to
+     * it, using a simple conversion mechanism. Note that if the payload is a <code>Collection</code>, the property will be
+     * multi-valued.
      * </p>
      * 
      * <p>
-     * If no existing target item is found or if the creation of a new node is
-     * forced (see first paragraph), a new node will be created, under the
-     * absolute path defined by the endpoint URI, with a content extracted from
-     * the <code>MuleMessage</code> payload and stored according to the type
-     * defined in the event or connector property (
-     * <code>JcrConnector.JCR_NODE_TYPE_NAME</code>). If the endpoint URI points
-     * to a property and not a node, an exception will be raised.
+     * If no existing target item is found or if the creation of a new node is forced (see first paragraph), a new node will be
+     * created, under the absolute path defined by the endpoint URI, with a content extracted from the <code>MuleMessage</code>
+     * payload and stored according to the type defined in the event or connector property (
+     * <code>JcrConnector.JCR_NODE_TYPE_NAME</code>). If the endpoint URI points to a property and not a node, an exception will
+     * be raised.
      * </p>
      * 
      * @see org.mule.transport.jcr.JcrConnector Property names constants
@@ -116,57 +110,52 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
      */
     @Override
     public MuleMessage doSend(final MuleEvent event) throws Exception {
-        final boolean alwaysCreate =
-                Boolean.valueOf(
-                        (String) event.getProperty(JcrConnector.JCR_ALWAYS_CREATE_CHILD_NODE_PROPERTY)).booleanValue();
+        final MuleMessage message = event.getMessage();
+
+        final boolean alwaysCreate = Boolean.valueOf(
+                (String) event.getProperty(JcrConnector.JCR_ALWAYS_CREATE_CHILD_NODE_PROPERTY)).booleanValue();
 
         final String nodeUUID = JcrNodeUtils.getNodeUUID(event);
         final String nodeRelPath = JcrNodeUtils.getNodeRelPath(event);
-        final String propertyRelPath =
-                JcrPropertyUtils.getPropertyRelPath(event);
+        final String propertyRelPath = JcrPropertyUtils.getPropertyRelPath(event);
         final Session session = getSession();
 
-        Item targetItem =
-                alwaysCreate ? null : JcrNodeUtils.getTargetItem(session,
-                        endpoint, event, true);
+        Item targetItem = alwaysCreate ? null : JcrNodeUtils.getTargetItem(session, endpoint, event, true);
+        Item storedItem = null;
 
         if (targetItem != null) {
             // write payload to node or property
             final Object payload = event.transformMessage();
 
             if (logger.isDebugEnabled()) {
-                logger.debug("Writing '" + payload + "' to item: "
-                        + targetItem.getPath());
+                logger.debug("Writing '" + payload + "' to item: " + targetItem.getPath());
             }
 
             if (targetItem.isNode()) {
                 final Node targetNode = (Node) targetItem;
 
-                jcrConnector.getNodeTypeHandlerManager().getNodeTypeHandler(
-                        targetNode).updateContent(session, targetNode,
-                        event.getMessage());
+                jcrConnector.getNodeTypeHandlerManager().getNodeTypeHandler(targetNode).updateContent(session, targetNode,
+                        message);
+
+                storedItem = targetNode;
             } else {
                 final Property targetProperty = (Property) targetItem;
 
                 if ((payload instanceof Collection)) {
-                    targetProperty.setValue(JcrPropertyUtils.newPropertyValues(
-                            session, (Collection<?>) payload));
+                    targetProperty.setValue(JcrPropertyUtils.newPropertyValues(session, (Collection<?>) payload));
                 } else {
-                    targetProperty.setValue(JcrPropertyUtils.newPropertyValue(
-                            session, payload));
+                    targetProperty.setValue(JcrPropertyUtils.newPropertyValue(session, payload));
                 }
+
+                storedItem = targetProperty;
             }
 
         } else {
-            targetItem =
-                    JcrNodeUtils.getTargetItem(session, endpoint, event, false);
+            targetItem = JcrNodeUtils.getTargetItem(session, endpoint, event, false);
 
             if (targetItem == null) {
-                throw new DispatchException(
-                        JcrMessages.noNodeFor("Endpoint URI: "
-                                + endpoint.getEndpointURI().toString()
-                                + " ; NodeUUID: " + nodeUUID),
-                        event.getMessage(), endpoint);
+                throw new DispatchException(JcrMessages.noNodeFor("Endpoint URI: " + endpoint.getEndpointURI().toString()
+                        + " ; NodeUUID: " + nodeUUID), message, endpoint);
 
             } else if (targetItem.isNode()) {
                 final Node targetParentNode = (Node) targetItem;
@@ -177,38 +166,31 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
                 NodeTypeHandler nodeTypeHandler;
 
                 if (StringUtils.isNotBlank(nodeTypeName)) {
-                    nodeTypeHandler =
-                            jcrConnector.getNodeTypeHandlerManager().getNodeTypeHandler(
-                                    nodeTypeName);
+                    nodeTypeHandler = jcrConnector.getNodeTypeHandlerManager().getNodeTypeHandler(nodeTypeName);
                 } else {
-                    nodeTypeHandler =
-                            jcrConnector.getNodeTypeHandlerManager().getChildNodeTypeHandler(
-                                    targetParentNode);
+                    nodeTypeHandler = jcrConnector.getNodeTypeHandlerManager().getChildNodeTypeHandler(targetParentNode);
                 }
 
                 if (logger.isDebugEnabled()) {
-                    logger.debug("Selected node type handler: "
-                            + nodeTypeHandler + " for node: "
-                            + targetParentNode.getPath());
+                    logger.debug("Selected node type handler: " + nodeTypeHandler + " for node: " + targetParentNode.getPath());
                 }
 
-                nodeTypeHandler.createNode(session, targetParentNode,
-                        nodeRelPath, event.getMessage());
+                storedItem = nodeTypeHandler.createNode(session, targetParentNode, nodeRelPath, message);
             } else {
-                throw new IllegalArgumentException(
-                        "The provided nodeRelPath ("
-                                + nodeRelPath
-                                + ") and propertyRelPath ("
-                                + propertyRelPath
-                                + ") point to a missing item, hence the connector tries to create a new node "
-                                + "but the endpoint URI, used as a parent node, refers to a JCR property.");
+                throw new IllegalArgumentException("The provided nodeRelPath (" + nodeRelPath + ") and propertyRelPath ("
+                        + propertyRelPath + ") point to a missing item, hence the connector tries to create a new node "
+                        + "but the endpoint URI, used as a parent node, refers to a JCR property.");
             }
 
         }
 
         session.save();
 
-        return event.getMessage();
+        if (storedItem != null) {
+            message.setStringProperty(JcrConnector.JCR_ITEM_PATH, storedItem.getPath());
+        }
+
+        return message;
     }
 
 }

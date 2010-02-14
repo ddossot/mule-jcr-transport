@@ -142,6 +142,11 @@ public final class JcrConnector extends AbstractConnector {
      */
     public static final String JCR_QUERY_LANGUAGE_PROPERTY = "queryLanguage";
 
+    /**
+     * Property that defines a the full unique path of a particular item (node or property).
+     */
+    public static final String JCR_ITEM_PATH = "itemPath";
+
     public JcrConnector() {
         super();
 
@@ -245,9 +250,8 @@ public final class JcrConnector extends AbstractConnector {
             logger.debug("Opening new JCR session.");
         }
 
-        final Credentials credentials =
-                ((getUsername() != null) && (getPassword() != null)) ? new SimpleCredentials(getUsername(),
-                        getPassword().toCharArray()) : null;
+        final Credentials credentials = ((getUsername() != null) && (getPassword() != null)) ? new SimpleCredentials(
+                getUsername(), getPassword().toCharArray()) : null;
 
         return getRepository().login(credentials, getWorkspaceName());
     }
@@ -323,8 +327,8 @@ public final class JcrConnector extends AbstractConnector {
             for (final Class<? extends NodeTypeHandler> customNodeTypeHandlerClass : customNodeTypeHandlers) {
 
                 try {
-                    final NodeTypeHandler handler =
-                            (NodeTypeHandler) ClassUtils.instanciateClass(customNodeTypeHandlerClass, ClassUtils.NO_ARGS);
+                    final NodeTypeHandler handler = (NodeTypeHandler) ClassUtils.instanciateClass(customNodeTypeHandlerClass,
+                            ClassUtils.NO_ARGS);
 
                     getNodeTypeHandlerManager().registerHandler(handler);
                 } catch (final Exception e) {
