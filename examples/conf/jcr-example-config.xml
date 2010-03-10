@@ -57,6 +57,13 @@
     </script:text>
   </script:script>
 
+  <script:script name="tcpContentFetcher" engine="groovy">
+    <script:text><![CDATA[
+    def jcrPath = message.payloadAsString
+    return eventContext.requestEvent("jcr://" + jcrPath, -1).payload ]]>
+    </script:text>
+  </script:script>
+
   <model name="jcrExamples">
     <!--
       Simple bridge used to send content to different JCR outbound endpoints, demonstrating different persistence strategies.
@@ -136,7 +143,7 @@
       </outbound>
     </service>
     <!--
-      Example of an HTTP endpoint that fetches data from a JCR container, turning Mule into an HTTP picture server. Browsing
+      Example of an HTTP endpoint that fetches image data from a JCR container, turning Mule into an HTTP picture server. Browsing
       http://localhost:8080/images/mule.gif or http://localhost:8080/images/jackrabbit.gif should return a gif image.
     -->
     <service name="jcrHttpContentFetcher">
@@ -160,7 +167,7 @@
       Examples of TCP endpoints streaming JCR content. Use the main() of org.mule.examples.jcr.JcrImageStreamClient to test
       them.
     -->
-    <service name="jcrStreamingHttpContentFetcher">
+    <service name="jcrStreamingTcpImageFetcher">
       <inbound>
         <tcp:inbound-endpoint host="localhost" port="9999" synchronous="true" />
       </inbound>
@@ -177,6 +184,15 @@
           </jcr:outbound-endpoint>
         </pass-through-router>
       </outbound>
+    </service>
+    <!--
+      Example of a TCP endpoint that fetches any data from a JCR container.
+    -->
+    <service name="jcrStreamingTcpFetcher">
+      <inbound>
+        <tcp:inbound-endpoint host="localhost" port="9997" synchronous="true" />
+      </inbound>
+      <script:component script-ref="tcpContentFetcher" />
     </service>
   </model>
 </mule>
