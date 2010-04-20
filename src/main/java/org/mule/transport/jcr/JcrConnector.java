@@ -27,6 +27,7 @@ import org.apache.commons.lang.Validate;
 import org.mule.DefaultMuleEvent;
 import org.mule.DefaultMuleMessage;
 import org.mule.RequestContext;
+import org.mule.api.MuleContext;
 import org.mule.api.MuleEvent;
 import org.mule.api.MuleException;
 import org.mule.api.MuleMessage;
@@ -147,8 +148,8 @@ public final class JcrConnector extends AbstractConnector {
      */
     public static final String JCR_ITEM_PATH = "itemPath";
 
-    public JcrConnector() {
-        super();
+    public JcrConnector(final MuleContext muleContext) {
+        super(muleContext);
 
         setDefaultEndpointValues();
 

@@ -25,8 +25,7 @@ public class JcrConnectorTestCase extends AbstractConnectorTestCase {
 
     static JcrConnector newJcrConnector() throws Exception, InitialisationException {
 
-        final JcrConnector c = new JcrConnector();
-        c.setMuleContext(muleContext);
+        final JcrConnector c = new JcrConnector(muleContext);
 
         c.setName("Test-Jcr");
         c.setRepository(RepositoryTestSupport.getRepository());
@@ -49,7 +48,7 @@ public class JcrConnectorTestCase extends AbstractConnectorTestCase {
 
     public void testInitializingWithoutConnector() {
         try {
-            new JcrConnector().doInitialise();
+            new JcrConnector(muleContext).doInitialise();
             fail("An InitialisationException should have been thrown");
         } catch (final InitialisationException ie) {
             // expected

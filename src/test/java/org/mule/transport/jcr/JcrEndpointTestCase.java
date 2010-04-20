@@ -114,8 +114,6 @@ public class JcrEndpointTestCase extends AbstractMuleTestCase {
         }
 
         final JcrConnector jcrConnector = JcrConnectorTestCase.newJcrConnector();
-
-        jcrConnector.setMuleContext(muleContext);
         jcrConnector.initialise();
         builder.setConnector(jcrConnector);
         return builder;
