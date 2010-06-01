@@ -51,6 +51,8 @@ public class JcrMessageDispatcherTestCase extends AbstractJcrMessagerTestCase {
     private void newDispatcherForTestEndpoint(final String uri) throws Exception {
         final OutboundEndpoint endpoint = JcrEndpointTestCase.newOutboundEndpoint(muleContext, uri, null);
         connector = (JcrConnector) endpoint.getConnector();
+        connector.connect();
+        connector.start();
         messageDispatcher = (JcrMessageDispatcher) new JcrMessageDispatcherFactory().create(endpoint);
     }
 
@@ -274,7 +276,7 @@ public class JcrMessageDispatcherTestCase extends AbstractJcrMessagerTestCase {
     }
 
     public void testConnectorGetOutputStream() throws Exception {
-        final Map<String, String> properties = new HashMap<String, String>();
+        final Map<String, Object> properties = new HashMap<String, Object>();
         properties.put(JcrConnector.JCR_NODE_RELPATH_PROPERTY, "stored-stream");
         properties.put(JcrConnector.JCR_NODE_TYPE_NAME_PROPERTY, "nt:resource");
         properties.put("jcr:mimeType", "text/plain");

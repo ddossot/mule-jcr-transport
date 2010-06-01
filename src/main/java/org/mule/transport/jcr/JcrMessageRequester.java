@@ -10,8 +10,6 @@
 
 package org.mule.transport.jcr;
 
-import java.util.Collections;
-
 import javax.jcr.Item;
 import javax.jcr.Session;
 
@@ -21,7 +19,6 @@ import org.mule.api.MuleEvent;
 import org.mule.api.MuleMessage;
 import org.mule.api.endpoint.InboundEndpoint;
 import org.mule.api.routing.filter.Filter;
-import org.mule.api.transformer.Transformer;
 import org.mule.transport.AbstractMessageRequester;
 import org.mule.transport.jcr.filters.JcrNodeNameFilter;
 import org.mule.transport.jcr.filters.JcrPropertyNameFilter;
@@ -140,18 +137,17 @@ public class JcrMessageRequester extends AbstractMessageRequester {
 
         if (targetItem != null) {
             if (targetItem.isNode()) {
-                rawJcrContent =
-                        JcrNodeUtils.getRawContentFromNode(targetItem, nodeNamePatternFilter, propertyNamePatternFilter);
+                rawJcrContent = JcrNodeUtils
+                        .getRawContentFromNode(targetItem, nodeNamePatternFilter, propertyNamePatternFilter);
             } else {
                 rawJcrContent = JcrNodeUtils.getRawContentFromProperty(targetItem);
             }
         }
 
-        final Object transformedContent =
-                rawJcrContent == null ? null : ((Transformer) jcrConnector.getDefaultResponseTransformers().get(0)).transform(rawJcrContent);
+        final Object transformedContent = rawJcrContent == null ? null : (jcrConnector.getDefaultResponseTransformers().get(0))
+                .transform(rawJcrContent);
 
-        return new DefaultMuleMessage(jcrConnector.getMessageAdapter(transformedContent), Collections.EMPTY_MAP,
-                jcrConnector.getMuleContext());
+        return new DefaultMuleMessage(transformedContent, jcrConnector.getMuleContext());
     }
 
 }

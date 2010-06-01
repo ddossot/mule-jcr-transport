@@ -10,7 +10,6 @@
 
 package org.mule.transport.jcr;
 
-import java.util.Collections;
 import java.util.List;
 
 import javax.jcr.Repository;
@@ -95,13 +94,11 @@ public final class JcrMessageReceiver extends AbstractMessageReceiver implements
 
         absPath = endpoint.getEndpointURI().getAddress();
 
-        eventTypes =
-                (Integer) new IntegerConverter(jcrConnector.getEventTypes()).convert(Integer.class,
-                        endpoint.getProperty(JcrConnector.JCR_EVENT_TYPES_PROPERTY));
+        eventTypes = (Integer) new IntegerConverter(jcrConnector.getEventTypes()).convert(Integer.class, endpoint
+                .getProperty(JcrConnector.JCR_EVENT_TYPES_PROPERTY));
 
-        deep =
-                (Boolean) new BooleanConverter(jcrConnector.isDeep()).convert(Boolean.class,
-                        endpoint.getProperty(JcrConnector.JCR_DEEP_PROPERTY));
+        deep = (Boolean) new BooleanConverter(jcrConnector.isDeep()).convert(Boolean.class, endpoint
+                .getProperty(JcrConnector.JCR_DEEP_PROPERTY));
 
         final String uuidProperty = (String) endpoint.getProperty(JcrConnector.JCR_UUID_LIST_PROPERTY);
 
@@ -119,9 +116,8 @@ public final class JcrMessageReceiver extends AbstractMessageReceiver implements
             nodeTypeNames = JcrNamespaceHandler.split(nodeTypeNameProperty);
         }
 
-        noLocal =
-                (Boolean) new BooleanConverter(jcrConnector.isNoLocal()).convert(Boolean.class,
-                        endpoint.getProperty(JcrConnector.JCR_NO_LOCAL_PROPERTY));
+        noLocal = (Boolean) new BooleanConverter(jcrConnector.isNoLocal()).convert(Boolean.class, endpoint
+                .getProperty(JcrConnector.JCR_NO_LOCAL_PROPERTY));
 
         String contentPayloadTypeProperty = (String) endpoint.getProperty(JcrConnector.JCR_CONTENT_PAYLOAD_TYPE_PROPERTY);
 
@@ -165,9 +161,9 @@ public final class JcrMessageReceiver extends AbstractMessageReceiver implements
     @Override
     public void doStart() throws MuleException {
         try {
-            observationManager.addEventListener(this, eventTypes.intValue(), absPath, deep.booleanValue(),
-                    uuids == null ? null : (String[]) uuids.toArray(EMPTY_STRING_ARRAY),
-                    nodeTypeNames == null ? null : (String[]) nodeTypeNames.toArray(EMPTY_STRING_ARRAY), noLocal.booleanValue());
+            observationManager.addEventListener(this, eventTypes.intValue(), absPath, deep.booleanValue(), uuids == null ? null
+                    : (String[]) uuids.toArray(EMPTY_STRING_ARRAY), nodeTypeNames == null ? null : (String[]) nodeTypeNames
+                    .toArray(EMPTY_STRING_ARRAY), noLocal.booleanValue());
 
             if (logger.isInfoEnabled()) {
                 logger.info("Observing JCR for events of types: " + eventTypes + " - at: " + absPath + " - deep: " + deep
@@ -208,8 +204,7 @@ public final class JcrMessageReceiver extends AbstractMessageReceiver implements
         }
 
         try {
-            routeMessage(new DefaultMuleMessage(jcrConnector.getMessageAdapter(eventIterator), Collections.EMPTY_MAP,
-                    jcrConnector.getMuleContext()));
+            routeMessage(new DefaultMuleMessage(eventIterator, jcrConnector.getMuleContext()));
 
         } catch (final MessagingException me) {
             handleException(me);
