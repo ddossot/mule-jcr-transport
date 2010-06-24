@@ -28,35 +28,36 @@ import org.mule.transport.jcr.support.JcrPropertyUtils;
  */
 final class NtUnstructuredHandler extends AbstractNodeTypeHandler {
 
-    public String getNodeTypeName() {
-        return "nt:unstructured";
-    }
+	public String getNodeTypeName() {
+		return "nt:unstructured";
+	}
 
-    @Override
-    protected void createChildren(final Node node) throws RepositoryException {
-        // no children to create
-    }
+	@Override
+	protected void createChildren(final Node node) throws RepositoryException {
+		// no children to create
+	}
 
-    public void updateContent(final Session session, final Node node,
-            final MuleMessage message) throws RepositoryException, IOException {
+	public void updateContent(final Session session, final Node node,
+			final MuleMessage message) throws RepositoryException, IOException {
 
-        node.setProperty(NtResourceHandler.JCR_DATA_PROPERTY_NAME, message
-                .getPayload().toString());
+		node.setProperty(NtResourceHandler.JCR_DATA_PROPERTY_NAME, message
+				.getPayload().toString());
 
-        final Object payload = message.getPayload();
+		final Object payload = message.getPayload();
 
-        if (payload instanceof Map) {
-            @SuppressWarnings("unchecked")
-            final Map<String, ?> mapPayload = (Map<String, ?>) payload;
-            JcrPropertyUtils.storeProperties(session, node, mapPayload);
+		if (payload instanceof Map<?, ?>) {
+			@SuppressWarnings("unchecked")
+			final Map<String, ?> mapPayload = (Map<String, ?>) payload;
+			JcrPropertyUtils.storeProperties(session, node, mapPayload);
 
-        } else if (payload instanceof Collection) {
-            node.setProperty(NtResourceHandler.JCR_DATA_PROPERTY_NAME, JcrPropertyUtils
-                    .newPropertyValues(session, (Collection<?>) payload));
-        } else {
-            node.setProperty(NtResourceHandler.JCR_DATA_PROPERTY_NAME, JcrPropertyUtils
-                    .newPropertyValue(session, payload));
-        }
+		} else if (payload instanceof Collection<?>) {
+			node.setProperty(NtResourceHandler.JCR_DATA_PROPERTY_NAME,
+					JcrPropertyUtils.newPropertyValues(session,
+							(Collection<?>) payload));
+		} else {
+			node.setProperty(NtResourceHandler.JCR_DATA_PROPERTY_NAME,
+					JcrPropertyUtils.newPropertyValue(session, payload));
+		}
 
-    }
+	}
 }

@@ -46,261 +46,261 @@ import org.mule.util.IOUtils;
  * @author David Dossot (david@dossot.net)
  */
 public abstract class JcrPropertyUtils {
-    private static final Log LOG = LogFactory.getLog(JcrPropertyUtils.class);
+	private static final Log LOG = LogFactory.getLog(JcrPropertyUtils.class);
 
-    public static Serializable getNonBinaryPropertyValue(
-            final Value propertyValue, final int propertyType)
-            throws ValueFormatException, RepositoryException {
+	public static Serializable getNonBinaryPropertyValue(
+			final Value propertyValue, final int propertyType)
+			throws ValueFormatException, RepositoryException {
 
-        Serializable result;
+		Serializable result;
 
-        if (propertyType == PropertyType.BOOLEAN) {
-            result = Boolean.valueOf(propertyValue.getBoolean());
-        } else if (propertyType == PropertyType.DATE) {
-            result = propertyValue.getDate();
-        } else if (propertyType == PropertyType.DOUBLE) {
-            result = Double.valueOf(propertyValue.getDouble());
-        } else if (propertyType == PropertyType.LONG) {
-            result = Long.valueOf(propertyValue.getLong());
-        } else {
-            result = propertyValue.getString();
-        }
+		if (propertyType == PropertyType.BOOLEAN) {
+			result = Boolean.valueOf(propertyValue.getBoolean());
+		} else if (propertyType == PropertyType.DATE) {
+			result = propertyValue.getDate();
+		} else if (propertyType == PropertyType.DOUBLE) {
+			result = Double.valueOf(propertyValue.getDouble());
+		} else if (propertyType == PropertyType.LONG) {
+			result = Long.valueOf(propertyValue.getLong());
+		} else {
+			result = propertyValue.getString();
+		}
 
-        return result;
-    }
+		return result;
+	}
 
-    public static Map<String, Object> getPropertiesPayload(
-            final PropertyIterator propertyIterator)
-            throws RepositoryException, ValueFormatException {
+	public static Map<String, Object> getPropertiesPayload(
+			final PropertyIterator propertyIterator)
+			throws RepositoryException, ValueFormatException {
 
-        final Map<String, Object> result = new HashMap<String, Object>();
+		final Map<String, Object> result = new HashMap<String, Object>();
 
-        while (propertyIterator.hasNext()) {
-            final Property property = (Property) propertyIterator.next();
-            result.put(property.getName(), getPropertyPayload(property));
-        }
+		while (propertyIterator.hasNext()) {
+			final Property property = (Property) propertyIterator.next();
+			result.put(property.getName(), getPropertyPayload(property));
+		}
 
-        return result.isEmpty() ? null : result;
-    }
+		return result.isEmpty() ? null : result;
+	}
 
-    public static String getPropertyNamePatternFilter(final Filter filter,
-            final Class<?> filterClass) {
+	public static String getPropertyNamePatternFilter(final Filter filter,
+			final Class<?> filterClass) {
 
-        String pattern = null;
+		String pattern = null;
 
-        if (filter != null) {
-            if (filter instanceof AbstractJcrNameFilter) {
-                if (filter.getClass().equals(filterClass)) {
-                    pattern = ((AbstractJcrNameFilter) filter).getPattern();
-                }
-            } else if (filter instanceof AndFilter) {
-                final AndFilter andFilter = (AndFilter) filter;
+		if (filter != null) {
+			if (filter instanceof AbstractJcrNameFilter) {
+				if (filter.getClass().equals(filterClass)) {
+					pattern = ((AbstractJcrNameFilter) filter).getPattern();
+				}
+			} else if (filter instanceof AndFilter) {
+				final AndFilter andFilter = (AndFilter) filter;
 
-                pattern = getPropertyNamePatternFilter((Filter) andFilter
-                        .getFilters().get(0), filterClass);
+				pattern = getPropertyNamePatternFilter(andFilter.getFilters()
+						.get(0), filterClass);
 
-                if (pattern == null) {
-                    pattern = getPropertyNamePatternFilter((Filter) andFilter
-                            .getFilters().get(1), filterClass);
-                }
-            } else {
-                throw new IllegalArgumentException(JcrMessages.badFilterType(
-                        filter.getClass()).getMessage());
-            }
-        }
+				if (pattern == null) {
+					pattern = getPropertyNamePatternFilter(andFilter
+							.getFilters().get(1), filterClass);
+				}
+			} else {
+				throw new IllegalArgumentException(JcrMessages.badFilterType(
+						filter.getClass()).getMessage());
+			}
+		}
 
-        return pattern;
-    }
+		return pattern;
+	}
 
-    public static String getPropertyRelPath(final MuleEvent event) {
-        return event != null ? JcrEventUtils.getParsableEventProperty(event,
-                JcrConnector.JCR_PROPERTY_REL_PATH_PROPERTY) : null;
-    }
+	public static String getPropertyRelPath(final MuleEvent event) {
+		return event != null ? JcrEventUtils.getParsableEventProperty(event,
+				JcrConnector.JCR_PROPERTY_REL_PATH_PROPERTY) : null;
+	}
 
-    public static Value newPropertyValue(final Session session,
-            final Object value) throws RepositoryException, IOException {
+	public static Value newPropertyValue(final Session session,
+			final Object value) throws RepositoryException, IOException {
 
-        if (value == null) {
-            throw new IllegalArgumentException(
-                    "Impossible to store a null value in JCR!");
+		if (value == null) {
+			throw new IllegalArgumentException(
+					"Impossible to store a null value in JCR!");
 
-        } else if (value instanceof Boolean) {
-            return session.getValueFactory().createValue(
-                    ((Boolean) value).booleanValue());
+		} else if (value instanceof Boolean) {
+			return session.getValueFactory().createValue(
+					((Boolean) value).booleanValue());
 
-        } else if (value instanceof Calendar) {
-            return session.getValueFactory().createValue((Calendar) value);
+		} else if (value instanceof Calendar) {
+			return session.getValueFactory().createValue((Calendar) value);
 
-        } else if (value instanceof Double) {
-            return session.getValueFactory().createValue(
-                    ((Double) value).doubleValue());
+		} else if (value instanceof Double) {
+			return session.getValueFactory().createValue(
+					((Double) value).doubleValue());
 
-        } else if (value instanceof InputStream) {
-            return session.getValueFactory().createValue((InputStream) value);
+		} else if (value instanceof InputStream) {
+			return session.getValueFactory().createValue((InputStream) value);
 
-        } else if (value instanceof byte[]) {
-            return session.getValueFactory().createValue(
-                    new ByteArrayInputStream((byte[]) value));
+		} else if (value instanceof byte[]) {
+			return session.getValueFactory().createValue(
+					new ByteArrayInputStream((byte[]) value));
 
-        } else if (value instanceof Long) {
-            return session.getValueFactory().createValue(
-                    ((Long) value).longValue());
+		} else if (value instanceof Long) {
+			return session.getValueFactory().createValue(
+					((Long) value).longValue());
 
-        } else if (value instanceof Node) {
-            return session.getValueFactory().createValue((Node) value);
+		} else if (value instanceof Node) {
+			return session.getValueFactory().createValue((Node) value);
 
-        } else if (value instanceof String) {
-            return session.getValueFactory().createValue((String) value);
+		} else if (value instanceof String) {
+			return session.getValueFactory().createValue((String) value);
 
-        } else if (value instanceof Serializable) {
-            final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            final ObjectOutputStream oos = new ObjectOutputStream(baos);
-            oos.writeObject(value);
-            oos.flush();
-            oos.close();
+		} else if (value instanceof Serializable) {
+			final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			final ObjectOutputStream oos = new ObjectOutputStream(baos);
+			oos.writeObject(value);
+			oos.flush();
+			oos.close();
 
-            return session.getValueFactory().createValue(
-                    new ByteArrayInputStream(baos.toByteArray()));
-        } else {
-            throw new IllegalArgumentException(
-                    "Impossible to store object of type: " + value.getClass());
-        }
+			return session.getValueFactory().createValue(
+					new ByteArrayInputStream(baos.toByteArray()));
+		} else {
+			throw new IllegalArgumentException(
+					"Impossible to store object of type: " + value.getClass());
+		}
 
-    }
+	}
 
-    public static Value[] newPropertyValues(final Session session,
-            final Collection<?> objects) throws RepositoryException,
-            IOException {
+	public static Value[] newPropertyValues(final Session session,
+			final Collection<?> objects) throws RepositoryException,
+			IOException {
 
-        final Value[] values = new Value[objects.size()];
+		final Value[] values = new Value[objects.size()];
 
-        int i = 0;
+		int i = 0;
 
-        for (final Object object : objects) {
-            values[i++] = newPropertyValue(session, object);
-        }
+		for (final Object object : objects) {
+			values[i++] = newPropertyValue(session, object);
+		}
 
-        return values;
-    }
+		return values;
+	}
 
-    public static Serializable outputPropertyValue(final String propertyPath,
-            final Value propertyValue,
-            final JcrContentPayloadType contentPayloadType) {
+	public static Serializable outputPropertyValue(final String propertyPath,
+			final Value propertyValue,
+			final JcrContentPayloadType contentPayloadType) {
 
-        Serializable result = "";
+		Serializable result = "";
 
-        try {
-            final int propertyType = propertyValue.getType();
+		try {
+			final int propertyType = propertyValue.getType();
 
-            if (propertyType == PropertyType.BINARY) {
-                if (!JcrContentPayloadType.NO_BINARY.equals(contentPayloadType)) {
-                    final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    IOUtils.copy(propertyValue.getStream(), baos);
-                    result = baos.toByteArray();
-                }
-            } else {
-                result = JcrPropertyUtils.getNonBinaryPropertyValue(
-                        propertyValue, propertyType);
-            }
-        } catch (final RuntimeException e) {
-            JcrPropertyUtils.logPropertyAccessError(propertyPath, e);
-        } catch (final ValueFormatException vfe) {
-            JcrPropertyUtils.logPropertyAccessError(propertyPath, vfe);
-        } catch (final RepositoryException re) {
-            JcrPropertyUtils.logPropertyAccessError(propertyPath, re);
-        } catch (final IOException ioe) {
-            JcrPropertyUtils.logPropertyAccessError(propertyPath, ioe);
-        }
+			if (propertyType == PropertyType.BINARY) {
+				if (!JcrContentPayloadType.NO_BINARY.equals(contentPayloadType)) {
+					final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+					IOUtils.copy(propertyValue.getStream(), baos);
+					result = baos.toByteArray();
+				}
+			} else {
+				result = JcrPropertyUtils.getNonBinaryPropertyValue(
+						propertyValue, propertyType);
+			}
+		} catch (final RuntimeException e) {
+			JcrPropertyUtils.logPropertyAccessError(propertyPath, e);
+		} catch (final ValueFormatException vfe) {
+			JcrPropertyUtils.logPropertyAccessError(propertyPath, vfe);
+		} catch (final RepositoryException re) {
+			JcrPropertyUtils.logPropertyAccessError(propertyPath, re);
+		} catch (final IOException ioe) {
+			JcrPropertyUtils.logPropertyAccessError(propertyPath, ioe);
+		}
 
-        return result;
-    }
+		return result;
+	}
 
-    public static void storeProperties(final Session session,
-            final Node targetNode, final Map<String, ?> propertyNamesAndValues)
-            throws RepositoryException, IOException {
+	public static void storeProperties(final Session session,
+			final Node targetNode, final Map<String, ?> propertyNamesAndValues)
+			throws RepositoryException, IOException {
 
-        for (final Map.Entry<String, ?> propertyNameAndValue : propertyNamesAndValues
-                .entrySet()) {
+		for (final Map.Entry<String, ?> propertyNameAndValue : propertyNamesAndValues
+				.entrySet()) {
 
-            final String propertyName = propertyNameAndValue.getKey();
-            final Object propertyValue = propertyNameAndValue.getValue();
+			final String propertyName = propertyNameAndValue.getKey();
+			final Object propertyValue = propertyNameAndValue.getValue();
 
-            if ((propertyValue instanceof Collection)) {
-                targetNode.setProperty(propertyName, JcrPropertyUtils
-                        .newPropertyValues(session,
-                                (Collection<?>) propertyValue));
-            } else {
-                targetNode.setProperty(propertyName, JcrPropertyUtils
-                        .newPropertyValue(session, propertyValue));
-            }
-        }
-    }
+			if ((propertyValue instanceof Collection<?>)) {
+				targetNode.setProperty(propertyName, JcrPropertyUtils
+						.newPropertyValues(session,
+								(Collection<?>) propertyValue));
+			} else {
+				targetNode.setProperty(propertyName, JcrPropertyUtils
+						.newPropertyValue(session, propertyValue));
+			}
+		}
+	}
 
-    private static void logPropertyAccessError(final String propertyPath,
-            final Exception e) {
-        LOG.error("Can not fetch property value for: " + propertyPath, e);
-    }
+	private static void logPropertyAccessError(final String propertyPath,
+			final Exception e) {
+		LOG.error("Can not fetch property value for: " + propertyPath, e);
+	}
 
-    static Object getPropertyPayload(final Property property)
-            throws IllegalStateException, ValueFormatException,
-            RepositoryException {
+	static Object getPropertyPayload(final Property property)
+			throws IllegalStateException, ValueFormatException,
+			RepositoryException {
 
-        if (property.getDefinition().isMultiple()) {
-            final List<Object> valuePayloads = new ArrayList<Object>();
+		if (property.getDefinition().isMultiple()) {
+			final List<Object> valuePayloads = new ArrayList<Object>();
 
-            final Value[] propertyValues = property.getValues();
+			final Value[] propertyValues = property.getValues();
 
-            for (int i = 0; i < propertyValues.length; i++) {
-                valuePayloads.add(JcrPropertyUtils
-                        .getValuePayload(propertyValues[i]));
-            }
+			for (int i = 0; i < propertyValues.length; i++) {
+				valuePayloads.add(JcrPropertyUtils
+						.getValuePayload(propertyValues[i]));
+			}
 
-            return valuePayloads;
-        }
+			return valuePayloads;
+		}
 
-        return JcrPropertyUtils.getValuePayload(property.getValue());
-    }
+		return JcrPropertyUtils.getValuePayload(property.getValue());
+	}
 
-    static Object getValuePayload(final Value value)
-            throws IllegalStateException, RepositoryException {
+	static Object getValuePayload(final Value value)
+			throws IllegalStateException, RepositoryException {
 
-        final int propertyType = value.getType();
+		final int propertyType = value.getType();
 
-        if (propertyType == PropertyType.BINARY) {
-            return value.getStream();
-        }
+		if (propertyType == PropertyType.BINARY) {
+			return value.getStream();
+		}
 
-        return getNonBinaryPropertyValue(value, propertyType);
-    }
+		return getNonBinaryPropertyValue(value, propertyType);
+	}
 
-    static Serializable outputProperty(final String propertyPath,
-            final Property property,
-            final JcrContentPayloadType contentPayloadType)
-            throws RepositoryException, ValueFormatException {
+	static Serializable outputProperty(final String propertyPath,
+			final Property property,
+			final JcrContentPayloadType contentPayloadType)
+			throws RepositoryException, ValueFormatException {
 
-        Serializable result;
+		Serializable result;
 
-        if (property.getDefinition().isMultiple()) {
-            final ArrayList<Serializable> contentList = new ArrayList<Serializable>();
+		if (property.getDefinition().isMultiple()) {
+			final ArrayList<Serializable> contentList = new ArrayList<Serializable>();
 
-            final Value[] propertyValues = property.getValues();
+			final Value[] propertyValues = property.getValues();
 
-            for (int i = 0; i < propertyValues.length; i++) {
-                contentList.add(outputPropertyValue(propertyPath,
-                        propertyValues[i], contentPayloadType));
-            }
+			for (int i = 0; i < propertyValues.length; i++) {
+				contentList.add(outputPropertyValue(propertyPath,
+						propertyValues[i], contentPayloadType));
+			}
 
-            result = contentList;
-        } else {
-            result = outputPropertyValue(propertyPath, property.getValue(),
-                    contentPayloadType);
-        }
+			result = contentList;
+		} else {
+			result = outputPropertyValue(propertyPath, property.getValue(),
+					contentPayloadType);
+		}
 
-        return result;
-    }
+		return result;
+	}
 
-    private JcrPropertyUtils() {
-        throw new UnsupportedOperationException("Do not instantiate");
-    }
+	private JcrPropertyUtils() {
+		throw new UnsupportedOperationException("Do not instantiate");
+	}
 
 }

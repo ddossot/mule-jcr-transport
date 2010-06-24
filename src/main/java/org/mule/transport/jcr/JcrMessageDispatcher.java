@@ -141,7 +141,7 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher {
             } else {
                 final Property targetProperty = (Property) targetItem;
 
-                if ((payload instanceof Collection)) {
+                if ((payload instanceof Collection<?>)) {
                     targetProperty.setValue(JcrPropertyUtils.newPropertyValues(session, (Collection<?>) payload));
                 } else {
                     targetProperty.setValue(JcrPropertyUtils.newPropertyValue(session, payload));
