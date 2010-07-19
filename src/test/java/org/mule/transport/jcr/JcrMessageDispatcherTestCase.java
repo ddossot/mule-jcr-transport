@@ -38,339 +38,340 @@ import org.mule.util.IOUtils;
 /**
  * @author David Dossot (david@dossot.net)
  */
-public class JcrMessageDispatcherTestCase extends AbstractJcrMessagerTestCase {
+public class JcrMessageDispatcherTestCase extends AbstractJcrMessagerTestCase
+{
 
-	private JcrMessageDispatcher messageDispatcher;
+    private JcrMessageDispatcher messageDispatcher;
 
-	@Override
-	protected void doSetUp() throws Exception {
-		super.doSetUp();
+    @Override
+    protected void doSetUp() throws Exception
+    {
+        super.doSetUp();
 
-		newDispatcherForTestEndpoint("jcr://"
-				+ RepositoryTestSupport.ROOT_NODE_NAME);
-	}
+        newDispatcherForTestEndpoint(getTestEndpointUri());
+    }
 
-	private void newDispatcherForTestEndpoint(final String uri)
-			throws Exception {
-		final OutboundEndpoint endpoint = JcrEndpointTestCase
-				.newOutboundEndpoint(muleContext, uri, null);
-		connector = (JcrConnector) endpoint.getConnector();
-		connector.connect();
-		connector.start();
-		messageDispatcher = (JcrMessageDispatcher) new JcrMessageDispatcherFactory()
-				.create(endpoint);
-	}
+    private String getTestEndpointUri()
+    {
+        return "jcr://" + RepositoryTestSupport.ROOT_NODE_NAME;
+    }
 
-	public void testStoreMapInNode() throws Exception {
-		final Map<String, Object> propertyNameAndValues = new HashMap<String, Object>();
-		propertyNameAndValues.put("longProperty", new Long(1234));
-		final Calendar now = Calendar.getInstance();
-		propertyNameAndValues.put("dateProperty", now);
+    private void newDispatcherForTestEndpoint(final String uri) throws Exception
+    {
+        final OutboundEndpoint endpoint = JcrEndpointTestCase.newOutboundEndpoint(muleContext, uri, null);
+        connector = (JcrConnector) endpoint.getConnector();
+        connector.connect();
+        connector.start();
+        messageDispatcher = (JcrMessageDispatcher) new JcrMessageDispatcherFactory().create(endpoint);
+    }
 
-		final MuleEvent event = getTestEvent(propertyNameAndValues);
-		event.getMessage().setStringProperty(
-				JcrConnector.JCR_NODE_RELPATH_PROPERTY, "noderelpath-target");
-		RequestContext.setEvent(event);
+    public void testStoreMapInNode() throws Exception
+    {
+        final Map<String, Object> propertyNameAndValues = new HashMap<String, Object>();
+        propertyNameAndValues.put("longProperty", new Long(1234));
+        final Calendar now = Calendar.getInstance();
+        propertyNameAndValues.put("dateProperty", now);
 
-		final MuleMessage result = messageDispatcher.doSend(event);
-		assertSame(propertyNameAndValues, result.getPayload());
-		assertEquals("/testData/noderelpath-target", result
-				.getProperty("itemPath"));
+        final MuleEvent event = getTestEvent(propertyNameAndValues);
+        event.getMessage().setStringProperty(JcrConnector.JCR_NODE_RELPATH_PROPERTY, "noderelpath-target");
+        RequestContext.setEvent(event);
 
-		final Node node = RepositoryTestSupport.getTestDataNode().getNode(
-				"noderelpath-target");
+        final MuleMessage result = messageDispatcher.doSend(event);
+        assertSame(propertyNameAndValues, result.getPayload());
+        assertEquals("/testData/noderelpath-target", result.getProperty("itemPath"));
 
-		assertEquals(1234L, node.getProperty("longProperty").getLong());
-		assertEquals(now, RepositoryTestSupport.getTestDataNode().getNode(
-				"noderelpath-target").getProperty("dateProperty").getDate());
-	}
+        final Node node = RepositoryTestSupport.getTestDataNode().getNode("noderelpath-target");
 
-	public void testFailedStoreInNode() throws Exception {
-		final MuleEvent event = getTestEvent(new Object());
-		event.getMessage().setStringProperty(
-				JcrConnector.JCR_NODE_RELPATH_PROPERTY, "noderelpath-target");
+        assertEquals(1234L, node.getProperty("longProperty").getLong());
+        assertEquals(now, RepositoryTestSupport.getTestDataNode().getNode("noderelpath-target").getProperty(
+            "dateProperty").getDate());
+    }
 
-		RequestContext.setEvent(event);
+    public void testFailedStoreInNode() throws Exception
+    {
+        final MuleEvent event = getTestEvent(new Object());
+        event.getMessage().setStringProperty(JcrConnector.JCR_NODE_RELPATH_PROPERTY, "noderelpath-target");
 
-		try {
-			messageDispatcher.doSend(event);
-		} catch (final IllegalArgumentException iae) {
-			return;
-		}
+        RequestContext.setEvent(event);
 
-		fail("Should have got an IllegalArgumentException!");
-	}
+        try
+        {
+            messageDispatcher.doSend(event);
+        }
+        catch (final IllegalArgumentException iae)
+        {
+            return;
+        }
 
-	public void testFailedStoreInNodeFromUUID() throws Exception {
-		final MuleEvent event = getTestEvent(new Object());
-		event.getMessage().setStringProperty(
-				JcrConnector.JCR_NODE_UUID_PROPERTY, "foo-bar-uuid");
-		event.getMessage().setStringProperty(
-				JcrConnector.JCR_NODE_RELPATH_PROPERTY, "noderelpath-target");
-		event.getMessage().setStringProperty(
-				JcrConnector.JCR_PROPERTY_REL_PATH_PROPERTY,
-				"proprelpath-target");
+        fail("Should have got an IllegalArgumentException!");
+    }
 
-		RequestContext.setEvent(event);
+    public void testFailedStoreInNodeFromUUID() throws Exception
+    {
+        final MuleEvent event = getTestEvent(new Object());
+        event.getMessage().setStringProperty(JcrConnector.JCR_NODE_UUID_PROPERTY, "foo-bar-uuid");
+        event.getMessage().setStringProperty(JcrConnector.JCR_NODE_RELPATH_PROPERTY, "noderelpath-target");
+        event.getMessage().setStringProperty(JcrConnector.JCR_PROPERTY_REL_PATH_PROPERTY,
+            "proprelpath-target");
 
-		try {
-			messageDispatcher.doSend(event);
-		} catch (final DispatchException de) {
-			return;
-		}
+        RequestContext.setEvent(event);
 
-		fail("Should have got a DispatchException!");
-	}
+        try
+        {
+            messageDispatcher.doSend(event);
+        }
+        catch (final DispatchException de)
+        {
+            return;
+        }
 
-	public void testFailedStoreInNodeFromQuery() throws Exception {
-		final MuleEvent event = getTestEvent(new Object());
-		event.getMessage().setStringProperty(
-				JcrConnector.JCR_QUERY_STATEMENT_PROPERTY, "/foo/bar");
-		event.getMessage().setStringProperty(
-				JcrConnector.JCR_QUERY_LANGUAGE_PROPERTY, "xpath");
+        fail("Should have got a DispatchException!");
+    }
 
-		RequestContext.setEvent(event);
+    public void testFailedStoreInNodeFromQuery() throws Exception
+    {
+        final MuleEvent event = getTestEvent(new Object());
+        event.getMessage().setStringProperty(JcrConnector.JCR_QUERY_STATEMENT_PROPERTY, "/foo/bar");
+        event.getMessage().setStringProperty(JcrConnector.JCR_QUERY_LANGUAGE_PROPERTY, "xpath");
 
-		try {
-			messageDispatcher.doSend(event);
-		} catch (final DispatchException de) {
-			return;
-		}
+        RequestContext.setEvent(event);
 
-		fail("Should have got a DispatchException!");
-	}
+        try
+        {
+            messageDispatcher.doSend(event);
+        }
+        catch (final DispatchException de)
+        {
+            return;
+        }
 
-	public void testStoreCollectionInNode() throws Exception {
-		final Node node = RepositoryTestSupport.getTestDataNode().getNode(
-				"noderelpath-target");
+        fail("Should have got a DispatchException!");
+    }
 
-		node.setProperty("multiLongs", new String[] { "0" }, PropertyType.LONG);
-		RepositoryTestSupport.getSession().save();
+    public void testStoreCollectionInNode() throws Exception
+    {
+        final Node node = RepositoryTestSupport.getTestDataNode().getNode("noderelpath-target");
 
-		final List<Long> propertyValues = new ArrayList<Long>();
-		propertyValues.add(new Long(1234));
-		propertyValues.add(new Long(5678));
+        node.setProperty("multiLongs", new String[]{"0"}, PropertyType.LONG);
+        RepositoryTestSupport.getSession().save();
 
-		final MuleEvent event = getTestEvent(propertyValues);
-		event.getMessage().setStringProperty(
-				JcrConnector.JCR_NODE_RELPATH_PROPERTY, "noderelpath-target");
-		event.getMessage().setStringProperty(
-				JcrConnector.JCR_PROPERTY_REL_PATH_PROPERTY, "multiLongs");
-		RequestContext.setEvent(event);
+        final List<Long> propertyValues = new ArrayList<Long>();
+        propertyValues.add(new Long(1234));
+        propertyValues.add(new Long(5678));
 
-		final MuleMessage result = messageDispatcher.doSend(event);
-		assertSame(propertyValues, result.getPayload());
-		assertEquals("/testData/noderelpath-target/multiLongs", result
-				.getProperty("itemPath"));
-		assertEquals(2, node.getProperty("multiLongs").getValues().length);
-	}
+        final MuleEvent event = getTestEvent(propertyValues);
+        event.getMessage().setStringProperty(JcrConnector.JCR_NODE_RELPATH_PROPERTY, "noderelpath-target");
+        event.getMessage().setStringProperty(JcrConnector.JCR_PROPERTY_REL_PATH_PROPERTY, "multiLongs");
+        RequestContext.setEvent(event);
 
-	public void testStoreSingleValueInNode() throws Exception {
-		final Long value = new Long(13579);
-		final MuleEvent event = getTestEvent(value);
-		event.getMessage().setStringProperty(
-				JcrConnector.JCR_NODE_RELPATH_PROPERTY, "noderelpath-target");
-		event.getMessage().setStringProperty(
-				JcrConnector.JCR_PROPERTY_REL_PATH_PROPERTY,
-				"proprelpath-target");
-		RequestContext.setEvent(event);
+        final MuleMessage result = messageDispatcher.doSend(event);
+        assertSame(propertyValues, result.getPayload());
+        assertEquals("/testData/noderelpath-target/multiLongs", result.getProperty("itemPath"));
+        assertEquals(2, node.getProperty("multiLongs").getValues().length);
+    }
 
-		final MuleMessage result = messageDispatcher.doSend(event);
-		assertSame(value, result.getPayload());
-		assertEquals("/testData/noderelpath-target/proprelpath-target", result
-				.getProperty("itemPath"));
-		assertEquals(value.longValue(), RepositoryTestSupport.getTestDataNode()
-				.getNode("noderelpath-target")
-				.getProperty("proprelpath-target").getLong());
-	}
+    public void testStoreSingleValueInNode() throws Exception
+    {
+        final Long value = new Long(13579);
+        final MuleEvent event = getTestEvent(value);
+        event.getMessage().setStringProperty(JcrConnector.JCR_NODE_RELPATH_PROPERTY, "noderelpath-target");
+        event.getMessage().setStringProperty(JcrConnector.JCR_PROPERTY_REL_PATH_PROPERTY,
+            "proprelpath-target");
+        RequestContext.setEvent(event);
 
-	public void testStoreSingleValueInNodeFromUUID() throws Exception {
-		final Long value = new Long(4862);
-		final MuleEvent event = getTestEvent(value);
-		event.getMessage().setStringProperty(
-				JcrConnector.JCR_NODE_UUID_PROPERTY, uuid);
-		event.getMessage().setStringProperty(
-				JcrConnector.JCR_NODE_RELPATH_PROPERTY, "noderelpath-target");
-		event.getMessage().setStringProperty(
-				JcrConnector.JCR_PROPERTY_REL_PATH_PROPERTY,
-				"proprelpath-target");
-		RequestContext.setEvent(event);
+        final MuleMessage result = messageDispatcher.doSend(event);
+        assertSame(value, result.getPayload());
+        assertEquals("/testData/noderelpath-target/proprelpath-target", result.getProperty("itemPath"));
+        assertEquals(value.longValue(), RepositoryTestSupport.getTestDataNode()
+            .getNode("noderelpath-target")
+            .getProperty("proprelpath-target")
+            .getLong());
+    }
 
-		assertSame(value, messageDispatcher.doSend(event).getPayload());
-		final MuleMessage result = messageDispatcher.doSend(event);
-		assertSame(value, result.getPayload());
-		assertEquals("/testData/noderelpath-target/proprelpath-target", result
-				.getProperty("itemPath"));
-		assertEquals(value.longValue(), RepositoryTestSupport.getTestDataNode()
-				.getNode("noderelpath-target")
-				.getProperty("proprelpath-target").getLong());
-	}
+    public void testStoreSingleValueInNodeFromUUID() throws Exception
+    {
+        final Long value = new Long(4862);
+        final MuleEvent event = getTestEvent(value);
+        event.getMessage().setStringProperty(JcrConnector.JCR_NODE_UUID_PROPERTY, uuid);
+        event.getMessage().setStringProperty(JcrConnector.JCR_NODE_RELPATH_PROPERTY, "noderelpath-target");
+        event.getMessage().setStringProperty(JcrConnector.JCR_PROPERTY_REL_PATH_PROPERTY,
+            "proprelpath-target");
+        RequestContext.setEvent(event);
 
-	public void testStoreSingleValueInNodeFromQuery() throws Exception {
-		final Long value = new Long(8246);
-		final MuleEvent event = getTestEvent(value);
-		event.getMessage().setStringProperty(
-				JcrConnector.JCR_QUERY_STATEMENT_PROPERTY,
-				"//noderelpath-target");
-		event.getMessage().setStringProperty(
-				JcrConnector.JCR_QUERY_LANGUAGE_PROPERTY, "xpath");
-		event.getMessage().setStringProperty(
-				JcrConnector.JCR_PROPERTY_REL_PATH_PROPERTY,
-				"proprelpath-target");
-		RequestContext.setEvent(event);
+        assertSame(value, messageDispatcher.doSend(event).getPayload());
+        final MuleMessage result = messageDispatcher.doSend(event);
+        assertSame(value, result.getPayload());
+        assertEquals("/testData/noderelpath-target/proprelpath-target", result.getProperty("itemPath"));
+        assertEquals(value.longValue(), RepositoryTestSupport.getTestDataNode()
+            .getNode("noderelpath-target")
+            .getProperty("proprelpath-target")
+            .getLong());
+    }
 
-		final MuleMessage result = messageDispatcher.doSend(event);
-		assertSame(value, result.getPayload());
-		assertEquals("/testData/noderelpath-target/proprelpath-target", result
-				.getProperty("itemPath"));
-		assertEquals(value.longValue(), RepositoryTestSupport.getTestDataNode()
-				.getNode("noderelpath-target")
-				.getProperty("proprelpath-target").getLong());
-	}
+    public void testStoreSingleValueInNodeFromQuery() throws Exception
+    {
+        final Long value = new Long(8246);
+        final MuleEvent event = getTestEvent(value);
+        event.getMessage().setStringProperty(JcrConnector.JCR_QUERY_STATEMENT_PROPERTY,
+            "//noderelpath-target");
+        event.getMessage().setStringProperty(JcrConnector.JCR_QUERY_LANGUAGE_PROPERTY, "xpath");
+        event.getMessage().setStringProperty(JcrConnector.JCR_PROPERTY_REL_PATH_PROPERTY,
+            "proprelpath-target");
+        RequestContext.setEvent(event);
 
-	public void testStoreInNewNode() throws Exception {
-		final MuleEvent event = getTestEvent("bar");
-		final String newNodeName = "new-node";
-		event.getMessage().setStringProperty(
-				JcrConnector.JCR_NODE_RELPATH_PROPERTY, newNodeName);
-		event.getMessage().setStringProperty(
-				JcrConnector.JCR_NODE_TYPE_NAME_PROPERTY, "nt:resource");
-		event.getMessage().setStringProperty("jcr:mimeType", "text/plain");
-		RequestContext.setEvent(event);
+        final MuleMessage result = messageDispatcher.doSend(event);
+        assertSame(value, result.getPayload());
+        assertEquals("/testData/noderelpath-target/proprelpath-target", result.getProperty("itemPath"));
+        assertEquals(value.longValue(), RepositoryTestSupport.getTestDataNode()
+            .getNode("noderelpath-target")
+            .getProperty("proprelpath-target")
+            .getLong());
+    }
 
-		final MuleMessage result = messageDispatcher.doSend(event);
-		assertNotNull(result.getPayload());
-		assertEquals("/testData/new-node", result.getProperty("itemPath"));
-		assertEquals("nt:resource", RepositoryTestSupport.getTestDataNode()
-				.getNode(newNodeName).getPrimaryNodeType().getName());
-	}
+    public void testStoreInNewNode() throws Exception
+    {
+        final MuleEvent event = getTestEvent("bar");
+        final String newNodeName = "new-node";
+        event.getMessage().setStringProperty(JcrConnector.JCR_NODE_RELPATH_PROPERTY, newNodeName);
+        event.getMessage().setStringProperty(JcrConnector.JCR_NODE_TYPE_NAME_PROPERTY, "nt:resource");
+        event.getMessage().setStringProperty("jcr:mimeType", "text/plain");
+        RequestContext.setEvent(event);
 
-	public void testStoreInNewNodeWithDispatch() throws Exception {
-		final MuleEvent event = getTestEvent("bar");
-		final String newNodeName = "new-node-dispatched";
-		event.getMessage().setStringProperty(
-				JcrConnector.JCR_NODE_RELPATH_PROPERTY, newNodeName);
-		event.getMessage().setStringProperty(
-				JcrConnector.JCR_NODE_TYPE_NAME_PROPERTY, "nt:resource");
-		event.getMessage().setStringProperty("jcr:mimeType", "text/plain");
-		RequestContext.setEvent(event);
+        final MuleMessage result = messageDispatcher.doSend(event);
+        assertNotNull(result.getPayload());
+        assertEquals("/testData/new-node", result.getProperty("itemPath"));
+        assertEquals("nt:resource", RepositoryTestSupport.getTestDataNode()
+            .getNode(newNodeName)
+            .getPrimaryNodeType()
+            .getName());
+    }
 
-		messageDispatcher.doDispatch(event);
+    public void testStoreInNewNodeWithDispatch() throws Exception
+    {
+        final MuleEvent event = getTestEvent("bar");
+        final String newNodeName = "new-node-dispatched";
+        event.getMessage().setStringProperty(JcrConnector.JCR_NODE_RELPATH_PROPERTY, newNodeName);
+        event.getMessage().setStringProperty(JcrConnector.JCR_NODE_TYPE_NAME_PROPERTY, "nt:resource");
+        event.getMessage().setStringProperty("jcr:mimeType", "text/plain");
+        RequestContext.setEvent(event);
 
-		assertEquals("nt:resource", RepositoryTestSupport.getTestDataNode()
-				.getNode(newNodeName).getPrimaryNodeType().getName());
-	}
+        messageDispatcher.doDispatch(event);
 
-	public void testStoreCustomTypeHandler() throws Exception {
-		final List<Class<? extends NodeTypeHandler>> customNodeTypeHandlers = new ArrayList<Class<? extends NodeTypeHandler>>();
-		customNodeTypeHandlers.add(NtQueryNodeTypeHandler.class);
-		connector.setCustomNodeTypeHandlers(customNodeTypeHandlers);
+        assertEquals("nt:resource", RepositoryTestSupport.getTestDataNode()
+            .getNode(newNodeName)
+            .getPrimaryNodeType()
+            .getName());
+    }
 
-		final MuleEvent event = getTestEvent(null);
-		final String newNodeName = "nt-query-node";
-		event.getMessage().setStringProperty(
-				JcrConnector.JCR_NODE_RELPATH_PROPERTY, newNodeName);
-		event.getMessage().setStringProperty(
-				JcrConnector.JCR_NODE_TYPE_NAME_PROPERTY, "nt:query");
-		event.getMessage().setStringProperty("jcr:statement", "/foo/bar");
-		event.getMessage().setStringProperty("jcr:language", Query.XPATH);
-		RequestContext.setEvent(event);
+    public void testStoreCustomTypeHandler() throws Exception
+    {
+        final List<Class<? extends NodeTypeHandler>> customNodeTypeHandlers = new ArrayList<Class<? extends NodeTypeHandler>>();
+        customNodeTypeHandlers.add(NtQueryNodeTypeHandler.class);
+        connector.setCustomNodeTypeHandlers(customNodeTypeHandlers);
 
-		final MuleMessage result = messageDispatcher.doSend(event);
-		assertNotNull(result.getPayload());
-		assertEquals("/testData/nt-query-node", result.getProperty("itemPath"));
+        final MuleEvent event = getTestEvent(null);
+        final String newNodeName = "nt-query-node";
+        event.getMessage().setStringProperty(JcrConnector.JCR_NODE_RELPATH_PROPERTY, newNodeName);
+        event.getMessage().setStringProperty(JcrConnector.JCR_NODE_TYPE_NAME_PROPERTY, "nt:query");
+        event.getMessage().setStringProperty("jcr:statement", "/foo/bar");
+        event.getMessage().setStringProperty("jcr:language", Query.XPATH);
+        RequestContext.setEvent(event);
 
-		final Node node = RepositoryTestSupport.getTestDataNode().getNode(
-				newNodeName);
+        final MuleMessage result = messageDispatcher.doSend(event);
+        assertNotNull(result.getPayload());
+        assertEquals("/testData/nt-query-node", result.getProperty("itemPath"));
 
-		assertEquals("nt:query", node.getPrimaryNodeType().getName());
-		assertEquals(Query.XPATH, node.getProperty("jcr:language").getString());
-		assertEquals("/foo/bar", node.getProperty("jcr:statement").getString());
-	}
+        final Node node = RepositoryTestSupport.getTestDataNode().getNode(newNodeName);
 
-	public void testStoreInForcedNewNode() throws Exception {
-		final MuleEvent event = getTestEvent("bar");
-		event.getMessage().setStringProperty(
-				JcrConnector.JCR_NODE_RELPATH_PROPERTY, "new-forced-node");
-		event.getMessage().setStringProperty(
-				JcrConnector.JCR_ALWAYS_CREATE_CHILD_NODE_PROPERTY, "true");
-		RequestContext.setEvent(event);
+        assertEquals("nt:query", node.getPrimaryNodeType().getName());
+        assertEquals(Query.XPATH, node.getProperty("jcr:language").getString());
+        assertEquals("/foo/bar", node.getProperty("jcr:statement").getString());
+    }
 
-		MuleMessage result = messageDispatcher.doSend(event);
-		assertNotNull(result.getPayload());
-		assertEquals("/testData/new-forced-node", result
-				.getProperty("itemPath"));
+    public void testStoreInForcedNewNode() throws Exception
+    {
+        final MuleEvent event = getTestEvent("bar");
+        event.getMessage().setStringProperty(JcrConnector.JCR_NODE_RELPATH_PROPERTY, "new-forced-node");
+        event.getMessage().setStringProperty(JcrConnector.JCR_ALWAYS_CREATE_CHILD_NODE_PROPERTY, "true");
+        RequestContext.setEvent(event);
 
-		result = messageDispatcher.doSend(event);
-		assertNotNull(result.getPayload());
-		assertEquals("/testData/new-forced-node[2]", result
-				.getProperty("itemPath"));
+        MuleMessage result = messageDispatcher.doSend(event);
+        assertNotNull(result.getPayload());
+        assertEquals("/testData/new-forced-node", result.getProperty("itemPath"));
 
-		assertEquals(2, RepositoryTestSupport.getTestDataNode().getNodes(
-				"new-forced-node").getSize());
-	}
+        result = messageDispatcher.doSend(event);
+        assertNotNull(result.getPayload());
+        assertEquals("/testData/new-forced-node[2]", result.getProperty("itemPath"));
 
-	public void testFailedStoreUnderProperty() throws Exception {
-		newDispatcherForTestEndpoint("jcr://"
-				+ RepositoryTestSupport.ROOT_NODE_NAME + "/pi");
+        assertEquals(2, RepositoryTestSupport.getTestDataNode().getNodes("new-forced-node").getSize());
+    }
 
-		final MuleEvent event = getTestEvent("bar");
-		event.getMessage().setStringProperty(
-				JcrConnector.JCR_ALWAYS_CREATE_CHILD_NODE_PROPERTY, "true");
-		RequestContext.setEvent(event);
+    public void testFailedStoreUnderProperty() throws Exception
+    {
+        newDispatcherForTestEndpoint("jcr://" + RepositoryTestSupport.ROOT_NODE_NAME + "/pi");
 
-		try {
-			messageDispatcher.doSend(event).getPayload();
-		} catch (final IllegalArgumentException iae) {
-			return;
-		}
+        final MuleEvent event = getTestEvent("bar");
+        event.getMessage().setStringProperty(JcrConnector.JCR_ALWAYS_CREATE_CHILD_NODE_PROPERTY, "true");
+        RequestContext.setEvent(event);
 
-		fail("Should have got an IAE");
-	}
+        try
+        {
+            messageDispatcher.doSend(event).getPayload();
+        }
+        catch (final IllegalArgumentException iae)
+        {
+            return;
+        }
 
-	public void testConnectorGetOutputStream() throws Exception {
-		final Map<String, Object> properties = new HashMap<String, Object>();
-		properties.put(JcrConnector.JCR_NODE_RELPATH_PROPERTY, "stored-stream");
-		properties.put(JcrConnector.JCR_NODE_TYPE_NAME_PROPERTY, "nt:resource");
-		properties.put("jcr:mimeType", "text/plain");
+        fail("Should have got an IAE");
+    }
 
-		final MuleMessage message = new DefaultMuleMessage(null, properties,
-				muleContext);
-		RequestContext.setEvent(getTestEvent(message));
+    public void testConnectorGetOutputStream() throws Exception
+    {
+        final Map<String, Object> properties = new HashMap<String, Object>();
+        properties.put(JcrConnector.JCR_NODE_RELPATH_PROPERTY, "stored-stream");
+        properties.put(JcrConnector.JCR_NODE_TYPE_NAME_PROPERTY, "nt:resource");
+        properties.put("jcr:mimeType", "text/plain");
 
-		final OutputStream outputStream = connector.getOutputStream(
-				messageDispatcher.getEndpoint(), message);
+        final MuleMessage message = new DefaultMuleMessage(null, properties, muleContext);
 
-		assertNotNull(outputStream);
+        RequestContext.setEvent(getTestEvent(message, getTestOutboundEndpoint("test",
+            getTestEndpointUri(), null, null, null, connector)));
 
-		final String testContent = "test streamed content";
-		IOUtils.copy(new StringReader(testContent), outputStream);
+        final OutputStream outputStream = connector.getOutputStream(messageDispatcher.getEndpoint(), message);
 
-		outputStream.flush();
-		outputStream.close();
+        assertNotNull(outputStream);
 
-		int attempt = 0;
-		Property property = null;
-		while (property == null && attempt < 20) {
-			attempt++;
+        final String testContent = "test streamed content";
+        IOUtils.copy(new StringReader(testContent), outputStream);
 
-			try {
-				property = RepositoryTestSupport.getTestDataNode().getNode(
-						"stored-stream").getProperty("jcr:data");
-			} catch (PathNotFoundException pnfe) {
-				System.out
-						.println("Pondering on JCR property change: attempt #"
-								+ attempt);
-				Thread.sleep(500L);
-			}
-		}
+        outputStream.flush();
+        outputStream.close();
 
-		assertNotNull(property);
+        int attempt = 0;
+        Property property = null;
+        while (property == null && attempt < 20)
+        {
+            attempt++;
 
-		final StringWriter sw = new StringWriter();
-		IOUtils.copy(property.getStream(), sw);
+            try
+            {
+                property = RepositoryTestSupport.getTestDataNode().getNode("stored-stream").getProperty(
+                    "jcr:data");
+            }
+            catch (PathNotFoundException pnfe)
+            {
+                System.out.println("Pondering on JCR property change: attempt #" + attempt);
+                Thread.sleep(500L);
+            }
+        }
 
-		assertEquals(testContent, sw.toString());
-	}
+        assertNotNull(property);
+
+        final StringWriter sw = new StringWriter();
+        IOUtils.copy(property.getStream(), sw);
+
+        assertEquals(testContent, sw.toString());
+    }
 
 }

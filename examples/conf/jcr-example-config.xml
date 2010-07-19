@@ -148,7 +148,7 @@
     -->
     <service name="jcrHttpContentFetcher">
       <inbound>
-        <http:inbound-endpoint host="localhost" port="8080" path="images" synchronous="true">
+        <http:inbound-endpoint host="localhost" port="8080" path="images" exchange-pattern="request-response">
           <not-filter>
             <custom-filter class="org.mule.transport.http.filters.HttpRequestWildcardFilter">
               <spring:property name="pattern" value="/favicon.ico" />
@@ -169,13 +169,13 @@
     -->
     <service name="jcrStreamingTcpImageFetcher">
       <inbound>
-        <tcp:inbound-endpoint host="localhost" port="9999" synchronous="true" />
+        <tcp:inbound-endpoint host="localhost" port="9999" exchange-pattern="request-response" />
       </inbound>
       <script:component script-ref="tcpImageFetcher" />
     </service>
     <service name="jcrStreamingStoreToNewChildNode">
       <inbound>
-        <tcp:inbound-endpoint host="localhost" port="9998" synchronous="true" />
+        <tcp:inbound-endpoint host="localhost" port="9998" exchange-pattern="request-response" />
       </inbound>
       <outbound>
         <pass-through-router>
@@ -190,7 +190,7 @@
     -->
     <service name="jcrStreamingTcpFetcher">
       <inbound>
-        <tcp:inbound-endpoint host="localhost" port="9997" synchronous="true" />
+        <tcp:inbound-endpoint host="localhost" port="9997" exchange-pattern="request-response" />
       </inbound>
       <script:component script-ref="tcpContentFetcher" />
     </service>
