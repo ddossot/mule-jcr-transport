@@ -32,12 +32,6 @@
     </xsd:annotation>
   </xsd:element>
 
-  <xsd:element name="inbound-endpoint" type="inboundEndpointType" substitutionGroup="mule:abstract-inbound-endpoint" />
-
-  <xsd:element name="outbound-endpoint" type="outboundEndpointType" substitutionGroup="mule:abstract-outbound-endpoint" />
-
-  <xsd:element name="endpoint" type="globalEndpointType" substitutionGroup="mule:abstract-global-endpoint" />
-
   <xsd:complexType name="jcrConnectorType">
     <xsd:complexContent>
       <xsd:extension base="mule:connectorType">
@@ -88,11 +82,10 @@
     </xsd:complexContent>
   </xsd:complexType>
 
+  <xsd:element name="inbound-endpoint" type="inboundEndpointType" substitutionGroup="mule:abstract-inbound-endpoint" />
   <xsd:complexType name="inboundEndpointType">
     <xsd:complexContent>
-      <xsd:extension base="mule:abstractInboundEndpointType">
-        <xsd:group ref="defaultEndpointElements" />
-
+      <xsd:extension base="mule:inboundEndpointType">
         <xsd:attribute name="path" type="xsd:string">
           <xsd:annotation>
             <xsd:documentation>
@@ -102,18 +95,16 @@
           </xsd:annotation>
         </xsd:attribute>
 
-        <xsd:attributeGroup ref="mule:defaultEndpointAttributes" />
         <xsd:attributeGroup ref="endpointAttributes" />
         <xsd:attributeGroup ref="inboundEndpointAttributes" />
       </xsd:extension>
     </xsd:complexContent>
   </xsd:complexType>
 
+  <xsd:element name="outbound-endpoint" type="outboundEndpointType" substitutionGroup="mule:abstract-outbound-endpoint" />
   <xsd:complexType name="outboundEndpointType">
     <xsd:complexContent>
-      <xsd:extension base="mule:abstractOutboundEndpointType">
-        <xsd:group ref="defaultEndpointElements" />
-
+      <xsd:extension base="mule:outboundEndpointType">
         <xsd:attribute name="path" type="xsd:string">
           <xsd:annotation>
             <xsd:documentation>
@@ -123,18 +114,16 @@
           </xsd:annotation>
         </xsd:attribute>
 
-        <xsd:attributeGroup ref="mule:defaultEndpointAttributes" />
         <xsd:attributeGroup ref="endpointAttributes" />
         <xsd:attributeGroup ref="outboundEndpointAttributes" />
       </xsd:extension>
     </xsd:complexContent>
   </xsd:complexType>
 
+  <xsd:element name="endpoint" type="globalEndpointType" substitutionGroup="mule:abstract-global-endpoint" />
   <xsd:complexType name="globalEndpointType">
     <xsd:complexContent>
-      <xsd:extension base="mule:abstractGlobalEndpointType">
-        <xsd:group ref="defaultEndpointElements" />
-
+      <xsd:extension base="mule:globalEndpointType">
         <xsd:attribute name="path" type="xsd:string">
           <xsd:annotation>
             <xsd:documentation>
@@ -144,23 +133,12 @@
           </xsd:annotation>
         </xsd:attribute>
 
-        <xsd:attributeGroup ref="mule:defaultEndpointAttributes" />
         <xsd:attributeGroup ref="endpointAttributes" />
         <xsd:attributeGroup ref="inboundEndpointAttributes" />
         <xsd:attributeGroup ref="outboundEndpointAttributes" />
       </xsd:extension>
     </xsd:complexContent>
   </xsd:complexType>
-
-  <xsd:group name="defaultEndpointElements">
-    <xsd:sequence>
-      <xsd:sequence minOccurs="0" maxOccurs="unbounded">
-        <xsd:group ref="mule:endpointTransformers" />
-        <xsd:element ref="mule:abstract-filter" minOccurs="0" />
-        <xsd:group ref="mule:propertiesGroup" />
-      </xsd:sequence>
-    </xsd:sequence>
-  </xsd:group>
 
   <xsd:attributeGroup name="jcrObserverCommonAttributes">
     <xsd:attribute name="uuids" type="xsd:string">

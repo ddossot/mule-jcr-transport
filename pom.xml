@@ -11,7 +11,7 @@
   <description>Provides connectivity to JCR repositories.</description>
 
   <properties>
-    <muleVersion>3.0.0-M4</muleVersion>
+    <muleVersion>3.0.0-RC2-SNAPSHOT</muleVersion>
     <transportId>JCR</transportId>
   </properties>
 

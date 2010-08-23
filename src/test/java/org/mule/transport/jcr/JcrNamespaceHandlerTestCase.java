@@ -7,6 +7,7 @@
  * license, a copy of which has been included with this distribution in the
  * LICENSE.txt file.
  */
+
 package org.mule.transport.jcr;
 
 import java.util.Arrays;
@@ -16,11 +17,14 @@ import java.util.Map;
 import org.mule.api.endpoint.EndpointBuilder;
 import org.mule.api.endpoint.ImmutableEndpoint;
 import org.mule.api.endpoint.InboundEndpoint;
-import org.mule.api.routing.OutboundRouter;
+import org.mule.api.endpoint.OutboundEndpoint;
 import org.mule.api.routing.filter.Filter;
 import org.mule.api.service.Service;
 import org.mule.api.transformer.Transformer;
 import org.mule.routing.filters.logic.AndFilter;
+import org.mule.routing.outbound.DefaultOutboundRouterCollection;
+import org.mule.routing.outbound.OutboundPassThroughRouter;
+import org.mule.service.ServiceCompositeMessageSource;
 import org.mule.tck.FunctionalTestCase;
 import org.mule.transport.jcr.config.JcrNamespaceHandler;
 import org.mule.transport.jcr.filters.JcrNodeNameFilter;
@@ -32,15 +36,19 @@ import org.mule.transport.jcr.transformers.JcrItemToObject;
 /**
  * @author David Dossot (david@dossot.net)
  */
-public class JcrNamespaceHandlerTestCase extends FunctionalTestCase {
+public class JcrNamespaceHandlerTestCase extends FunctionalTestCase
+{
 
     @Override
-    protected String getConfigResources() {
+    protected String getConfigResources()
+    {
         return "jcr-namespace-config.xml";
     }
 
-    public void testJcrConnectorMinimumConfiguration() throws Exception {
-        final JcrConnector c = (JcrConnector) muleContext.getRegistry().lookupConnector("jcrConnectorMinimumConfiguration");
+    public void testJcrConnectorMinimumConfiguration() throws Exception
+    {
+        final JcrConnector c = (JcrConnector) muleContext.getRegistry().lookupConnector(
+            "jcrConnectorMinimumConfiguration");
 
         checkCoreConnectorProperties(c);
 
@@ -56,8 +64,10 @@ public class JcrNamespaceHandlerTestCase extends FunctionalTestCase {
         assertNull(c.getNodeTypeNames());
     }
 
-    public void testJcrConnectorFullConfiguration() throws Exception {
-        final JcrConnector c = (JcrConnector) muleContext.getRegistry().lookupConnector("jcrConnectorFullConfiguration");
+    public void testJcrConnectorFullConfiguration() throws Exception
+    {
+        final JcrConnector c = (JcrConnector) muleContext.getRegistry().lookupConnector(
+            "jcrConnectorFullConfiguration");
 
         checkCoreConnectorProperties(c);
 
@@ -69,29 +79,33 @@ public class JcrNamespaceHandlerTestCase extends FunctionalTestCase {
         assertFalse(c.isDeep());
         assertTrue(c.isNoLocal());
 
-        assertEquals(Arrays.asList(new String[] { "foo", "bar" }), c.getUuids());
+        assertEquals(Arrays.asList(new String[]{"foo", "bar"}), c.getUuids());
 
-        assertEquals(Arrays.asList(new String[] { "oof", "rab" }), c.getNodeTypeNames());
+        assertEquals(Arrays.asList(new String[]{"oof", "rab"}), c.getNodeTypeNames());
     }
 
-    public void testJcrConnectorWithCustomNodeTypeHandlers() throws Exception {
+    public void testJcrConnectorWithCustomNodeTypeHandlers() throws Exception
+    {
         final JcrConnector c = (JcrConnector) muleContext.getRegistry().lookupConnector(
-                "jcrConnectorWithCustomNodeTypeHandlers");
+            "jcrConnectorWithCustomNodeTypeHandlers");
 
         checkCoreConnectorProperties(c);
 
         assertTrue(c.getNodeTypeHandlerManager().getNodeTypeHandler("nt:query") instanceof NtQueryNodeTypeHandler);
     }
 
-    private void checkCoreConnectorProperties(final JcrConnector c) {
+    private void checkCoreConnectorProperties(final JcrConnector c)
+    {
         assertNotNull(c);
         assertTrue(c.isConnected());
         assertTrue(c.isStarted());
     }
 
-    public void testGlobalJcrEndpointMinimumConfiguration() throws Exception {
-        final EndpointBuilder endpointBuilder = muleContext.getRegistry().lookupEndpointFactory().getEndpointBuilder(
-                "jcrEndpointMinimumConfiguration");
+    public void testGlobalJcrEndpointMinimumConfiguration() throws Exception
+    {
+        final EndpointBuilder endpointBuilder = muleContext.getRegistry()
+            .lookupEndpointFactory()
+            .getEndpointBuilder("jcrEndpointMinimumConfiguration");
 
         assertNotNull(endpointBuilder);
 
@@ -100,7 +114,9 @@ public class JcrNamespaceHandlerTestCase extends FunctionalTestCase {
         verifyJcrEndpointMinimumConfiguration("/ref", inboundEndpoint);
     }
 
-    private void verifyJcrEndpointMinimumConfiguration(final String address, final ImmutableEndpoint inboundEndpoint) {
+    private void verifyJcrEndpointMinimumConfiguration(final String address,
+                                                       final ImmutableEndpoint inboundEndpoint)
+    {
 
         assertNotNull(inboundEndpoint);
         assertEquals(address, inboundEndpoint.getEndpointURI().getAddress());
@@ -111,12 +127,15 @@ public class JcrNamespaceHandlerTestCase extends FunctionalTestCase {
         assertNull(props.get(JcrConnector.JCR_QUERY_LANGUAGE_PROPERTY));
         assertNull(props.get(JcrConnector.JCR_QUERY_STATEMENT_PROPERTY));
 
-        if (inboundEndpoint instanceof InboundEndpoint) {
+        if (inboundEndpoint instanceof InboundEndpoint)
+        {
             assertNull(props.get(JcrConnector.JCR_NO_LOCAL_PROPERTY));
             assertNull(props.get(JcrConnector.JCR_DEEP_PROPERTY));
             assertNull(props.get(JcrConnector.JCR_CONTENT_PAYLOAD_TYPE_PROPERTY));
             assertNull(props.get(JcrConnector.JCR_EVENT_TYPES_PROPERTY));
-        } else {
+        }
+        else
+        {
             assertEquals("false", props.get(JcrConnector.JCR_ALWAYS_CREATE_CHILD_NODE_PROPERTY));
         }
 
@@ -129,9 +148,11 @@ public class JcrNamespaceHandlerTestCase extends FunctionalTestCase {
         assertNull(JcrNamespaceHandler.split(props.get(JcrConnector.JCR_UUID_LIST_PROPERTY)));
     }
 
-    public void testGlobalJcrEndpointFullConfiguration() throws Exception {
-        final EndpointBuilder endpointBuilder = muleContext.getRegistry().lookupEndpointFactory().getEndpointBuilder(
-                "jcrEndpointFullConfiguration");
+    public void testGlobalJcrEndpointFullConfiguration() throws Exception
+    {
+        final EndpointBuilder endpointBuilder = muleContext.getRegistry()
+            .lookupEndpointFactory()
+            .getEndpointBuilder("jcrEndpointFullConfiguration");
 
         assertNotNull(endpointBuilder);
 
@@ -140,7 +161,8 @@ public class JcrNamespaceHandlerTestCase extends FunctionalTestCase {
         verifyJcrEndpointFullConfiguration(inboundEndpoint);
     }
 
-    private void verifyJcrEndpointFullConfiguration(final ImmutableEndpoint inboundEndpoint) {
+    private void verifyJcrEndpointFullConfiguration(final ImmutableEndpoint inboundEndpoint)
+    {
 
         assertNotNull(inboundEndpoint);
         assertEquals("/full", inboundEndpoint.getEndpointURI().getAddress());
@@ -152,7 +174,8 @@ public class JcrNamespaceHandlerTestCase extends FunctionalTestCase {
 
         assertEquals("/query", props.get(JcrConnector.JCR_QUERY_STATEMENT_PROPERTY));
 
-        if (inboundEndpoint instanceof InboundEndpoint) {
+        if (inboundEndpoint instanceof InboundEndpoint)
+        {
             assertEquals("true", props.get(JcrConnector.JCR_NO_LOCAL_PROPERTY));
             assertEquals("false", props.get(JcrConnector.JCR_DEEP_PROPERTY));
 
@@ -160,13 +183,15 @@ public class JcrNamespaceHandlerTestCase extends FunctionalTestCase {
 
             assertEquals("4", props.get(JcrConnector.JCR_EVENT_TYPES_PROPERTY));
 
-            assertEquals(Arrays.asList(new String[] { "nt:resource", "nt:unstructured" }), JcrNamespaceHandler.split(props
-                    .get(JcrConnector.JCR_NODE_TYPE_NAME_LIST_PROPERTY)));
+            assertEquals(Arrays.asList(new String[]{"nt:resource", "nt:unstructured"}),
+                JcrNamespaceHandler.split(props.get(JcrConnector.JCR_NODE_TYPE_NAME_LIST_PROPERTY)));
 
-            assertEquals(Arrays.asList(new String[] { "f81d4fae-7dec-11d0-a765-00a0c91e6bf6",
-                    "e99d4fae-7dec-11d0-a765-00a0c91e6bf6" }), JcrNamespaceHandler.split(props
-                    .get(JcrConnector.JCR_UUID_LIST_PROPERTY)));
-        } else {
+            assertEquals(Arrays.asList(new String[]{"f81d4fae-7dec-11d0-a765-00a0c91e6bf6",
+                "e99d4fae-7dec-11d0-a765-00a0c91e6bf6"}),
+                JcrNamespaceHandler.split(props.get(JcrConnector.JCR_UUID_LIST_PROPERTY)));
+        }
+        else
+        {
             assertEquals("true", props.get(JcrConnector.JCR_ALWAYS_CREATE_CHILD_NODE_PROPERTY));
 
             assertEquals("name", props.get(JcrConnector.JCR_NODE_TYPE_NAME_PROPERTY));
@@ -180,9 +205,11 @@ public class JcrNamespaceHandlerTestCase extends FunctionalTestCase {
 
     }
 
-    public void testGlobalJcrEndpointAddressConfiguration() throws Exception {
-        final EndpointBuilder endpointBuilder = muleContext.getRegistry().lookupEndpointFactory().getEndpointBuilder(
-                "jcrEndpointAddressConfiguration");
+    public void testGlobalJcrEndpointAddressConfiguration() throws Exception
+    {
+        final EndpointBuilder endpointBuilder = muleContext.getRegistry()
+            .lookupEndpointFactory()
+            .getEndpointBuilder("jcrEndpointAddressConfiguration");
 
         assertNotNull(endpointBuilder);
 
@@ -197,9 +224,11 @@ public class JcrNamespaceHandlerTestCase extends FunctionalTestCase {
         assertEquals("31", props.get(JcrConnector.JCR_EVENT_TYPES_PROPERTY));
     }
 
-    public void testGlobalJcrEndpointFilterConfiguration() throws Exception {
-        final EndpointBuilder endpointBuilder = muleContext.getRegistry().lookupEndpointFactory().getEndpointBuilder(
-                "jcrFilteredConfiguration");
+    public void testGlobalJcrEndpointFilterConfiguration() throws Exception
+    {
+        final EndpointBuilder endpointBuilder = muleContext.getRegistry()
+            .lookupEndpointFactory()
+            .getEndpointBuilder("jcrFilteredConfiguration");
 
         assertNotNull(endpointBuilder);
 
@@ -224,7 +253,8 @@ public class JcrNamespaceHandlerTestCase extends FunctionalTestCase {
         assertEquals("jcr:data", rightFilter.getPattern());
     }
 
-    public void testGlobalTransformers() throws Exception {
+    public void testGlobalTransformers() throws Exception
+    {
         final Transformer e2oT = muleContext.getRegistry().lookupTransformer("EventToObject");
 
         assertNotNull(e2oT);
@@ -236,38 +266,50 @@ public class JcrNamespaceHandlerTestCase extends FunctionalTestCase {
         assertTrue(i2oT instanceof JcrItemToObject);
     }
 
-    public void testServiceEnpointsReferenceConfiguration() throws Exception {
+    public void testServiceEnpointsReferenceConfiguration() throws Exception
+    {
         verifyServiceEnpointsMinimumConfiguration("jcrBridgeReferenceConfiguration", "/ref");
     }
 
-    public void testServiceEnpointsMinimumConfiguration() throws Exception {
+    public void testServiceEnpointsMinimumConfiguration() throws Exception
+    {
         verifyServiceEnpointsMinimumConfiguration("jcrBridgeMinimumConfiguration", "/min");
     }
 
-    public void testServiceEnpointsFullConfiguration() throws Exception {
+    public void testServiceEnpointsFullConfiguration() throws Exception
+    {
         verifyServiceEnpointsFullConfiguration("jcrBridgeFullConfiguration");
     }
 
-    private void verifyServiceEnpointsFullConfiguration(final String serviceName) {
+    private void verifyServiceEnpointsFullConfiguration(final String serviceName)
+    {
         final Service service = (Service) muleContext.getRegistry().lookupObject(serviceName);
 
         assertNotNull(service);
 
-        verifyJcrEndpointFullConfiguration((ImmutableEndpoint) service.getInboundRouter().getEndpoints().get(0));
+        verifyJcrEndpointFullConfiguration(((ServiceCompositeMessageSource) service.getMessageSource()).getEndpoints()
+            .get(0));
 
-        verifyJcrEndpointFullConfiguration((ImmutableEndpoint) ((OutboundRouter) service.getOutboundRouter().getRouters()
-                .get(0)).getEndpoints().get(0));
+        final OutboundPassThroughRouter optr = (OutboundPassThroughRouter) ((DefaultOutboundRouterCollection) service.getOutboundMessageProcessor()).getRoutes()
+            .get(0);
+
+        verifyJcrEndpointFullConfiguration((OutboundEndpoint) optr.getRoutes().get(0));
     }
 
-    public void verifyServiceEnpointsMinimumConfiguration(final String serviceName, final String address) throws Exception {
+    public void verifyServiceEnpointsMinimumConfiguration(final String serviceName, final String address)
+        throws Exception
+    {
 
         final Service service = (Service) muleContext.getRegistry().lookupObject(serviceName);
 
         assertNotNull(service);
 
-        verifyJcrEndpointMinimumConfiguration(address, (ImmutableEndpoint) service.getInboundRouter().getEndpoints().get(0));
+        verifyJcrEndpointMinimumConfiguration(address,
+            ((ServiceCompositeMessageSource) service.getMessageSource()).getEndpoints().get(0));
 
-        verifyJcrEndpointMinimumConfiguration(address, (ImmutableEndpoint) ((OutboundRouter) service.getOutboundRouter()
-                .getRouters().get(0)).getEndpoints().get(0));
+        final OutboundPassThroughRouter optr = (OutboundPassThroughRouter) ((DefaultOutboundRouterCollection) service.getOutboundMessageProcessor()).getRoutes()
+            .get(0);
+
+        verifyJcrEndpointMinimumConfiguration(address, (OutboundEndpoint) optr.getRoutes().get(0));
     }
 }

@@ -7,6 +7,7 @@
  * license, a copy of which has been included with this distribution in the
  * LICENSE.txt file.
  */
+
 package org.mule.transport.jcr.support;
 
 import javax.jcr.Item;
@@ -24,64 +25,68 @@ import org.mule.transport.jcr.JcrContentPayloadType;
 /**
  * @author David Dossot (david@dossot.net)
  */
-public abstract class JcrEventUtils {
+public abstract class JcrEventUtils
+{
 
     private static final Log LOG = LogFactory.getLog(JcrEventUtils.class);
 
     // This should really be in JCR API!
-    public static String getEventTypeNameFromValue(final int eventType) {
-        switch (eventType) {
+    public static String getEventTypeNameFromValue(final int eventType)
+    {
+        switch (eventType)
+        {
 
-        case Event.NODE_ADDED:
-            return "NODE_ADDED";
+            case Event.NODE_ADDED :
+                return "NODE_ADDED";
 
-        case Event.NODE_REMOVED:
-            return "NODE_REMOVED";
+            case Event.NODE_REMOVED :
+                return "NODE_REMOVED";
 
-        case Event.PROPERTY_ADDED:
-            return "PROPERTY_ADDED";
+            case Event.PROPERTY_ADDED :
+                return "PROPERTY_ADDED";
 
-        case Event.PROPERTY_CHANGED:
-            return "PROPERTY_CHANGED";
+            case Event.PROPERTY_CHANGED :
+                return "PROPERTY_CHANGED";
 
-        case Event.PROPERTY_REMOVED:
-            return "PROPERTY_REMOVED";
+            case Event.PROPERTY_REMOVED :
+                return "PROPERTY_REMOVED";
 
-        default:
-            return "UNKNOWN";
+            default :
+                return "UNKNOWN";
         }
     }
 
-    public static String getParsableEventProperty(final MuleEvent event,
-            final String propertyName) {
-
-        final String expression = (String) event.getProperty(propertyName);
+    public static String getParsableEventProperty(final MuleEvent event, final String propertyName)
+    {
+        final String expression = (String) event.getMessage().findPropertyInAnyScope(propertyName, null);
 
         return parseExpressionForEvent(expression, event);
     }
 
-    static String parseExpressionForEvent(final String expression,
-            final MuleEvent event) {
-
-        if (event == null) {
+    static String parseExpressionForEvent(final String expression, final MuleEvent event)
+    {
+        if (event == null)
+        {
             return expression;
         }
 
-        if (expression == null) {
+        if (expression == null)
+        {
             return null;
         }
 
-        return event.getMuleContext().getExpressionManager().parse(expression,
-                event.getMessage(), false);
+        return event.getMuleContext().getExpressionManager().parse(expression, event.getMessage(), false);
     }
 
     static EventContent getEventContent(final Event event,
-            final Session session,
-            final JcrContentPayloadType contentPayloadType) {
+                                        final Session session,
+                                        final JcrContentPayloadType contentPayloadType)
+    {
 
         final EventContent result = new EventContent();
 
-        if (!JcrContentPayloadType.NONE.equals(contentPayloadType)) {
+        if (!JcrContentPayloadType.NONE.equals(contentPayloadType))
+        {
 
             final int eventType = event.getType();
 
@@ -93,35 +98,43 @@ public abstract class JcrEventUtils {
             // critical in any way).
             String eventPath = "N/A";
 
-            try {
-                if ((eventType == Event.PROPERTY_ADDED)
-                        || (eventType == Event.PROPERTY_CHANGED)) {
+            try
+            {
+                if ((eventType == Event.PROPERTY_ADDED) || (eventType == Event.PROPERTY_CHANGED))
+                {
 
                     eventPath = event.getPath();
                     final Item item = session.getItem(eventPath);
 
-                    if (!item.isNode()) {
+                    if (!item.isNode())
+                    {
                         // is not a node == is a property
-                        result.setData(JcrPropertyUtils.outputProperty(
-                                eventPath, (Property) item, contentPayloadType));
+                        result.setData(JcrPropertyUtils.outputProperty(eventPath, (Property) item,
+                            contentPayloadType));
                     }
 
-                } else if (eventType == Event.NODE_ADDED) {
+                }
+                else if (eventType == Event.NODE_ADDED)
+                {
                     eventPath = event.getPath();
                     final Item item = session.getItem(eventPath);
 
-                    if (item.isNode()) {
+                    if (item.isNode())
+                    {
                         final Node node = ((Node) item);
-                        if (node.isNodeType("mix:referenceable")) {
+                        if (node.isNodeType("mix:referenceable"))
+                        {
                             result.setUuid(node.getUUID());
                         }
                     }
                 }
-            } catch (final RepositoryException ignoredException) {
-                if (LOG.isInfoEnabled()) {
-                    LOG.info("Can not fetch content for event path: "
-                            + eventPath + "(" + ignoredException.getMessage()
-                            + ")");
+            }
+            catch (final RepositoryException ignoredException)
+            {
+                if (LOG.isInfoEnabled())
+                {
+                    LOG.info("Can not fetch content for event path: " + eventPath + "("
+                             + ignoredException.getMessage() + ")");
                 }
             }
 
@@ -130,7 +143,8 @@ public abstract class JcrEventUtils {
         return result;
     }
 
-    private JcrEventUtils() {
+    private JcrEventUtils()
+    {
         throw new UnsupportedOperationException("Do not instantiate");
     }
 

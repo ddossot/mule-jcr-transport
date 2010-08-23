@@ -13,7 +13,6 @@ package org.mule.transport.jcr;
 import javax.jcr.Item;
 import javax.jcr.Session;
 
-import org.mule.DefaultMuleMessage;
 import org.mule.RequestContext;
 import org.mule.api.MuleEvent;
 import org.mule.api.MuleMessage;
@@ -26,11 +25,13 @@ import org.mule.transport.jcr.support.JcrNodeUtils;
 import org.mule.transport.jcr.support.JcrPropertyUtils;
 
 /**
- * <code>JcrMessageRequester</code> is responsible for receiving messages from JCR repositories.
+ * <code>JcrMessageRequester</code> is responsible for receiving messages from JCR
+ * repositories.
  * 
  * @author David Dossot (david@dossot.net)
  */
-public class JcrMessageRequester extends AbstractMessageRequester {
+public class JcrMessageRequester extends AbstractMessageRequester
+{
 
     private final JcrConnector jcrConnector;
 
@@ -40,12 +41,14 @@ public class JcrMessageRequester extends AbstractMessageRequester {
 
     private Session requesterSession;
 
-    public Session getSession() {
+    public Session getSession()
+    {
         requesterSession = jcrConnector.validateSession(requesterSession);
         return requesterSession;
     }
 
-    public JcrMessageRequester(final InboundEndpoint endpoint) {
+    public JcrMessageRequester(final InboundEndpoint endpoint)
+    {
         super(endpoint);
 
         jcrConnector = (JcrConnector) endpoint.getConnector();
@@ -54,79 +57,91 @@ public class JcrMessageRequester extends AbstractMessageRequester {
 
         nodeNamePatternFilter = JcrPropertyUtils.getPropertyNamePatternFilter(filter, JcrNodeNameFilter.class);
 
-        propertyNamePatternFilter = JcrPropertyUtils.getPropertyNamePatternFilter(filter, JcrPropertyNameFilter.class);
+        propertyNamePatternFilter = JcrPropertyUtils.getPropertyNamePatternFilter(filter,
+            JcrPropertyNameFilter.class);
     }
 
     @Override
-    protected void doConnect() throws Exception {
+    protected void doConnect() throws Exception
+    {
         requesterSession = jcrConnector.newSession();
     }
 
     @Override
-    protected void doDisconnect() throws Exception {
+    protected void doDisconnect() throws Exception
+    {
         jcrConnector.terminateSession(requesterSession);
     }
 
     @Override
-    protected void doDispose() {
+    protected void doDispose()
+    {
         requesterSession = null;
     }
 
     /**
      * <p>
-     * Receives JCR content from the configured endpoint, using optional event properties to define the target repository item.
-     * Unless an exception is thrown, a <code>MuleMessage</code> will always be retrieved, possibly with a null payload if no
-     * content was acessible.
+     * Receives JCR content from the configured endpoint, using optional event
+     * properties to define the target repository item. Unless an exception is
+     * thrown, a <code>MuleMessage</code> will always be retrieved, possibly with a
+     * null payload if no content was acessible.
      * </p>
-     * 
      * <p>
-     * The content is extracted from the property or properties that were targeted by the endpoint path, filters and event
-     * optional parameters.
+     * The content is extracted from the property or properties that were targeted by
+     * the endpoint path, filters and event optional parameters.
      * </p>
-     * 
      * <p>
-     * The first step of the content fetching consists in selecting a target item from the repository. By default, this item is
-     * a node selected by using the path of the endpoint. Alternatively, an event property (
-     * <code>JcrConnector.JCR_NODE_UUID_PROPERTY</code>) can be used to specify the UUID to use to select the target node: if
-     * this is done, the endpoint URI will be ignored. A third option is to define a query (with queryStatement and
-     * queryLanguage) that will be used to select the node. Then, if any optional relative paths have been specified as event
-     * properties for the current <code>MuleEvent</code> ( <code>JcrConnector.JCR_NODE_RELPATH_PROPERTY</code> and/or
-     * <code>JcrConnector.JCR_PROPERTY_REL_PATH_PROPERTY</code>), they will be used to navigate to the actual item to use.
+     * The first step of the content fetching consists in selecting a target item
+     * from the repository. By default, this item is a node selected by using the
+     * path of the endpoint. Alternatively, an event property (
+     * <code>JcrConnector.JCR_NODE_UUID_PROPERTY</code>) can be used to specify the
+     * UUID to use to select the target node: if this is done, the endpoint URI will
+     * be ignored. A third option is to define a query (with queryStatement and
+     * queryLanguage) that will be used to select the node. Then, if any optional
+     * relative paths have been specified as event properties for the current
+     * <code>MuleEvent</code> ( <code>JcrConnector.JCR_NODE_RELPATH_PROPERTY</code>
+     * and/or <code>JcrConnector.JCR_PROPERTY_REL_PATH_PROPERTY</code>), they will be
+     * used to navigate to the actual item to use.
      * </p>
-     * 
      * <p>
-     * The second step consists in applying any <code>JcrNodeNameFilter</code> or <code>JcrPropertyNameFilter</code> that could
-     * have been defined on the endpoint to further narrow the target item from which content will be extracted. If more than
-     * one node is selected, the first one will be arbitrarily used as the target item and a warning will be issued. If no item
-     * can be selected, a null payload will be used for the returned <code>MuleMessage</code>.
+     * The second step consists in applying any <code>JcrNodeNameFilter</code> or
+     * <code>JcrPropertyNameFilter</code> that could have been defined on the
+     * endpoint to further narrow the target item from which content will be
+     * extracted. If more than one node is selected, the first one will be
+     * arbitrarily used as the target item and a warning will be issued. If no item
+     * can be selected, a null payload will be used for the returned
+     * <code>MuleMessage</code>.
      * </p>
-     * 
      * <p>
-     * The final step is the content extraction that will be used as the <code>MuleMessage</code> payload. For this, the
-     * following rules apply, depending on the target item:
+     * The final step is the content extraction that will be used as the
+     * <code>MuleMessage</code> payload. For this, the following rules apply,
+     * depending on the target item:
      * <ul>
      * <li>For a single-valued property, the payload will be the property value.</li>
-     * <li>For a multi-valued property, the payload will be a <code>List</code> of values.</li>
-     * <li>For a node, the payload will be a <code>Map</code> of property names and property values (for these values, the
-     * previous two rules will apply).</li>
+     * <li>For a multi-valued property, the payload will be a <code>List</code> of
+     * values.</li>
+     * <li>For a node, the payload will be a <code>Map</code> of property names and
+     * property values (for these values, the previous two rules will apply).</li>
      * </ul>
      * </p>
      * 
      * @see org.mule.transport.jcr.JcrConnector Property names constants
-     * 
-     * @param ignoredTimeout
-     *            ignored timeout parameter.
-     * 
+     * @param ignoredTimeout ignored timeout parameter.
      * @return the message fetched from this dispatcher.
      */
     @Override
-    protected MuleMessage doRequest(final long ignoredTimeout) throws Exception {
+    protected MuleMessage doRequest(final long ignoredTimeout) throws Exception
+    {
         final MuleEvent event = RequestContext.getEvent();
 
-        if (logger.isDebugEnabled()) {
-            if (event != null) {
+        if (logger.isDebugEnabled())
+        {
+            if (event != null)
+            {
                 logger.debug("Receiving from JCR with event: " + event + ", message: " + event.getMessage());
-            } else {
+            }
+            else
+            {
                 logger.debug("Receiving from JCR with no event.");
             }
         }
@@ -135,19 +150,27 @@ public class JcrMessageRequester extends AbstractMessageRequester {
 
         Object rawJcrContent = null;
 
-        if (targetItem != null) {
-            if (targetItem.isNode()) {
-                rawJcrContent = JcrNodeUtils
-                        .getRawContentFromNode(targetItem, nodeNamePatternFilter, propertyNamePatternFilter);
-            } else {
+        if (targetItem != null)
+        {
+            if (targetItem.isNode())
+            {
+                rawJcrContent = JcrNodeUtils.getRawContentFromNode(targetItem, nodeNamePatternFilter,
+                    propertyNamePatternFilter);
+            }
+            else
+            {
                 rawJcrContent = JcrNodeUtils.getRawContentFromProperty(targetItem);
             }
         }
 
-        final Object transformedContent = rawJcrContent == null ? null : (jcrConnector.getDefaultResponseTransformers().get(0))
-                .transform(rawJcrContent);
+        return jcrConnector.getMuleMessageFactory().create(rawJcrContent, getCurrentEncoding(event));
+    }
 
-        return new DefaultMuleMessage(transformedContent, jcrConnector.getMuleContext());
+    private String getCurrentEncoding(final MuleEvent event)
+    {
+        return event == null
+                            ? jcrConnector.getMuleContext().getConfiguration().getDefaultEncoding()
+                            : event.getEncoding();
     }
 
 }

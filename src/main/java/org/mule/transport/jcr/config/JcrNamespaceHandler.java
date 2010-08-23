@@ -7,6 +7,7 @@
  * license, a copy of which has been included with this distribution in the
  * LICENSE.txt file.
  */
+
 package org.mule.transport.jcr.config;
 
 import java.util.Arrays;
@@ -14,7 +15,7 @@ import java.util.List;
 
 import org.mule.config.spring.handlers.AbstractMuleNamespaceHandler;
 import org.mule.config.spring.parsers.specific.FilterDefinitionParser;
-import org.mule.config.spring.parsers.specific.TransformerDefinitionParser;
+import org.mule.config.spring.parsers.specific.MessageProcessorDefinitionParser;
 import org.mule.transport.jcr.JcrConnector;
 import org.mule.transport.jcr.filters.JcrNodeNameFilter;
 import org.mule.transport.jcr.filters.JcrPropertyNameFilter;
@@ -23,24 +24,32 @@ import org.mule.transport.jcr.transformers.JcrItemToObject;
 import org.mule.util.StringUtils;
 
 /**
- * Registers a Bean Definition Parser for handling <code><jcr:connector></code> elements.
+ * Registers a Bean Definition Parser for handling <code><jcr:connector></code>
+ * elements.
  */
-public class JcrNamespaceHandler extends AbstractMuleNamespaceHandler {
-    private static final String[] JCR_ATTRIBUTES = new String[] { "path" };
+public class JcrNamespaceHandler extends AbstractMuleNamespaceHandler
+{
+    private static final String[] JCR_ATTRIBUTES = new String[]{"path"};
 
-    public void init() {
+    public void init()
+    {
         registerStandardTransportEndpoints(JcrConnector.PROTOCOL, JCR_ATTRIBUTES);
         registerConnectorDefinitionParser(JcrConnector.class);
         registerBeanDefinitionParser("node-name-filter", new FilterDefinitionParser(JcrNodeNameFilter.class));
-        registerBeanDefinitionParser("property-name-filter", new FilterDefinitionParser(JcrPropertyNameFilter.class));
-        registerBeanDefinitionParser("event-to-object-transformer", new TransformerDefinitionParser(JcrEventToObject.class));
-        registerBeanDefinitionParser("item-to-object-transformer", new TransformerDefinitionParser(JcrItemToObject.class));
+        registerBeanDefinitionParser("property-name-filter", new FilterDefinitionParser(
+            JcrPropertyNameFilter.class));
+        registerBeanDefinitionParser("event-to-object-transformer", new MessageProcessorDefinitionParser(
+            JcrEventToObject.class));
+        registerBeanDefinitionParser("item-to-object-transformer", new MessageProcessorDefinitionParser(
+            JcrItemToObject.class));
     }
 
     /**
-     * Supports configuration that uses attributes containing lists of whitespace separated values.
+     * Supports configuration that uses attributes containing lists of whitespace
+     * separated values.
      */
-    public static List<String> split(final String values) {
+    public static List<String> split(final String values)
+    {
         return StringUtils.isNotBlank(values) ? Arrays.asList(StringUtils.split(values)) : null;
     }
 }
