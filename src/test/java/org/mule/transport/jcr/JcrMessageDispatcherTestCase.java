@@ -192,7 +192,8 @@ public class JcrMessageDispatcherTestCase extends AbstractJcrMessagerTestCase
 
         final MuleMessage result = messageDispatcher.doSend(event);
         assertSame(value, result.getPayload());
-        assertEquals("/testData/noderelpath-target/proprelpath-target", result.getProperty("itemPath"));
+        assertEquals("/testData/noderelpath-target/proprelpath-target", result.getProperty("itemPath",
+            PropertyScope.INVOCATION));
         assertEquals(value.longValue(), RepositoryTestSupport.getTestDataNode()
             .getNode("noderelpath-target")
             .getProperty("proprelpath-target")
@@ -213,7 +214,8 @@ public class JcrMessageDispatcherTestCase extends AbstractJcrMessagerTestCase
         assertSame(value, messageDispatcher.doSend(event).getPayload());
         final MuleMessage result = messageDispatcher.doSend(event);
         assertSame(value, result.getPayload());
-        assertEquals("/testData/noderelpath-target/proprelpath-target", result.getProperty("itemPath"));
+        assertEquals("/testData/noderelpath-target/proprelpath-target", result.getProperty("itemPath",
+            PropertyScope.INVOCATION));
         assertEquals(value.longValue(), RepositoryTestSupport.getTestDataNode()
             .getNode("noderelpath-target")
             .getProperty("proprelpath-target")

@@ -121,8 +121,8 @@ public class JcrMessageDispatcher extends AbstractMessageDispatcher
     {
         final MuleMessage message = event.getMessage();
 
-        final boolean alwaysCreate = message.findPropertyInAnyScope(
-            JcrConnector.JCR_ALWAYS_CREATE_CHILD_NODE_PROPERTY, false);
+        final boolean alwaysCreate = Boolean.valueOf(message.findPropertyInAnyScope(
+            JcrConnector.JCR_ALWAYS_CREATE_CHILD_NODE_PROPERTY, "false"));
 
         final String nodeUUID = JcrNodeUtils.getNodeUUID(event);
         final String nodeRelPath = JcrNodeUtils.getNodeRelPath(event);

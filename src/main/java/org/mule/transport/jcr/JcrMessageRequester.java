@@ -18,11 +18,13 @@ import org.mule.api.MuleEvent;
 import org.mule.api.MuleMessage;
 import org.mule.api.endpoint.InboundEndpoint;
 import org.mule.api.routing.filter.Filter;
+import org.mule.api.transformer.Transformer;
 import org.mule.transport.AbstractMessageRequester;
 import org.mule.transport.jcr.filters.JcrNodeNameFilter;
 import org.mule.transport.jcr.filters.JcrPropertyNameFilter;
 import org.mule.transport.jcr.support.JcrNodeUtils;
 import org.mule.transport.jcr.support.JcrPropertyUtils;
+import org.mule.transport.jcr.transformers.JcrItemToObject;
 
 /**
  * <code>JcrMessageRequester</code> is responsible for receiving messages from JCR
@@ -32,14 +34,11 @@ import org.mule.transport.jcr.support.JcrPropertyUtils;
  */
 public class JcrMessageRequester extends AbstractMessageRequester
 {
-
     private final JcrConnector jcrConnector;
-
     private final String nodeNamePatternFilter;
-
     private final String propertyNamePatternFilter;
-
     private Session requesterSession;
+    private final Transformer receiveTransformer;
 
     public Session getSession()
     {
@@ -59,6 +58,9 @@ public class JcrMessageRequester extends AbstractMessageRequester
 
         propertyNamePatternFilter = JcrPropertyUtils.getPropertyNamePatternFilter(filter,
             JcrPropertyNameFilter.class);
+
+        receiveTransformer = new JcrItemToObject();
+        receiveTransformer.setMuleContext(jcrConnector.getMuleContext());
     }
 
     @Override
@@ -163,7 +165,8 @@ public class JcrMessageRequester extends AbstractMessageRequester
             }
         }
 
-        return jcrConnector.getMuleMessageFactory().create(rawJcrContent, getCurrentEncoding(event));
+        final Object payload = rawJcrContent == null ? null : receiveTransformer.transform(rawJcrContent);
+        return jcrConnector.getMuleMessageFactory().create(payload, getCurrentEncoding(event));
     }
 
     private String getCurrentEncoding(final MuleEvent event)

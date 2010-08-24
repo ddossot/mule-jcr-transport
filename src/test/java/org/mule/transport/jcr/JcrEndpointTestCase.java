@@ -125,6 +125,7 @@ public class JcrEndpointTestCase extends AbstractMuleTestCase
         return muleContext.getRegistry().lookupEndpointFactory().getOutboundEndpoint(builder);
     }
 
+    @SuppressWarnings("unchecked")
     private static EndpointBuilder newEndpointBuilder(final MuleContext muleContext,
                                                       final String address,
                                                       final Filter filter)
