@@ -8,6 +8,7 @@
   xmlns:stdio="http://www.mulesoft.org/schema/mule/stdio"
   xmlns:http="http://www.mulesoft.org/schema/mule/http"
   xmlns:script="http://www.mulesoft.org/schema/mule/scripting"
+  xmlns:test="http://www.mulesoft.org/schema/mule/test"
   xmlns:spring="http://www.springframework.org/schema/beans"
   xsi:schemaLocation="
        http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/3.0/mule.xsd
@@ -18,6 +19,7 @@
        http://www.mulesoft.org/schema/mule/stdio http://www.mulesoft.org/schema/mule/stdio/3.0/mule-stdio.xsd
        http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/3.0/mule-http.xsd
        http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/3.0/mule-scripting.xsd
+       http://www.mulesoft.org/schema/mule/test http://www.mulesoft.org/schema/mule/test/3.0/mule-test.xsd
        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
 
   <spring:beans>
@@ -31,8 +33,6 @@
   </tcp:connector>
 
   <stdio:connector name="systemStreamConnector" promptMessage="Type content to store in JCR: " messageDelayTime="1000" />
-
-  <xm:object-to-xml-transformer name="ObjectToXml" />
 
   <jcr:endpoint name="jcrImages" path="/example/images">
     <and-filter>
@@ -71,7 +71,7 @@
     -->
     <service name="systemInMulticaster">
       <inbound>
-        <stdio:inbound-endpoint system="IN" />
+        <vm:inbound-endpoint path="mainIn" />
       </inbound>
       <outbound>
         <multicasting-router>
@@ -138,7 +138,7 @@
       <echo-component />
       <outbound>
         <pass-through-router>
-          <stdio:outbound-endpoint system="OUT" transformer-refs="ObjectToXml" />
+          <vm:outbound-endpoint path="accumulateEvent" />
         </pass-through-router>
       </outbound>
     </service>
@@ -154,11 +154,11 @@
               <spring:property name="pattern" value="/favicon.ico" />
             </custom-filter>
           </not-filter>
-          <response-transformers>
+          <response>
             <message-properties-transformer>
               <add-message-property key="Content-Type" value="image/gif" />
             </message-properties-transformer>
-          </response-transformers>
+          </response>
         </http:inbound-endpoint>
       </inbound>
       <script:component script-ref="httpImageFetcher" />
@@ -193,6 +193,15 @@
         <tcp:inbound-endpoint host="localhost" port="9997" exchange-pattern="request-response" />
       </inbound>
       <script:component script-ref="tcpContentFetcher" />
+    </service>
+    <!--
+      Test service that accumulates 
+     -->
+    <service name="eventAccumulator">
+      <inbound>
+        <vm:inbound-endpoint path="accumulateEvent" />
+      </inbound>
+      <test:component />
     </service>
   </model>
 </mule>
