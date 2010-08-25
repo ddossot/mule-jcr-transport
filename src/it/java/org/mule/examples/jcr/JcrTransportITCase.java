@@ -1,20 +1,31 @@
 
 package org.mule.examples.jcr;
 
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.lang.RandomStringUtils;
 import org.mule.module.client.MuleClient;
 import org.mule.tck.FunctionalTestCase;
 import org.mule.tck.functional.FunctionalTestComponent;
+import org.mule.transport.jcr.JcrMessage;
 
 public class JcrTransportITCase extends FunctionalTestCase
 {
     private MuleClient muleClient;
+    private FunctionalTestComponent eventAccumulator;
 
     @Override
     protected void doSetUp() throws Exception
     {
         super.doSetUp();
+        super.setDisposeManagerPerSuite(true);
         muleClient = new MuleClient(muleContext);
+        eventAccumulator = getFunctionalTestComponent("eventAccumulator");
+        eventAccumulator.initialise();
     }
 
     @Override
@@ -28,41 +39,98 @@ public class JcrTransportITCase extends FunctionalTestCase
         final String payload = RandomStringUtils.randomAlphanumeric(20);
         muleClient.dispatch("vm://mainIn", payload, null);
 
-        final FunctionalTestComponent eventAccumulator = getFunctionalTestComponent("eventAccumulator");
+        final int receivedMessagesCount = waitForNMessages(3);
 
-        // wait for 3 messages to be received
-        for (int i = 0; i < 20; i++)
+        final Map<String, Integer> expectedEventsCountMap = new HashMap<String, Integer>();
+        expectedEventsCountMap.put("/example/singleChild/targetSingleNtResourceNode", 6);
+        expectedEventsCountMap.put("/example/multipleChildren/targetMultipleUnstructuredNode", 3);
+        expectedEventsCountMap.put("/example/targetProperty", 1);
+
+        for (int i = 1; i <= receivedMessagesCount; i++)
         {
-            Thread.sleep(500L);
-            if (eventAccumulator.getReceivedMessagesCount() == 3) break;
+            final List<JcrMessage> events = getAccumulatedJcrMessageList(i);
+
+            int expectedEventsCount = 0;
+            String rootEventPath = null;
+            boolean contentFound = false;
+
+            for (final JcrMessage event : events)
+            {
+                final String eventPath = event.getPath();
+
+                if (expectedEventsCountMap.containsKey(eventPath))
+                {
+                    expectedEventsCount = expectedEventsCountMap.get(eventPath);
+                    rootEventPath = eventPath;
+                }
+
+                final Serializable eventContent = event.getContent();
+
+                if ((eventContent instanceof String && payload.equals(eventContent))
+                    || (eventContent.getClass().isArray() && payload.equals(new String((byte[]) eventContent))))
+                {
+                    contentFound = true;
+                }
+            }
+
+            assertEquals(expectedEventsCount, events.size());
+            assertTrue("content not found for: " + rootEventPath, contentFound);
         }
-
-        assertEquals(3, eventAccumulator.getReceivedMessagesCount());
-
-        // TODO check messages accumulated in FTC
-        System.out.println("-------------------------------------");
-        System.out.println(eventAccumulator.getReceivedMessage(1));
-        // org.mule.transport.jcr.JcrMessage@b40443[path=/example/singleChild/targetSingleNtResourceNode/jcr:lastModified,type=4,typeAsString=PROPERTY_ADDED,userID=admin,content=java.util.GregorianCalendar[time=1282692377828,areFieldsSet=true,areAllFieldsSet=true,lenient=true,zone=sun.util.calendar.ZoneInfo[id="America/Vancouver",offset=-28800000,dstSavings=3600000,useDaylight=true,transitions=189,lastRule=java.util.SimpleTimeZone[id=America/Vancouver,offset=-28800000,dstSavings=3600000,useDaylight=true,startYear=0,startMode=3,startMonth=2,startDay=8,startDayOfWeek=1,startTime=7200000,startTimeMode=0,endMode=3,endMonth=10,endDay=1,endDayOfWeek=1,endTime=7200000,endTimeMode=0]],firstDayOfWeek=1,minimalDaysInFirstWeek=1,ERA=1,YEAR=2010,MONTH=7,WEEK_OF_YEAR=35,WEEK_OF_MONTH=4,DAY_OF_MONTH=24,DAY_OF_YEAR=236,DAY_OF_WEEK=3,DAY_OF_WEEK_IN_MONTH=4,AM_PM=1,HOUR=4,HOUR_OF_DAY=16,MINUTE=26,SECOND=17,MILLISECOND=828,ZONE_OFFSET=-28800000,DST_OFFSET=3600000],uuid=<null>],
-        // org.mule.transport.jcr.JcrMessage@14e1f2b[path=/example/singleChild/targetSingleNtResourceNode/jcr:data,type=4,typeAsString=PROPERTY_ADDED,userID=admin,content={98,69,55,109,54,80,107,76,72,98,109,108,67,65,72,51,103,53,106,100},uuid=<null>],
-        // org.mule.transport.jcr.JcrMessage@c199f[path=/example/singleChild/targetSingleNtResourceNode/jcr:mimeType,type=4,typeAsString=PROPERTY_ADDED,userID=admin,content=text/plain,uuid=<null>],
-        // org.mule.transport.jcr.JcrMessage@6646fc[path=/example/singleChild/targetSingleNtResourceNode/jcr:uuid,type=4,typeAsString=PROPERTY_ADDED,userID=admin,content=d456633e-5828-4092-b30e-51f8dade3859,uuid=<null>],
-        // org.mule.transport.jcr.JcrMessage@be6858[path=/example/singleChild/targetSingleNtResourceNode/jcr:primaryType,type=4,typeAsString=PROPERTY_ADDED,userID=admin,content=nt:resource,uuid=<null>],
-        // org.mule.transport.jcr.JcrMessage@b471fe[path=/example/singleChild/targetSingleNtResourceNode,type=1,typeAsString=NODE_ADDED,userID=admin,content=,uuid=d456633e-5828-4092-b30e-51f8dade3859]]
-
-        System.out.println("-------------------------------------");
-        System.out.println(eventAccumulator.getReceivedMessage(2));
-        // org.mule.transport.jcr.JcrMessage@1c68b6f[path=/example/multipleChildren/targetMultipleUnstructuredNode/jcr:primaryType,type=4,typeAsString=PROPERTY_ADDED,userID=admin,content=nt:unstructured,uuid=<null>],
-        // org.mule.transport.jcr.JcrMessage@c7f06[path=/example/multipleChildren/targetMultipleUnstructuredNode/jcr:data,type=4,typeAsString=PROPERTY_ADDED,userID=admin,content=bE7m6PkLHbmlCAH3g5jd,uuid=<null>],
-        // org.mule.transport.jcr.JcrMessage@677ea2[path=/example/multipleChildren/targetMultipleUnstructuredNode,type=1,typeAsString=NODE_ADDED,userID=admin,content=,uuid=<null>]]
-
-        System.out.println("-------------------------------------");
-        System.out.println(eventAccumulator.getReceivedMessage(3));
-        // org.mule.transport.jcr.JcrMessage@b8705b[path=/example/targetProperty,type=16,typeAsString=PROPERTY_CHANGED,userID=admin,content=bE7m6PkLHbmlCAH3g5jd,uuid=<null>]]
-        System.out.println("-------------------------------------");
     }
 
-    // TODO test jcrHttpContentFetcher
-    // TODO test jcrStreamingTcpImageFetcher
-    // TODO test jcrStreamingStoreToNewChildNode
-    // TODO test jcrStreamingTcpFetcher
+    public void testRequesterWithRelPath() throws Exception
+    {
+        final byte[] muleImage = muleClient.request("http://localhost:8080/images/mule.gif", 5000)
+            .getPayloadAsBytes();
+
+        assertEquals(1552, muleImage.length);
+    }
+
+    public void testRequesterWithNodePath() throws Exception
+    {
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        JcrImageStreamClient.downloadContentToStream("/example/images/jackrabbit.gif/jcr:content/jcr:data",
+            9997, baos);
+
+        assertEquals(2440, baos.size());
+    }
+
+    public void testOutboundStreaming() throws Exception
+    {
+
+        JcrImageStreamClient.uploadStreamingData();
+        waitForNMessages(1);
+        final List<JcrMessage> accumulatedJcrMessageList = getAccumulatedJcrMessageList(1);
+        assertEquals(6, accumulatedJcrMessageList.size());
+    }
+
+    private int waitForNMessages(final int expectedMessagesCount) throws InterruptedException
+    {
+        int receivedMessagesCount = 0;
+        for (int i = 0; i < 20; i++)
+        {
+            System.out.printf("Received %d message(s) when %d are expected: pondering...\n",
+                receivedMessagesCount, expectedMessagesCount);
+
+            Thread.sleep(500L);
+
+            if ((receivedMessagesCount = eventAccumulator.getReceivedMessagesCount()) == expectedMessagesCount)
+            {
+                break;
+            }
+        }
+
+        assertEquals(expectedMessagesCount, receivedMessagesCount);
+        return receivedMessagesCount;
+    }
+
+    private List<JcrMessage> getAccumulatedJcrMessageList(int i)
+    {
+        final Object receivedMessage = eventAccumulator.getReceivedMessage(i);
+        assertTrue(receivedMessage instanceof List<?>);
+
+        @SuppressWarnings("unchecked")
+        final List<JcrMessage> events = (List<JcrMessage>) receivedMessage;
+        return events;
+    }
 }

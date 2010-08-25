@@ -26,26 +26,45 @@ import org.mule.util.IOUtils;
  * 
  * @author David Dossot (david@dossot.net)
  */
-public final class JcrImageStreamClient {
+public final class JcrImageStreamClient
+{
 
-    public static void main(final String[] args) throws Exception {
+    public static void main(final String[] args) throws Exception
+    {
         downloadRelativePath();
         downloadAbsolutePath();
-        uploadData();
+        uploadStreamingData();
 
         System.out.println("Done.");
     }
 
-    private static void downloadRelativePath() throws UnknownHostException, IOException, FileNotFoundException {
-        downloadContent("mule.gif", 9999, "mule.gif");
+    private static void downloadRelativePath()
+        throws UnknownHostException, IOException, FileNotFoundException
+    {
+        downloadContentToFile("mule.gif", 9999, "mule.gif");
     }
 
-    private static void downloadAbsolutePath() throws UnknownHostException, IOException, FileNotFoundException {
-        downloadContent("/example/images/jackrabbit.gif/jcr:content/jcr:data", 9997, "jackrabbit.gif");
+    private static void downloadAbsolutePath()
+        throws UnknownHostException, IOException, FileNotFoundException
+    {
+        downloadContentToFile("/example/images/jackrabbit.gif/jcr:content/jcr:data", 9997, "jackrabbit.gif");
     }
 
-    private static void downloadContent(final String contentReference, final int port, final String localName)
-            throws UnknownHostException, IOException, FileNotFoundException {
+    private static void downloadContentToFile(final String contentReference,
+                                              final int port,
+                                              final String localName)
+        throws UnknownHostException, IOException, FileNotFoundException
+    {
+        final String contentPath = System.getProperty("java.io.tmpdir") + File.separatorChar + localName;
+        downloadContentToStream(contentReference, port, new FileOutputStream(contentPath, false));
+        System.out.println("Saved locally: " + contentPath);
+    }
+
+    public static void downloadContentToStream(final String contentReference,
+                                               final int port,
+                                               final OutputStream stream)
+        throws UnknownHostException, IOException, FileNotFoundException
+    {
 
         final Socket socket = new Socket("localhost", port);
         final OutputStream outputStream = socket.getOutputStream();
@@ -54,14 +73,13 @@ public final class JcrImageStreamClient {
         socket.shutdownOutput();
 
         final InputStream inputStream = socket.getInputStream();
-        final String contentPath = System.getProperty("java.io.tmpdir") + File.separatorChar + localName;
-        IOUtils.copy(inputStream, new FileOutputStream(contentPath, false));
+        IOUtils.copy(inputStream, stream);
         inputStream.close();
         socket.close();
-        System.out.println("Saved locally: " + contentPath);
     }
 
-    private static void uploadData() throws UnknownHostException, IOException {
+    public static void uploadStreamingData() throws UnknownHostException, IOException
+    {
         Socket socket;
         OutputStream outputStream;
         socket = new Socket("localhost", 9998);

@@ -44,7 +44,7 @@
   <script:script name="httpImageFetcher" engine="groovy">
     <script:text><![CDATA[
 		def imageName = message.payload.substring(8)
-		message.setStringProperty("nodeRelPath", imageName)
+		message.setOutboundProperty("nodeRelPath", imageName)
 		return eventContext.requestEvent("jcrImages", -1).payload	]]>
     </script:text>
   </script:script>
@@ -52,7 +52,7 @@
   <script:script name="tcpImageFetcher" engine="groovy">
     <script:text><![CDATA[
 		def imageName = message.payloadAsString
-		message.setStringProperty("nodeRelPath", imageName)
+		message.setOutboundProperty("nodeRelPath", imageName)
 		return eventContext.requestEvent("jcrImages", -1).payload ]]>
     </script:text>
   </script:script>
