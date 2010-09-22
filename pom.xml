@@ -193,10 +193,11 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>
+        <version>2.3</version>
         <configuration>
           <configLocation>
             http://www.muleforge.org/download/checkstyle.xml
-					</configLocation>
+		  </configLocation>
         </configuration>
       </plugin>
       <plugin>
