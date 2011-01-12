@@ -360,10 +360,12 @@ public class JcrMessageDispatcherTestCase extends AbstractJcrMessagerTestCase
 
         final MuleMessage message = new DefaultMuleMessage(null, properties, muleContext);
 
-        RequestContext.setEvent(getTestEvent(message, getTestOutboundEndpoint("test", getTestEndpointUri(),
-            null, null, null, connector)));
+        final MuleEvent event = getTestEvent(message, getTestOutboundEndpoint("test", getTestEndpointUri(),
+            null, null, null, connector));
 
-        final OutputStream outputStream = connector.getOutputStream(messageDispatcher.getEndpoint(), message);
+        RequestContext.setEvent(event);
+
+        final OutputStream outputStream = connector.getOutputStream(messageDispatcher.getEndpoint(), event);
 
         assertNotNull(outputStream);
 

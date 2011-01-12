@@ -16,38 +16,49 @@ import javax.jcr.RepositoryException;
 
 import org.mule.api.transformer.TransformerException;
 import org.mule.transformer.AbstractDiscoverableTransformer;
-import org.mule.transport.jcr.support.JcrPropertyUtils;
+import org.mule.transformer.types.SimpleDataType;
 import org.mule.transport.jcr.support.JcrNodeUtils;
+import org.mule.transport.jcr.support.JcrPropertyUtils;
 
 /**
- * Transforms a JCR <code>Item</code> or <code>PropertyIterator</code> into
- * an object that can be used as a payload.
+ * Transforms a JCR <code>Item</code> or <code>PropertyIterator</code> into an object
+ * that can be used as a payload.
  * 
  * @author David Dossot (david@dossot.net)
  */
-public class JcrItemToObject extends AbstractDiscoverableTransformer {
+public class JcrItemToObject extends AbstractDiscoverableTransformer
+{
 
-	public JcrItemToObject() {
-		super();
-		registerSourceType(Item.class);
-		registerSourceType(PropertyIterator.class);
-	}
+    public JcrItemToObject()
+    {
+        super();
+        registerSourceType(new SimpleDataType<Item>(Item.class));
+        registerSourceType(new SimpleDataType<PropertyIterator>(PropertyIterator.class));
+    }
 
-	@Override
-	protected Object doTransform(final Object src, final String encoding)
-			throws TransformerException {
+    @Override
+    protected Object doTransform(final Object src, final String encoding) throws TransformerException
+    {
 
-		try {
-			if (src instanceof Item) {
-				return JcrNodeUtils.getItemPayload((Item) src);
-			} else if (src instanceof PropertyIterator) {
-				return JcrPropertyUtils.getPropertiesPayload((PropertyIterator) src);
-			} else {
-				throw new IllegalArgumentException("Unsupported source: " + src);
-			}
+        try
+        {
+            if (src instanceof Item)
+            {
+                return JcrNodeUtils.getItemPayload((Item) src);
+            }
+            else if (src instanceof PropertyIterator)
+            {
+                return JcrPropertyUtils.getPropertiesPayload((PropertyIterator) src);
+            }
+            else
+            {
+                throw new IllegalArgumentException("Unsupported source: " + src);
+            }
 
-		} catch (final RepositoryException re) {
-			throw new TransformerException(this, re);
-		}
-	}
+        }
+        catch (final RepositoryException re)
+        {
+            throw new TransformerException(this, re);
+        }
+    }
 }

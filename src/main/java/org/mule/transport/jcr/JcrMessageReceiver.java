@@ -24,10 +24,10 @@ import org.apache.commons.beanutils.converters.IntegerConverter;
 import org.mule.DefaultMuleMessage;
 import org.mule.api.MuleException;
 import org.mule.api.MuleRuntimeException;
+import org.mule.api.construct.FlowConstruct;
 import org.mule.api.endpoint.InboundEndpoint;
 import org.mule.api.lifecycle.CreateException;
 import org.mule.api.lifecycle.LifecycleException;
-import org.mule.api.service.Service;
 import org.mule.api.transport.Connector;
 import org.mule.transport.AbstractMessageReceiver;
 import org.mule.transport.ConnectException;
@@ -79,11 +79,12 @@ public final class JcrMessageReceiver extends AbstractMessageReceiver implements
         jcrMessageReceiverContext.set(context);
     }
 
-    public JcrMessageReceiver(final Connector connector, final Service service, final InboundEndpoint endpoint)
-        throws CreateException
+    public JcrMessageReceiver(final Connector connector,
+                              final FlowConstruct flowConstruct,
+                              final InboundEndpoint endpoint) throws CreateException
     {
 
-        super(connector, service, endpoint);
+        super(connector, flowConstruct, endpoint);
 
         jcrConnector = (JcrConnector) getConnector();
 
