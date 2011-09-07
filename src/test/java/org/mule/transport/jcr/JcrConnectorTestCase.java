@@ -10,6 +10,11 @@
 
 package org.mule.transport.jcr;
 
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNull;
+import static junit.framework.Assert.fail;
+
+import org.mule.api.MuleContext;
 import org.mule.api.lifecycle.InitialisationException;
 import org.mule.api.transport.Connector;
 import org.mule.transport.AbstractConnectorTestCase;
@@ -20,11 +25,10 @@ import org.mule.transport.AbstractConnectorTestCase;
 public class JcrConnectorTestCase extends AbstractConnectorTestCase {
     @Override
     public Connector createConnector() throws Exception {
-        return newJcrConnector();
+        return newJcrConnector(muleContext);
     }
 
-    static JcrConnector newJcrConnector() throws Exception, InitialisationException {
-
+    static JcrConnector newJcrConnector(final MuleContext muleContext) throws Exception, InitialisationException {
         final JcrConnector c = new JcrConnector(muleContext);
 
         c.setName("Test-Jcr");

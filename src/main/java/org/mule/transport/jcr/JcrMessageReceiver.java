@@ -11,6 +11,7 @@
 package org.mule.transport.jcr;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.jcr.Repository;
 import javax.jcr.RepositoryException;
@@ -34,16 +35,13 @@ import org.mule.transport.ConnectException;
 import org.mule.transport.jcr.config.JcrNamespaceHandler;
 import org.mule.transport.jcr.i18n.JcrMessages;
 
-import edu.emory.mathcs.backport.java.util.concurrent.atomic.AtomicReference;
-
 /**
  * Registers a JCR <code>javax.jcr.observation.EventListener</code> to the
  * <code>javax.jcr.observation.ObservationManager</code> of the repository.
  * 
  * @author David Dossot (david@dossot.net)
  */
-public final class JcrMessageReceiver extends AbstractMessageReceiver implements EventListener
-{
+public final class JcrMessageReceiver extends AbstractMessageReceiver implements EventListener {
 
     private static final String[] EMPTY_STRING_ARRAY = new String[0];
 
@@ -67,29 +65,24 @@ public final class JcrMessageReceiver extends AbstractMessageReceiver implements
 
     private Session receiverSession;
 
-    private static final AtomicReference jcrMessageReceiverContext = new AtomicReference();
+    private static final AtomicReference<JcrMessageReceiverContext> jcrMessageReceiverContext = new AtomicReference<JcrMessageReceiverContext>();
 
-    public static JcrMessageReceiverContext getJcrMessageReceiverContext()
-    {
-        return (JcrMessageReceiverContext) jcrMessageReceiverContext.get();
+    public static JcrMessageReceiverContext getJcrMessageReceiverContext() {
+        return jcrMessageReceiverContext.get();
     }
 
-    public static void setJcrMessageReceiverContext(final JcrMessageReceiverContext context)
-    {
+    public static void setJcrMessageReceiverContext(final JcrMessageReceiverContext context) {
         jcrMessageReceiverContext.set(context);
     }
 
-    public JcrMessageReceiver(final Connector connector,
-                              final FlowConstruct flowConstruct,
-                              final InboundEndpoint endpoint) throws CreateException
-    {
+    public JcrMessageReceiver(final Connector connector, final FlowConstruct flowConstruct, final InboundEndpoint endpoint)
+            throws CreateException {
 
         super(connector, flowConstruct, endpoint);
 
         jcrConnector = (JcrConnector) getConnector();
 
-        if (logger.isDebugEnabled())
-        {
+        if (logger.isDebugEnabled()) {
             logger.debug("Initializing for: " + endpoint);
         }
 
@@ -101,154 +94,118 @@ public final class JcrMessageReceiver extends AbstractMessageReceiver implements
         absPath = endpoint.getEndpointURI().getAddress();
 
         eventTypes = (Integer) new IntegerConverter(jcrConnector.getEventTypes()).convert(Integer.class,
-            endpoint.getProperty(JcrConnector.JCR_EVENT_TYPES_PROPERTY));
+                endpoint.getProperty(JcrConnector.JCR_EVENT_TYPES_PROPERTY));
 
         deep = (Boolean) new BooleanConverter(jcrConnector.isDeep()).convert(Boolean.class,
-            endpoint.getProperty(JcrConnector.JCR_DEEP_PROPERTY));
+                endpoint.getProperty(JcrConnector.JCR_DEEP_PROPERTY));
 
         final String uuidProperty = (String) endpoint.getProperty(JcrConnector.JCR_UUID_LIST_PROPERTY);
 
-        if (uuidProperty == null)
-        {
+        if (uuidProperty == null) {
             uuids = jcrConnector.getUuids();
-        }
-        else
-        {
+        } else {
             uuids = JcrNamespaceHandler.split(uuidProperty);
         }
 
         final String nodeTypeNameProperty = (String) endpoint.getProperty(JcrConnector.JCR_NODE_TYPE_NAME_LIST_PROPERTY);
 
-        if (nodeTypeNameProperty == null)
-        {
+        if (nodeTypeNameProperty == null) {
             nodeTypeNames = jcrConnector.getNodeTypeNames();
-        }
-        else
-        {
+        } else {
             nodeTypeNames = JcrNamespaceHandler.split(nodeTypeNameProperty);
         }
 
         noLocal = (Boolean) new BooleanConverter(jcrConnector.isNoLocal()).convert(Boolean.class,
-            endpoint.getProperty(JcrConnector.JCR_NO_LOCAL_PROPERTY));
+                endpoint.getProperty(JcrConnector.JCR_NO_LOCAL_PROPERTY));
 
         String contentPayloadTypeProperty = (String) endpoint.getProperty(JcrConnector.JCR_CONTENT_PAYLOAD_TYPE_PROPERTY);
 
-        if (contentPayloadTypeProperty == null)
-        {
+        if (contentPayloadTypeProperty == null) {
             contentPayloadTypeProperty = jcrConnector.getContentPayloadType();
         }
 
-        try
-        {
+        try {
             contentPayloadType = JcrContentPayloadType.fromString(contentPayloadTypeProperty);
 
-        }
-        catch (final IllegalArgumentException iae)
-        {
+        } catch (final IllegalArgumentException iae) {
             throw new CreateException(iae, this);
         }
     }
 
     @Override
-    public void doConnect() throws ConnectException
-    {
-        if (jcrConnector.getRepository().getDescriptor(Repository.OPTION_OBSERVATION_SUPPORTED) == null)
-        {
+    public void doConnect() throws ConnectException {
+        if (jcrConnector.getRepository().getDescriptor(Repository.OPTION_OBSERVATION_SUPPORTED) == null) {
             throw new ConnectException(JcrMessages.observationsNotSupported(), this);
         }
 
-        try
-        {
+        try {
             receiverSession = jcrConnector.newSession();
             observationManager = receiverSession.getWorkspace().getObservationManager();
 
-            setJcrMessageReceiverContext(new JcrMessageReceiverContext()
-            {
-                public JcrContentPayloadType getContentPayloadType()
-                {
+            setJcrMessageReceiverContext(new JcrMessageReceiverContext() {
+                public JcrContentPayloadType getContentPayloadType() {
                     return contentPayloadType;
                 }
 
-                public Session getObservingSession()
-                {
+                public Session getObservingSession() {
                     return receiverSession;
                 }
             });
 
-        }
-        catch (final Exception e)
-        {
-            throw new ConnectException(
-                JcrMessages.canNotGetObservationManager(jcrConnector.getWorkspaceName()), e, this);
+        } catch (final Exception e) {
+            throw new ConnectException(JcrMessages.canNotGetObservationManager(jcrConnector.getWorkspaceName()), e, this);
         }
     }
 
     @Override
-    public void doStart() throws MuleException
-    {
-        try
-        {
-            observationManager.addEventListener(this, eventTypes.intValue(), absPath, deep.booleanValue(),
-                uuids == null ? null : (String[]) uuids.toArray(EMPTY_STRING_ARRAY),
-                nodeTypeNames == null ? null : (String[]) nodeTypeNames.toArray(EMPTY_STRING_ARRAY),
-                noLocal.booleanValue());
+    public void doStart() throws MuleException {
+        try {
+            observationManager.addEventListener(this, eventTypes.intValue(), absPath, deep.booleanValue(), uuids == null ? null
+                    : (String[]) uuids.toArray(EMPTY_STRING_ARRAY),
+                    nodeTypeNames == null ? null : (String[]) nodeTypeNames.toArray(EMPTY_STRING_ARRAY), noLocal.booleanValue());
 
-            if (logger.isInfoEnabled())
-            {
-                logger.info("Observing JCR for events of types: " + eventTypes + " - at: " + absPath
-                            + " - deep: " + deep + " - uuid: " + uuids + " - nodeTypeName: " + nodeTypeNames
-                            + " - noLocal: " + noLocal + " - contentPayloadType: " + contentPayloadType);
+            if (logger.isInfoEnabled()) {
+                logger.info("Observing JCR for events of types: " + eventTypes + " - at: " + absPath + " - deep: " + deep + " - uuid: "
+                        + uuids + " - nodeTypeName: " + nodeTypeNames + " - noLocal: " + noLocal + " - contentPayloadType: "
+                        + contentPayloadType);
             }
 
-        }
-        catch (final RepositoryException re)
-        {
+        } catch (final RepositoryException re) {
             throw new LifecycleException(re, this);
         }
     }
 
     @Override
-    public void doStop() throws MuleException
-    {
-        try
-        {
+    public void doStop() throws MuleException {
+        try {
             observationManager.removeEventListener(this);
-        }
-        catch (final RepositoryException re)
-        {
+        } catch (final RepositoryException re) {
             throw new LifecycleException(re, this);
         }
 
     }
 
     @Override
-    public void doDisconnect() throws ConnectException
-    {
+    public void doDisconnect() throws ConnectException {
         jcrConnector.terminateSession(receiverSession);
 
         receiverSession = null;
     }
 
     @Override
-    public void doDispose()
-    {
+    public void doDispose() {
         observationManager = null;
     }
 
-    public void onEvent(final EventIterator eventIterator)
-    {
-        if (logger.isDebugEnabled())
-        {
+    public void onEvent(final EventIterator eventIterator) {
+        if (logger.isDebugEnabled()) {
             logger.debug("JCR events received");
         }
 
-        try
-        {
+        try {
             routeMessage(new DefaultMuleMessage(eventIterator, jcrConnector.getMuleContext()));
 
-        }
-        catch (final MuleException mue)
-        {
+        } catch (final MuleException mue) {
             throw new MuleRuntimeException(mue);
         }
     }
@@ -256,56 +213,49 @@ public final class JcrMessageReceiver extends AbstractMessageReceiver implements
     /**
      * @return the absPath
      */
-    String getAbsPath()
-    {
+    String getAbsPath() {
         return absPath;
     }
 
     /**
      * @return the contentPayloadType
      */
-    JcrContentPayloadType getContentPayloadType()
-    {
+    JcrContentPayloadType getContentPayloadType() {
         return contentPayloadType;
     }
 
     /**
      * @return the deep
      */
-    Boolean isDeep()
-    {
+    Boolean isDeep() {
         return deep;
     }
 
     /**
      * @return the eventTypes
      */
-    Integer getEventTypes()
-    {
+    Integer getEventTypes() {
         return eventTypes;
     }
 
     /**
      * @return the nodeTypeName
      */
-    List<String> getNodeTypeNames()
-    {
+    List<String> getNodeTypeNames() {
         return nodeTypeNames;
     }
 
     /**
      * @return the noLocal
      */
-    Boolean isNoLocal()
-    {
+    Boolean isNoLocal() {
         return noLocal;
     }
 
     /**
      * @return the uuid
      */
-    List<String> getUuids()
-    {
+    List<String> getUuids() {
         return uuids;
     }
 

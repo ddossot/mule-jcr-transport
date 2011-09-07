@@ -10,13 +10,13 @@
 
 package org.mule.transport.jcr.handlers;
 
+import java.util.concurrent.ConcurrentHashMap;
+
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.nodetype.NodeType;
 
 import org.mule.util.StringUtils;
-
-import edu.emory.mathcs.backport.java.util.concurrent.ConcurrentHashMap;
 
 /**
  * The manager for all JCR node type handlers.
@@ -25,10 +25,10 @@ import edu.emory.mathcs.backport.java.util.concurrent.ConcurrentHashMap;
  */
 public class NodeTypeHandlerManager {
 
-    private final ConcurrentHashMap registeredHandlers;
+    private final ConcurrentHashMap<String, NodeTypeHandler> registeredHandlers;
 
     public NodeTypeHandlerManager() {
-        registeredHandlers = new ConcurrentHashMap();
+        registeredHandlers = new ConcurrentHashMap<String, NodeTypeHandler>();
         registerHandler(new NtFileHandler());
         registerHandler(new NtLinkedFileHandler());
         registerHandler(new NtResourceHandler());
@@ -36,20 +36,18 @@ public class NodeTypeHandlerManager {
     }
 
     /**
-     * Registers a new <code>NodeTypeHandler</code>. The manager calls
-     * initialize first, then registers the handler.
+     * Registers a new <code>NodeTypeHandler</code>. The manager calls initialize first, then registers the handler.
      * 
      * @param handler
      *            the new handler.
      */
-    public void registerHandler(NodeTypeHandler handler) {
+    public void registerHandler(final NodeTypeHandler handler) {
         if (handler == null) {
-            throw new IllegalArgumentException(
-                    "A new type handler can not be null!");
+            throw new IllegalArgumentException("A new type handler can not be null!");
         }
 
         handler.initialize(this);
-        
+
         registeredHandlers.put(handler.getNodeTypeName(), handler);
     }
 
@@ -57,32 +55,27 @@ public class NodeTypeHandlerManager {
      * Get the default type handler for child nodes of the passed parent node.
      * 
      * @param parentNode
-     *            the node whose default child node type will be used to get an
-     *            handler.
+     *            the node whose default child node type will be used to get an handler.
      * 
      * @return the default child type handler.
      */
-    public NodeTypeHandler getChildNodeTypeHandler(Node parentNode) {
+    public NodeTypeHandler getChildNodeTypeHandler(final Node parentNode) {
         if (parentNode == null) {
             throw new IllegalArgumentException("A parent node can not be null!");
         }
 
         try {
-            NodeType defaultPrimaryType =
-                    parentNode.getDefinition().getDefaultPrimaryType();
+            final NodeType defaultPrimaryType = parentNode.getDefinition().getDefaultPrimaryType();
 
             if (defaultPrimaryType == null) {
-                throw new IllegalArgumentException(
-                        "The parent node does not define a default primary type, "
-                            + "hence requires a child node type to be specified.");
+                throw new IllegalArgumentException("The parent node does not define a default primary type, "
+                        + "hence requires a child node type to be specified.");
             }
 
             return getNodeTypeHandler(defaultPrimaryType.getName());
-        } catch (RepositoryException re) {
-            throw new RuntimeException(
-                    "Can not retrieve the default primary type of the parent node!"
-                        + "Either specify one or resolve the error condition.",
-                    re);
+        } catch (final RepositoryException re) {
+            throw new RuntimeException("Can not retrieve the default primary type of the parent node!"
+                    + "Either specify one or resolve the error condition.", re);
         }
     }
 
@@ -90,19 +83,16 @@ public class NodeTypeHandlerManager {
      * Gets the node type handler for a particular node.
      * 
      * @param node
-     *            the node for which the appropriate type handler will be
-     *            returned.
+     *            the node for which the appropriate type handler will be returned.
      * 
      * @return the node type handler.
      */
-    public NodeTypeHandler getNodeTypeHandler(Node node) {
+    public NodeTypeHandler getNodeTypeHandler(final Node node) {
         try {
             return getNodeTypeHandler(node.getPrimaryNodeType().getName());
-        } catch (RepositoryException re) {
-            throw new RuntimeException(
-                    "Can not retrieve the primary type of the targeted node!"
-                        + "Either specify one or resolve the error condition.",
-                    re);
+        } catch (final RepositoryException re) {
+            throw new RuntimeException("Can not retrieve the primary type of the targeted node!"
+                    + "Either specify one or resolve the error condition.", re);
         }
     }
 
@@ -110,20 +100,17 @@ public class NodeTypeHandlerManager {
      * Gets the node type handler for a particular node type name.
      * 
      * @param nodeTypeName
-     *            the node type name for which the appropriate type handler will
-     *            be returned.
+     *            the node type name for which the appropriate type handler will be returned.
      * 
      * @return the node type handler.
      */
-    public NodeTypeHandler getNodeTypeHandler(String nodeTypeName) {
+    public NodeTypeHandler getNodeTypeHandler(final String nodeTypeName) {
 
         if (StringUtils.isEmpty(nodeTypeName)) {
-            throw new IllegalArgumentException(
-                    "The node type name can not be empty!");
+            throw new IllegalArgumentException("The node type name can not be empty!");
         }
 
-        NodeTypeHandler handler =
-                (NodeTypeHandler) registeredHandlers.get(nodeTypeName);
+        NodeTypeHandler handler = registeredHandlers.get(nodeTypeName);
 
         if (handler == null) {
             handler = new NoActionAnyTypeHandler(nodeTypeName);

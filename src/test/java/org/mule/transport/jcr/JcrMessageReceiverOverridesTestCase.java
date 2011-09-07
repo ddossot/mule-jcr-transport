@@ -10,6 +10,8 @@
 
 package org.mule.transport.jcr;
 
+import static junit.framework.Assert.assertEquals;
+
 import java.util.Collections;
 import java.util.List;
 
@@ -34,14 +36,11 @@ public class JcrMessageReceiverOverridesTestCase extends JcrMessageReceiverTestC
         final EndpointBuilder builder = new EndpointURIEndpointBuilder(new URIBuilder(
                 "jcr://path/to/observedNode?contentPayloadType=full&eventTypes=5&deep=true&noLocal=false", muleContext));
 
-        builder.setConnector(JcrConnectorTestCase.newJcrConnector());
+        builder.setConnector(JcrConnectorTestCase.newJcrConnector(muleContext));
 
-        endpoint = muleContext.getRegistry().lookupEndpointFactory().getInboundEndpoint(builder);
-
+        endpoint = muleContext.getEndpointFactory().getInboundEndpoint(builder);
         endpoint.getProperties().put("uuids", StringUtils.join(UUID_LIST, ' '));
-
         endpoint.getProperties().put("nodeTypeNames", StringUtils.join(NODE_TYPE_NAME_LIST, ' '));
-
         return endpoint;
     }
 
@@ -49,18 +48,11 @@ public class JcrMessageReceiverOverridesTestCase extends JcrMessageReceiverTestC
         final JcrMessageReceiver messageReceiver = (JcrMessageReceiver) getMessageReceiver();
 
         assertEquals("/path/to/observedNode", messageReceiver.getAbsPath());
-
         assertEquals(JcrContentPayloadType.FULL, messageReceiver.getContentPayloadType());
-
         assertEquals(new Integer(5), messageReceiver.getEventTypes());
-
         assertEquals(Boolean.TRUE, messageReceiver.isDeep());
-
         assertEquals(UUID_LIST, messageReceiver.getUuids());
-
         assertEquals(NODE_TYPE_NAME_LIST, messageReceiver.getNodeTypeNames());
-
         assertEquals(Boolean.FALSE, messageReceiver.isNoLocal());
     }
-
 }
