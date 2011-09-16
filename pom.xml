@@ -10,7 +10,7 @@
   <description>Provides connectivity to JCR repositories.</description>
 
   <properties>
-    <mule.version>3.2.0-RC4-SNAPSHOT</mule.version>
+    <mule.version>3.2.0</mule.version>
     <spring.version>3.0.5.RELEASE</spring.version>
     <transportId>JCR</transportId>
   </properties>
