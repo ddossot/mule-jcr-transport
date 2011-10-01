@@ -21,9 +21,9 @@
     <url>http://mule.mulesource.org/jira/browse/JCR</url>
   </issueManagement>
   <scm>
-    <connection>scm:svn:http://svn.muleforge.org/mule-transport-jcr/tags/mule-transport-jcr-3.1.0</connection>
-    <developerConnection>scm:svn:https://svn.muleforge.org/mule-transport-jcr/tags/mule-transport-jcr-3.1.0</developerConnection>
-    <url>http://svn.mule-transport-jcr.muleforge.org/tags/mule-transport-jcr-3.1.0</url>
+    <connection>scm:git:git://github.com/ddossot/mule-jcr-transport.git</connection>
+    <developerConnection>scm:git:git@github.com:ddossot/mule-jcr-transport.git</developerConnection>
+    <url>https://github.com/ddossot/mule-jcr-transport</url>
   </scm>
   <ciManagement>
     <system>Bamboo</system>
@@ -117,7 +117,9 @@
         </configuration>
       </plugin>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-assembly-plugin</artifactId>
+        <version>2.2.1</version>
         <configuration>
           <finalName>${project.artifactId}-${project.version}</finalName>
           <descriptors>
