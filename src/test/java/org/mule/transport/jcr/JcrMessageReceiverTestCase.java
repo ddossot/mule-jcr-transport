@@ -20,20 +20,20 @@ import com.mockobjects.dynamic.Mock;
 /**
  * @author David Dossot (david@dossot.net)
  */
-public class JcrMessageReceiverTestCase extends AbstractMessageReceiverTestCase {
+public class JcrMessageReceiverTestCase extends AbstractMessageReceiverTestCase
+{
+    @Override
+    public MessageReceiver getMessageReceiver() throws Exception
+    {
+        final Mock mockService = new Mock(Service.class);
+        mockService.expectAndReturn("getResponseRouter", null);
 
-	@Override
-	public MessageReceiver getMessageReceiver() throws Exception {
-		final Mock mockService = new Mock(Service.class);
-		mockService.expectAndReturn("getResponseRouter", null);
+        return new JcrMessageReceiver(endpoint.getConnector(), (Service) mockService.proxy(), endpoint);
+    }
 
-		return new JcrMessageReceiver(endpoint.getConnector(),
-				(Service) mockService.proxy(), endpoint);
-	}
-
-	@Override
-	public InboundEndpoint getEndpoint() throws Exception {
-		return JcrEndpointTestCase.newInboundEndpoint(muleContext, "jcr://path/to/observedNode");
-	}
-
+    @Override
+    public InboundEndpoint getEndpoint() throws Exception
+    {
+        return JcrEndpointTestCase.newInboundEndpoint(muleContext, "jcr://path/to/observedNode");
+    }
 }

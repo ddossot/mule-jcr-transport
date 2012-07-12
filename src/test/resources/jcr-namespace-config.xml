@@ -2,9 +2,9 @@
 <mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:jcr="http://www.mulesoft.org/schema/mule/jcr"
     xmlns:spring="http://www.springframework.org/schema/beans"
     xsi:schemaLocation="
-       http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/3.2/mule.xsd
-       http://www.mulesoft.org/schema/mule/jcr http://dist.muleforge.org/mule-transport-jcr/schema/3.2/mule-jcr.xsd
-       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
+       http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+       http://www.mulesoft.org/schema/mule/jcr http://www.mulesoft.org/schema/mule/jcr/current/mule-jcr.xsd
+       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
     <spring:bean id="jcrRepository" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
         <spring:property name="targetClass" value="org.mule.transport.jcr.RepositoryTestSupport" />

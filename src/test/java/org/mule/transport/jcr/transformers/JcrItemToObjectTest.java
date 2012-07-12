@@ -18,44 +18,53 @@ import org.mule.transport.jcr.support.JcrNodeUtils;
 /**
  * @author David Dossot (david@dossot.net)
  */
-public class JcrItemToObjectTest extends AbstractTransformerTestCase {
+public class JcrItemToObjectTest extends AbstractTransformerTestCase
+{
+    @Override
+    protected void doSetUp() throws Exception
+    {
+        super.doSetUp();
 
-	@Override
-	protected void doSetUp() throws Exception {
-		super.doSetUp();
+        RepositoryTestSupport.resetRepository();
 
-		RepositoryTestSupport.resetRepository();
+        try
+        {
+            RepositoryTestSupport.getSession().save();
+        }
+        catch (final Exception e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
 
-		try {
-			RepositoryTestSupport.getSession().save();
-		} catch (final Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
+    @Override
+    public Object getResultData()
+    {
+        try
+        {
+            return JcrNodeUtils.getItemPayload(RepositoryTestSupport.getTestDataNode());
+        }
+        catch (final Exception e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
 
-	@Override
-	public Object getResultData() {
-		try {
-			return JcrNodeUtils.getItemPayload(RepositoryTestSupport
-					.getTestDataNode());
-		} catch (final Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
+    @Override
+    public Transformer getRoundTripTransformer() throws Exception
+    {
+        return null;
+    }
 
-	@Override
-	public Transformer getRoundTripTransformer() throws Exception {
-		return null;
-	}
+    @Override
+    public Object getTestData()
+    {
+        return RepositoryTestSupport.getTestDataNode();
+    }
 
-	@Override
-	public Object getTestData() {
-		return RepositoryTestSupport.getTestDataNode();
-	}
-
-	@Override
-	public Transformer getTransformer() throws Exception {
-		return new JcrItemToObject();
-	}
-
+    @Override
+    public Transformer getTransformer() throws Exception
+    {
+        return new JcrItemToObject();
+    }
 }

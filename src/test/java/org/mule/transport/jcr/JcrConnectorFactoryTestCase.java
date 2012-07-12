@@ -10,26 +10,32 @@
 
 package org.mule.transport.jcr;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import org.junit.Test;
 import org.mule.api.transport.Connector;
 import org.mule.endpoint.MuleEndpointURI;
-import org.mule.tck.AbstractMuleTestCase;
+import org.mule.tck.junit4.AbstractMuleContextTestCase;
 import org.mule.transport.service.TransportFactory;
 
 /**
  * @author David Dossot (david@dossot.net)
  */
-public class JcrConnectorFactoryTestCase extends AbstractMuleTestCase {
-
-    public void testCreateFromFactory() throws Exception {
-        final Connector connector =
-                new TransportFactory(muleContext).createConnector(new MuleEndpointURI(getEndpointURI(), muleContext));
+public class JcrConnectorFactoryTestCase extends AbstractMuleContextTestCase
+{
+    @Test
+    public void testCreateFromFactory() throws Exception
+    {
+        final Connector connector = new TransportFactory(muleContext).createConnector(new MuleEndpointURI(
+            getEndpointURI(), muleContext));
 
         assertNotNull(connector);
         assertTrue(connector instanceof JcrConnector);
     }
 
-    public String getEndpointURI() {
+    public String getEndpointURI()
+    {
         return "jcr://path/to/observedNode";
     }
-
 }

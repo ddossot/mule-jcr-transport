@@ -1,207 +1,200 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mule xmlns="http://www.mulesoft.org/schema/mule/core"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xmlns:jcr="http://www.mulesoft.org/schema/mule/jcr"
-  xmlns:tcp="http://www.mulesoft.org/schema/mule/tcp"
-  xmlns:xm="http://www.mulesoft.org/schema/mule/xml"
-  xmlns:vm="http://www.mulesoft.org/schema/mule/vm"
-  xmlns:stdio="http://www.mulesoft.org/schema/mule/stdio"
-  xmlns:http="http://www.mulesoft.org/schema/mule/http"
-  xmlns:script="http://www.mulesoft.org/schema/mule/scripting"
-  xmlns:test="http://www.mulesoft.org/schema/mule/test"
-  xmlns:spring="http://www.springframework.org/schema/beans"
-  xsi:schemaLocation="
-       http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/3.0/mule.xsd
-       http://www.mulesoft.org/schema/mule/jcr http://dist.muleforge.org/mule-transport-jcr/schema/3.0/mule-jcr.xsd
-       http://www.mulesoft.org/schema/mule/tcp http://www.mulesoft.org/schema/mule/tcp/3.0/mule-tcp.xsd
-       http://www.mulesoft.org/schema/mule/xml http://www.mulesoft.org/schema/mule/xml/3.0/mule-xml.xsd
-       http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/3.0/mule-vm.xsd
-       http://www.mulesoft.org/schema/mule/stdio http://www.mulesoft.org/schema/mule/stdio/3.0/mule-stdio.xsd
-       http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/3.0/mule-http.xsd
-       http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/3.0/mule-scripting.xsd
-       http://www.mulesoft.org/schema/mule/test http://www.mulesoft.org/schema/mule/test/3.0/mule-test.xsd
-       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:jcr="http://www.mulesoft.org/schema/mule/jcr" xmlns:tcp="http://www.mulesoft.org/schema/mule/tcp"
+    xmlns:xm="http://www.mulesoft.org/schema/mule/xml" xmlns:vm="http://www.mulesoft.org/schema/mule/vm"
+    xmlns:stdio="http://www.mulesoft.org/schema/mule/stdio" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+    xmlns:script="http://www.mulesoft.org/schema/mule/scripting"
+    xmlns:test="http://www.mulesoft.org/schema/mule/test" xmlns:spring="http://www.springframework.org/schema/beans"
+    xsi:schemaLocation="
+       http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+       http://www.mulesoft.org/schema/mule/jcr http://www.mulesoft.org/schema/mule/jcr/current/mule-jcr.xsd
+       http://www.mulesoft.org/schema/mule/tcp http://www.mulesoft.org/schema/mule/tcp/current/mule-tcp.xsd
+       http://www.mulesoft.org/schema/mule/xml http://www.mulesoft.org/schema/mule/xml/current/mule-xml.xsd
+       http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd
+       http://www.mulesoft.org/schema/mule/stdio http://www.mulesoft.org/schema/mule/stdio/current/mule-stdio.xsd
+       http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+       http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd
+       http://www.mulesoft.org/schema/mule/test http://www.mulesoft.org/schema/mule/test/current/mule-test.xsd
+       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-  <spring:beans>
-    <spring:import resource="jcr-example-beans.xml" />
-  </spring:beans>
+    <spring:beans>
+        <spring:import resource="jcr-example-beans.xml" />
+    </spring:beans>
 
-  <jcr:connector name="jcrConnector" repository-ref="jcrRepository" username="admin" password="admin" eventTypes="31" />
+    <jcr:connector name="jcrConnector" repository-ref="jcrRepository"
+        username="admin" password="admin" eventTypes="31" />
 
-  <tcp:connector name="tcpConnector">
-    <tcp:eof-protocol payloadOnly="true" />
-  </tcp:connector>
+    <tcp:connector name="tcpConnector">
+        <tcp:eof-protocol payloadOnly="true" />
+    </tcp:connector>
 
-  <stdio:connector name="systemStreamConnector" promptMessage="Type content to store in JCR: " messageDelayTime="1000" />
+    <stdio:connector name="systemStreamConnector"
+        promptMessage="Type content to store in JCR: " messageDelayTime="1000" />
 
-  <jcr:endpoint name="jcrImages" path="/example/images">
-    <and-filter>
-      <jcr:node-name-filter pattern="jcr:content" />
-      <jcr:property-name-filter pattern="jcr:data" />
-    </and-filter>
-  </jcr:endpoint>
+    <jcr:endpoint name="jcrImages" path="/example/images">
+        <and-filter>
+            <jcr:node-name-filter pattern="jcr:content" />
+            <jcr:property-name-filter pattern="jcr:data" />
+        </and-filter>
+    </jcr:endpoint>
 
-  <script:script name="httpImageFetcher" engine="groovy">
-    <script:text><![CDATA[
+    <script:script name="httpImageFetcher" engine="groovy">
+        <script:text><![CDATA[
 		def imageName = message.payload.substring(8)
 		message.setOutboundProperty("nodeRelPath", imageName)
 		return eventContext.requestEvent("jcrImages", -1).payload	]]>
-    </script:text>
-  </script:script>
+        </script:text>
+    </script:script>
 
-  <script:script name="tcpImageFetcher" engine="groovy">
-    <script:text><![CDATA[
+    <script:script name="tcpImageFetcher" engine="groovy">
+        <script:text><![CDATA[
 		def imageName = message.payloadAsString
 		message.setOutboundProperty("nodeRelPath", imageName)
 		return eventContext.requestEvent("jcrImages", -1).payload ]]>
-    </script:text>
-  </script:script>
+        </script:text>
+    </script:script>
 
-  <script:script name="tcpContentFetcher" engine="groovy">
-    <script:text><![CDATA[
+    <script:script name="tcpContentFetcher" engine="groovy">
+        <script:text><![CDATA[
     def jcrPath = message.payloadAsString
     return eventContext.requestEvent("jcr://" + jcrPath, -1).payload ]]>
-    </script:text>
-  </script:script>
+        </script:text>
+    </script:script>
 
-  <model name="jcrExamples">
-    <!--
-      Simple bridge used to send content to different JCR outbound endpoints, demonstrating different persistence strategies.
-      Type text in the console followed by enter should store data in JCR and trigger the listener of "jcrEventDumper" above.
-    -->
-    <service name="systemInMulticaster">
-      <inbound>
-        <vm:inbound-endpoint path="mainIn" />
-      </inbound>
-      <outbound>
-        <multicasting-router>
-          <vm:outbound-endpoint path="storeInProperty" />
-          <vm:outbound-endpoint path="storeInSingleNode" />
-          <vm:outbound-endpoint path="storeInNewChildNodeEachTime" />
-        </multicasting-router>
-      </outbound>
-    </service>
-    <!--
-			Example of an endpoint that receives data and saves it in an existing
-			property of the JCR container.
-		-->
-    <service name="jcrStoreToProperty">
-      <inbound>
-        <vm:inbound-endpoint path="storeInProperty" />
-      </inbound>
-      <outbound>
-        <pass-through-router>
-          <jcr:outbound-endpoint path="/example/targetProperty" />
-        </pass-through-router>
-      </outbound>
-    </service>
-    <!--
-      Example of an endpoint that receives data and saves it as a node of type nt:resource that is auto-created the first time,
-      then updated.
-    -->
-    <service name="jcrStoreToSingleNode">
-      <inbound>
-        <vm:inbound-endpoint path="storeInSingleNode" />
-      </inbound>
-      <outbound>
-        <pass-through-router>
-          <jcr:outbound-endpoint path="/example/singleChild" nodeRelPath="targetSingleNtResourceNode"
-            nodeTypeName="nt:resource">
-            <property key="jcr:mimeType" value="text/plain" />
-          </jcr:outbound-endpoint>
-        </pass-through-router>
-      </outbound>
-    </service>
-    <!--
-			Example of an endpoint that receives data and saves it as a new child
-			node of type nt:unstructured.
-		-->
-    <service name="jcrStoreToNewChildNode">
-      <inbound>
-        <vm:inbound-endpoint path="storeInNewChildNodeEachTime" />
-      </inbound>
-      <outbound>
-        <pass-through-router>
-          <jcr:outbound-endpoint path="/example/multipleChildren" nodeRelPath="targetMultipleUnstructuredNode"
-            alwaysCreate="true" nodeTypeName="nt:unstructured" />
-        </pass-through-router>
-      </outbound>
-    </service>
-    <!--
-      Example of an inbound endpoint that listens to JCR events. The event objects are then transformed to XML and sent to the
-      console.
-    -->
-    <service name="jcrEventDumper">
-      <inbound>
-        <jcr:inbound-endpoint path="/example" deep="true" contentPayloadType="FULL" />
-      </inbound>
-      <echo-component />
-      <outbound>
-        <pass-through-router>
-          <vm:outbound-endpoint path="accumulateEvent" />
-        </pass-through-router>
-      </outbound>
-    </service>
-    <!--
-      Example of an HTTP endpoint that fetches image data from a JCR container, turning Mule into an HTTP picture server. Browsing
-      http://localhost:8080/images/mule.gif or http://localhost:8080/images/jackrabbit.gif should return a gif image.
-    -->
-    <service name="jcrHttpContentFetcher">
-      <inbound>
-        <http:inbound-endpoint host="localhost" port="8080" path="images" exchange-pattern="request-response">
-          <not-filter>
-            <custom-filter class="org.mule.transport.http.filters.HttpRequestWildcardFilter">
-              <spring:property name="pattern" value="/favicon.ico" />
-            </custom-filter>
-          </not-filter>
-          <response>
-            <message-properties-transformer>
-              <add-message-property key="Content-Type" value="image/gif" />
-            </message-properties-transformer>
-          </response>
-        </http:inbound-endpoint>
-      </inbound>
-      <script:component script-ref="httpImageFetcher" />
-    </service>
-    <!--
-      Examples of TCP endpoints streaming JCR content. Use the main() of org.mule.examples.jcr.JcrImageStreamClient to test
-      them.
-    -->
-    <service name="jcrStreamingTcpImageFetcher">
-      <inbound>
-        <tcp:inbound-endpoint host="localhost" port="9999" exchange-pattern="request-response" />
-      </inbound>
-      <script:component script-ref="tcpImageFetcher" />
-    </service>
-    <service name="jcrStreamingStoreToNewChildNode">
-      <inbound>
-        <tcp:inbound-endpoint host="localhost" port="9998" exchange-pattern="request-response" />
-      </inbound>
-      <outbound>
-        <pass-through-router>
-          <jcr:outbound-endpoint path="/example" nodeRelPath="streamedData" nodeTypeName="nt:resource">
-            <property key="jcr:mimeType" value="text/plain" />
-          </jcr:outbound-endpoint>
-        </pass-through-router>
-      </outbound>
-    </service>
-    <!--
-      Example of a TCP endpoint that fetches any data from a JCR container.
-    -->
-    <service name="jcrStreamingTcpFetcher">
-      <inbound>
-        <tcp:inbound-endpoint host="localhost" port="9997" exchange-pattern="request-response" />
-      </inbound>
-      <script:component script-ref="tcpContentFetcher" />
-    </service>
-    <!--
-      Test service that accumulates 
-     -->
-    <service name="eventAccumulator">
-      <inbound>
-        <vm:inbound-endpoint path="accumulateEvent" />
-      </inbound>
-      <test:component />
-    </service>
-  </model>
+    <model name="jcrExamples">
+        <!-- Simple bridge used to send content to different JCR outbound 
+            endpoints, demonstrating different persistence strategies. Type text in the 
+            console followed by enter should store data in JCR and trigger the listener 
+            of "jcrEventDumper" above. -->
+        <service name="systemInMulticaster">
+            <inbound>
+                <vm:inbound-endpoint path="mainIn" />
+            </inbound>
+            <outbound>
+                <multicasting-router>
+                    <vm:outbound-endpoint path="storeInProperty" />
+                    <vm:outbound-endpoint path="storeInSingleNode" />
+                    <vm:outbound-endpoint path="storeInNewChildNodeEachTime" />
+                </multicasting-router>
+            </outbound>
+        </service>
+        <!-- Example of an endpoint that receives data and saves it in an 
+            existing property of the JCR container. -->
+        <service name="jcrStoreToProperty">
+            <inbound>
+                <vm:inbound-endpoint path="storeInProperty" />
+            </inbound>
+            <outbound>
+                <pass-through-router>
+                    <jcr:outbound-endpoint path="/example/targetProperty" />
+                </pass-through-router>
+            </outbound>
+        </service>
+        <!-- Example of an endpoint that receives data and saves it as a 
+            node of type nt:resource that is auto-created the first time, then updated. -->
+        <service name="jcrStoreToSingleNode">
+            <inbound>
+                <vm:inbound-endpoint path="storeInSingleNode" />
+            </inbound>
+            <outbound>
+                <pass-through-router>
+                    <jcr:outbound-endpoint path="/example/singleChild"
+                        nodeRelPath="targetSingleNtResourceNode"
+                        nodeTypeName="nt:resource">
+                        <property key="jcr:mimeType" value="text/plain" />
+                    </jcr:outbound-endpoint>
+                </pass-through-router>
+            </outbound>
+        </service>
+        <!-- Example of an endpoint that receives data and saves it as a 
+            new child node of type nt:unstructured. -->
+        <service name="jcrStoreToNewChildNode">
+            <inbound>
+                <vm:inbound-endpoint path="storeInNewChildNodeEachTime" />
+            </inbound>
+            <outbound>
+                <pass-through-router>
+                    <jcr:outbound-endpoint path="/example/multipleChildren"
+                        nodeRelPath="targetMultipleUnstructuredNode"
+                        alwaysCreate="true" nodeTypeName="nt:unstructured" />
+                </pass-through-router>
+            </outbound>
+        </service>
+        <!-- Example of an inbound endpoint that listens to JCR events. The 
+            event objects are then transformed to XML and sent to the console. -->
+        <service name="jcrEventDumper">
+            <inbound>
+                <jcr:inbound-endpoint path="/example"
+                    deep="true" contentPayloadType="FULL" />
+            </inbound>
+            <echo-component />
+            <outbound>
+                <pass-through-router>
+                    <vm:outbound-endpoint path="accumulateEvent" />
+                </pass-through-router>
+            </outbound>
+        </service>
+        <!-- Example of an HTTP endpoint that fetches image data from a JCR 
+            container, turning Mule into an HTTP picture server. Browsing http://localhost:8080/images/mule.gif 
+            or http://localhost:8080/images/jackrabbit.gif should return a gif image. -->
+        <service name="jcrHttpContentFetcher">
+            <inbound>
+                <http:inbound-endpoint host="localhost"
+                    port="8080" path="images" exchange-pattern="request-response">
+                    <not-filter>
+                        <custom-filter
+                            class="org.mule.transport.http.filters.HttpRequestWildcardFilter">
+                            <spring:property name="pattern"
+                                value="/favicon.ico" />
+                        </custom-filter>
+                    </not-filter>
+                    <response>
+                        <message-properties-transformer>
+                            <add-message-property
+                                key="Content-Type" value="image/gif" />
+                        </message-properties-transformer>
+                    </response>
+                </http:inbound-endpoint>
+            </inbound>
+            <script:component script-ref="httpImageFetcher" />
+        </service>
+        <!-- Examples of TCP endpoints streaming JCR content. Use the main() 
+            of org.mule.examples.jcr.JcrImageStreamClient to test them. -->
+        <service name="jcrStreamingTcpImageFetcher">
+            <inbound>
+                <tcp:inbound-endpoint host="localhost"
+                    port="9999" exchange-pattern="request-response" />
+            </inbound>
+            <script:component script-ref="tcpImageFetcher" />
+        </service>
+        <service name="jcrStreamingStoreToNewChildNode">
+            <inbound>
+                <tcp:inbound-endpoint host="localhost"
+                    port="9998" exchange-pattern="request-response" />
+            </inbound>
+            <outbound>
+                <pass-through-router>
+                    <jcr:outbound-endpoint path="/example"
+                        nodeRelPath="streamedData" nodeTypeName="nt:resource">
+                        <property key="jcr:mimeType" value="text/plain" />
+                    </jcr:outbound-endpoint>
+                </pass-through-router>
+            </outbound>
+        </service>
+        <!-- Example of a TCP endpoint that fetches any data from a JCR container. -->
+        <service name="jcrStreamingTcpFetcher">
+            <inbound>
+                <tcp:inbound-endpoint host="localhost"
+                    port="9997" exchange-pattern="request-response" />
+            </inbound>
+            <script:component script-ref="tcpContentFetcher" />
+        </service>
+        <!-- Test service that accumulates -->
+        <service name="eventAccumulator">
+            <inbound>
+                <vm:inbound-endpoint path="accumulateEvent" />
+            </inbound>
+            <test:component />
+        </service>
+    </model>
 </mule>

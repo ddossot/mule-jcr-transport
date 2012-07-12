@@ -10,6 +10,8 @@
 
 package org.mule.transport.jcr.handlers;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.Collections;
 
 import javax.jcr.Node;
@@ -20,17 +22,18 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.Value;
 
+import org.junit.Test;
 import org.mule.DefaultMuleMessage;
 import org.mule.api.MuleMessage;
 import org.mule.api.transport.PropertyScope;
-import org.mule.tck.AbstractMuleTestCase;
+import org.mule.tck.junit4.AbstractMuleContextTestCase;
 import org.mule.transport.jcr.RepositoryTestSupport;
 import org.mule.util.StringUtils;
 
 /**
  * @author David Dossot (david@dossot.net)
  */
-public class NodeTypeHandlersTest extends AbstractMuleTestCase
+public class NodeTypeHandlersTest extends AbstractMuleContextTestCase
 {
     private static final String ORIGINAL_RESOURCE_NODE_CONTENT = "foo-resource";
 
@@ -57,10 +60,10 @@ public class NodeTypeHandlersTest extends AbstractMuleTestCase
      * 
      * @throws Exception
      */
+    @Test
     @SuppressWarnings("unchecked")
     public void testAll() throws Exception
     {
-        super.setUp();
         final Session session = RepositoryTestSupport.getSession();
 
         final Node testDataNode = RepositoryTestSupport.getTestDataNode();

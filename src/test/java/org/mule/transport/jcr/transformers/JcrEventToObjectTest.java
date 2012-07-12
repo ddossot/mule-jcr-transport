@@ -29,51 +29,57 @@ import org.mule.transport.jcr.support.JcrNodeUtils;
 /**
  * @author David Dossot (david@dossot.net)
  */
-public class JcrEventToObjectTest extends AbstractTransformerTestCase {
-	private Event testJcrEvent;
+public class JcrEventToObjectTest extends AbstractTransformerTestCase
+{
+    private Event testJcrEvent;
 
-	@Override
-	public Object getResultData() {
-		try {
-			return Collections.singletonList(JcrNodeUtils.newJcrMessage(
-					testJcrEvent, JcrMessageReceiver
-							.getJcrMessageReceiverContext()
-							.getObservingSession(), JcrMessageReceiver
-							.getJcrMessageReceiverContext()
-							.getContentPayloadType()));
+    @Override
+    public Object getResultData()
+    {
+        try
+        {
+            return Collections.singletonList(JcrNodeUtils.newJcrMessage(testJcrEvent,
+                JcrMessageReceiver.getJcrMessageReceiverContext().getObservingSession(),
+                JcrMessageReceiver.getJcrMessageReceiverContext().getContentPayloadType()));
 
-		} catch (final RepositoryException re) {
-			throw new RuntimeException(re);
-		}
-	}
+        }
+        catch (final RepositoryException re)
+        {
+            throw new RuntimeException(re);
+        }
+    }
 
-	@Override
-	public Transformer getRoundTripTransformer() throws Exception {
-		return null;
-	}
+    @Override
+    public Transformer getRoundTripTransformer() throws Exception
+    {
+        return null;
+    }
 
-	@Override
-	public Object getTestData() {
-		JcrMessageReceiver
-				.setJcrMessageReceiverContext(new JcrMessageReceiverContext() {
-					public JcrContentPayloadType getContentPayloadType() {
-						return JcrContentPayloadType.NO_BINARY;
-					}
+    @Override
+    public Object getTestData()
+    {
+        JcrMessageReceiver.setJcrMessageReceiverContext(new JcrMessageReceiverContext()
+        {
+            public JcrContentPayloadType getContentPayloadType()
+            {
+                return JcrContentPayloadType.NO_BINARY;
+            }
 
-					public Session getObservingSession() {
-						return RepositoryTestSupport.getSession();
-					}
-				});
+            public Session getObservingSession()
+            {
+                return RepositoryTestSupport.getSession();
+            }
+        });
 
-		testJcrEvent = new JcrEventTestCase.DummyEvent("/",
-				Event.PROPERTY_CHANGED, "foo");
+        testJcrEvent = new JcrEventTestCase.DummyEvent("/", Event.PROPERTY_CHANGED, "foo");
 
-		return new EventIteratorAdapter(Collections.singleton(testJcrEvent));
-	}
+        return new EventIteratorAdapter(Collections.singleton(testJcrEvent));
+    }
 
-	@Override
-	public Transformer getTransformer() throws Exception {
-		return new JcrEventToObject();
-	}
+    @Override
+    public Transformer getTransformer() throws Exception
+    {
+        return new JcrEventToObject();
+    }
 
 }

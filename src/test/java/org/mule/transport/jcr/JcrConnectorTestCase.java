@@ -14,6 +14,7 @@ import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.fail;
 
+import org.junit.Test;
 import org.mule.api.MuleContext;
 import org.mule.api.lifecycle.InitialisationException;
 import org.mule.api.transport.Connector;
@@ -22,13 +23,17 @@ import org.mule.transport.AbstractConnectorTestCase;
 /**
  * @author David Dossot (david@dossot.net)
  */
-public class JcrConnectorTestCase extends AbstractConnectorTestCase {
+public class JcrConnectorTestCase extends AbstractConnectorTestCase
+{
     @Override
-    public Connector createConnector() throws Exception {
+    public Connector createConnector() throws Exception
+    {
         return newJcrConnector(muleContext);
     }
 
-    static JcrConnector newJcrConnector(final MuleContext muleContext) throws Exception, InitialisationException {
+    static JcrConnector newJcrConnector(final MuleContext muleContext)
+        throws Exception, InitialisationException
+    {
         final JcrConnector c = new JcrConnector(muleContext);
 
         c.setName("Test-Jcr");
@@ -41,30 +46,37 @@ public class JcrConnectorTestCase extends AbstractConnectorTestCase {
     }
 
     @Override
-    public String getTestEndpointURI() {
+    public String getTestEndpointURI()
+    {
         return "jcr://path/to/observedFolder";
     }
 
     @Override
-    public Object getValidMessage() throws Exception {
+    public Object getValidMessage() throws Exception
+    {
         return "foo";
     }
 
-    public void testInitializingWithoutConnector() {
-        try {
+    public void testInitializingWithoutConnector()
+    {
+        try
+        {
             new JcrConnector(muleContext).doInitialise();
             fail("An InitialisationException should have been thrown");
-        } catch (final InitialisationException ie) {
+        }
+        catch (final InitialisationException ie)
+        {
             // expected
         }
     }
 
-    public void testProperties() throws Exception {
+    @Test
+    public void testProperties() throws Exception
+    {
         final JcrConnector jcrConnector = (JcrConnector) getConnector();
 
         assertEquals(RepositoryTestSupport.USERNAME, jcrConnector.getUsername());
         assertEquals(RepositoryTestSupport.PASSWORD, jcrConnector.getPassword());
         assertNull(jcrConnector.getWorkspaceName());
     }
-
 }

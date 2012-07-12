@@ -15,6 +15,7 @@ import static junit.framework.Assert.assertEquals;
 import java.util.Collections;
 import java.util.List;
 
+import org.junit.Test;
 import org.mule.api.endpoint.EndpointBuilder;
 import org.mule.api.endpoint.InboundEndpoint;
 import org.mule.endpoint.EndpointURIEndpointBuilder;
@@ -24,7 +25,8 @@ import org.mule.util.StringUtils;
 /**
  * @author David Dossot
  */
-public class JcrMessageReceiverOverridesTestCase extends JcrMessageReceiverTestCase {
+public class JcrMessageReceiverOverridesTestCase extends JcrMessageReceiverTestCase
+{
 
     private static final List<String> UUID_LIST = Collections.singletonList("uuid_01");
 
@@ -32,9 +34,11 @@ public class JcrMessageReceiverOverridesTestCase extends JcrMessageReceiverTestC
 
     @SuppressWarnings("unchecked")
     @Override
-    public InboundEndpoint getEndpoint() throws Exception {
+    public InboundEndpoint getEndpoint() throws Exception
+    {
         final EndpointBuilder builder = new EndpointURIEndpointBuilder(new URIBuilder(
-                "jcr://path/to/observedNode?contentPayloadType=full&eventTypes=5&deep=true&noLocal=false", muleContext));
+            "jcr://path/to/observedNode?contentPayloadType=full&eventTypes=5&deep=true&noLocal=false",
+            muleContext));
 
         builder.setConnector(JcrConnectorTestCase.newJcrConnector(muleContext));
 
@@ -44,7 +48,9 @@ public class JcrMessageReceiverOverridesTestCase extends JcrMessageReceiverTestC
         return endpoint;
     }
 
-    public void testReceiverProperties() throws Exception {
+    @Test
+    public void testReceiverProperties() throws Exception
+    {
         final JcrMessageReceiver messageReceiver = (JcrMessageReceiver) getMessageReceiver();
 
         assertEquals("/path/to/observedNode", messageReceiver.getAbsPath());

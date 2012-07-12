@@ -1,6 +1,7 @@
 /**
  * 
  */
+
 package org.mule.transport.jcr;
 
 import java.io.ByteArrayInputStream;
@@ -8,20 +9,20 @@ import java.io.ByteArrayInputStream;
 import javax.jcr.Node;
 
 import org.mule.RequestContext;
-import org.mule.tck.AbstractMuleTestCase;
+import org.mule.tck.junit4.AbstractMuleContextTestCase;
 
 /**
  * @author David Dossot (david@dossot.net)
- * 
  */
-public abstract class AbstractJcrMessagerTestCase extends AbstractMuleTestCase {
-
+public abstract class AbstractJcrMessagerTestCase extends AbstractMuleContextTestCase
+{
     protected JcrConnector connector;
 
     protected String uuid;
 
     @Override
-    protected void doSetUp() throws Exception {
+    protected void doSetUp() throws Exception
+    {
         super.doSetUp();
 
         // create some extra test nodes and properties
@@ -41,7 +42,8 @@ public abstract class AbstractJcrMessagerTestCase extends AbstractMuleTestCase {
     }
 
     @Override
-    protected void doTearDown() throws Exception {
+    protected void doTearDown() throws Exception
+    {
         RequestContext.setEvent(null);
 
         connector.stop();
@@ -49,5 +51,4 @@ public abstract class AbstractJcrMessagerTestCase extends AbstractMuleTestCase {
         connector.dispose();
         super.doTearDown();
     }
-
 }

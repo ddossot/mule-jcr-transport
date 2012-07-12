@@ -1,6 +1,12 @@
 
 package org.mule.transport.jcr.support;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -11,10 +17,11 @@ import java.util.Calendar;
 import javax.jcr.Session;
 import javax.naming.CompositeName;
 
+import org.junit.Test;
 import org.mule.api.MuleEvent;
 import org.mule.api.transport.PropertyScope;
-import org.mule.tck.AbstractMuleTestCase;
 import org.mule.tck.MuleTestUtils;
+import org.mule.tck.junit4.AbstractMuleContextTestCase;
 import org.mule.transport.jcr.RepositoryTestSupport;
 import org.mule.util.IOUtils;
 import org.mule.util.StringUtils;
@@ -22,7 +29,7 @@ import org.mule.util.StringUtils;
 /**
  * @author David Dossot (david@dossot.net)
  */
-public class JcrUtilsTestCase extends AbstractMuleTestCase
+public class JcrUtilsTestCase extends AbstractMuleContextTestCase
 {
 
     private Session session;
@@ -37,6 +44,7 @@ public class JcrUtilsTestCase extends AbstractMuleTestCase
         session = RepositoryTestSupport.getSession();
     }
 
+    @Test
     public void testParsePath() throws Exception
     {
         assertNull(JcrEventUtils.parseExpressionForEvent(null, null));
@@ -59,6 +67,7 @@ public class JcrUtilsTestCase extends AbstractMuleTestCase
         assertTrue(StringUtils.contains(parsedPath, "#[header:foo?]"));
     }
 
+    @Test
     public void testNewPropertyNullValue() throws Exception
     {
         try
@@ -72,6 +81,7 @@ public class JcrUtilsTestCase extends AbstractMuleTestCase
         fail("Should have got an IAE!");
     }
 
+    @Test
     public void testNewPropertyUnsupportedValue() throws Exception
     {
         try
@@ -85,6 +95,7 @@ public class JcrUtilsTestCase extends AbstractMuleTestCase
         fail("Should have got an IAE!");
     }
 
+    @Test
     public void testSimplePropertyValues() throws Exception
     {
         for (int i = 0; i < supportedValues.length; i++)
@@ -99,6 +110,7 @@ public class JcrUtilsTestCase extends AbstractMuleTestCase
         }
     }
 
+    @Test
     public void testSerializablePropertyValues() throws Exception
     {
         final Serializable s = new CompositeName("a/b");

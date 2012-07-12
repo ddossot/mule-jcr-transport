@@ -22,8 +22,8 @@ import org.apache.jackrabbit.core.TransientRepository;
  * 
  * @author David Dossot
  */
-public abstract class RepositoryTestSupport {
-
+public abstract class RepositoryTestSupport
+{
     public static final String USERNAME = "admin";
 
     public static final String PASSWORD = "admin";
@@ -36,26 +36,29 @@ public abstract class RepositoryTestSupport {
 
     private static Node testDataNode;
 
-    private RepositoryTestSupport() {
+    private RepositoryTestSupport()
+    {
         // NOOP
     }
 
-    public synchronized static Repository getRepository() throws Exception {
-        if (repository == null) {
-            final TransientRepository transientRepository =
-                    new TransientRepository();
+    public synchronized static Repository getRepository() throws Exception
+    {
+        if (repository == null)
+        {
+            final TransientRepository transientRepository = new TransientRepository();
 
-            Runtime.getRuntime().addShutdownHook(new Thread() {
-                public void run() {
+            Runtime.getRuntime().addShutdownHook(new Thread()
+            {
+                @Override
+                public void run()
+                {
                     transientRepository.shutdown();
                 }
             });
 
             repository = transientRepository;
 
-            session =
-                    repository.login(new SimpleCredentials("admin",
-                            "admin".toCharArray()));
+            session = repository.login(new SimpleCredentials("admin", "admin".toCharArray()));
 
             resetRepository();
             session.save();
@@ -64,39 +67,51 @@ public abstract class RepositoryTestSupport {
         return repository;
     }
 
-    public static void resetRepository() {
+    public static void resetRepository()
+    {
 
-        try {
-            Node root = getSession().getRootNode();
+        try
+        {
+            final Node root = getSession().getRootNode();
 
-            if (root.hasNode(ROOT_NODE_NAME)) {
+            if (root.hasNode(ROOT_NODE_NAME))
+            {
                 root.getNode(ROOT_NODE_NAME).remove();
             }
 
             testDataNode = root.addNode(ROOT_NODE_NAME);
-        } catch (Exception e) {
+        }
+        catch (final Exception e)
+        {
             throw new RuntimeException(e);
         }
     }
 
-    public synchronized static Session getSession() {
-        try {
+    public synchronized static Session getSession()
+    {
+        try
+        {
             getRepository();
-        } catch (Exception e) {
+        }
+        catch (final Exception e)
+        {
             throw new RuntimeException(e);
         }
 
         return session;
     }
 
-    public synchronized static Node getTestDataNode() {
-        try {
+    public synchronized static Node getTestDataNode()
+    {
+        try
+        {
             getRepository();
-        } catch (Exception e) {
+        }
+        catch (final Exception e)
+        {
             throw new RuntimeException(e);
         }
 
         return testDataNode;
     }
-
 }

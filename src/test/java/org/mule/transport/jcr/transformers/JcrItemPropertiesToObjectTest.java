@@ -18,25 +18,32 @@ import org.mule.transport.jcr.support.JcrPropertyUtils;
 /**
  * @author David Dossot (david@dossot.net)
  */
-public class JcrItemPropertiesToObjectTest extends JcrItemToObjectTest {
+public class JcrItemPropertiesToObjectTest extends JcrItemToObjectTest
+{
+    @Override
+    public Object getResultData()
+    {
+        try
+        {
+            return JcrPropertyUtils.getPropertiesPayload(RepositoryTestSupport.getTestDataNode()
+                .getProperties());
+        }
+        catch (final Exception e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
 
-	@Override
-	public Object getResultData() {
-		try {
-			return JcrPropertyUtils.getPropertiesPayload(RepositoryTestSupport
-					.getTestDataNode().getProperties());
-		} catch (final Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	@Override
-	public Object getTestData() {
-		try {
-			return RepositoryTestSupport.getTestDataNode().getProperties();
-		} catch (final RepositoryException re) {
-			throw new RuntimeException(re);
-		}
-	}
-
+    @Override
+    public Object getTestData()
+    {
+        try
+        {
+            return RepositoryTestSupport.getTestDataNode().getProperties();
+        }
+        catch (final RepositoryException re)
+        {
+            throw new RuntimeException(re);
+        }
+    }
 }

@@ -16,12 +16,13 @@ import org.mule.transport.jcr.JcrContentPayloadType;
 /**
  * @author David Dossot (david@dossot.net)
  */
-public class JcrEventToObjectLocalConfigTest extends JcrEventToObjectTest {
-	@Override
-	public Transformer getTransformer() throws Exception {
-		final JcrEventToObject jcrEventToObject = new JcrEventToObject();
-		jcrEventToObject.setContentPayloadType(JcrContentPayloadType.FULL
-				.toString());
-		return jcrEventToObject;
-	}
+public class JcrEventToObjectLocalConfigTest extends JcrEventToObjectTest
+{
+    @Override
+    public Transformer getTransformer() throws Exception
+    {
+        final JcrEventToObject jcrEventToObject = new JcrEventToObject();
+        jcrEventToObject.setContentPayloadType(JcrContentPayloadType.FULL.toString());
+        return jcrEventToObject;
+    }
 }

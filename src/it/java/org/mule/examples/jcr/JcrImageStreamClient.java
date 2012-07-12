@@ -28,7 +28,6 @@ import org.mule.util.IOUtils;
  */
 public final class JcrImageStreamClient
 {
-
     public static void main(final String[] args) throws Exception
     {
         downloadRelativePath();

@@ -1,1 +1,2 @@
-http\://dist.muleforge.org/mule-transport-jcr/schema/3.2/mule-jcr.xsd=META-INF/mule-jcr.xsd
+http\://www.mulesoft.org/schema/mule/jcr/3.3/mule-jcr.xsd=META-INF/mule-jcr.xsd
+http\://www.mulesoft.org/schema/mule/jcr/current/mule-jcr.xsd=META-INF/mule-jcr.xsd

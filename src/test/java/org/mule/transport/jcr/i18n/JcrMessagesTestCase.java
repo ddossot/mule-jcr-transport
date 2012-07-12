@@ -10,19 +10,23 @@
 
 package org.mule.transport.jcr.i18n;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import org.junit.Test;
 
 /**
  * @author David Dossot
  */
-public class JcrMessagesTestCase extends TestCase {
-	public void testMessages() {
-		assertTrue(JcrMessages.canNotGetObservationManager("foo").getMessage()
-				.indexOf("foo") >= 0);
+public class JcrMessagesTestCase
+{
+    @Test
+    public void testMessages()
+    {
+        assertTrue(JcrMessages.canNotGetObservationManager("foo").getMessage().indexOf("foo") >= 0);
 
-		assertTrue(JcrMessages.missingDependency("bar").getMessage().indexOf(
-				"bar") >= 0);
+        assertTrue(JcrMessages.missingDependency("bar").getMessage().indexOf("bar") >= 0);
 
-		assertNotNull(JcrMessages.observationsNotSupported());
-	}
+        assertNotNull(JcrMessages.observationsNotSupported());
+    }
 }

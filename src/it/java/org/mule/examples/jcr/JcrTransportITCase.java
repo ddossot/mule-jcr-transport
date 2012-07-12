@@ -1,6 +1,9 @@
 
 package org.mule.examples.jcr;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
@@ -8,9 +11,10 @@ import java.util.Map;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.lang.RandomStringUtils;
+import org.junit.Test;
 import org.mule.module.client.MuleClient;
-import org.mule.tck.FunctionalTestCase;
 import org.mule.tck.functional.FunctionalTestComponent;
+import org.mule.tck.junit4.FunctionalTestCase;
 import org.mule.transport.jcr.JcrMessage;
 
 public class JcrTransportITCase extends FunctionalTestCase
@@ -22,7 +26,6 @@ public class JcrTransportITCase extends FunctionalTestCase
     protected void doSetUp() throws Exception
     {
         super.doSetUp();
-        super.setDisposeManagerPerSuite(true);
         muleClient = new MuleClient(muleContext);
         eventAccumulator = getFunctionalTestComponent("eventAccumulator");
         eventAccumulator.initialise();
@@ -34,6 +37,7 @@ public class JcrTransportITCase extends FunctionalTestCase
         return "jcr-example-config.xml";
     }
 
+    @Test
     public void testEventGenerationAndCapture() throws Exception
     {
         final String payload = RandomStringUtils.randomAlphanumeric(20);
@@ -78,6 +82,7 @@ public class JcrTransportITCase extends FunctionalTestCase
         }
     }
 
+    @Test
     public void testRequesterWithRelPath() throws Exception
     {
         final byte[] muleImage = muleClient.request("http://localhost:8080/images/mule.gif", 5000)
@@ -86,6 +91,7 @@ public class JcrTransportITCase extends FunctionalTestCase
         assertEquals(1552, muleImage.length);
     }
 
+    @Test
     public void testRequesterWithNodePath() throws Exception
     {
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -95,9 +101,9 @@ public class JcrTransportITCase extends FunctionalTestCase
         assertEquals(2440, baos.size());
     }
 
+    @Test
     public void testOutboundStreaming() throws Exception
     {
-
         JcrImageStreamClient.uploadStreamingData();
         waitForNMessages(1);
         final List<JcrMessage> accumulatedJcrMessageList = getAccumulatedJcrMessageList(1);
@@ -124,7 +130,7 @@ public class JcrTransportITCase extends FunctionalTestCase
         return receivedMessagesCount;
     }
 
-    private List<JcrMessage> getAccumulatedJcrMessageList(int i)
+    private List<JcrMessage> getAccumulatedJcrMessageList(final int i)
     {
         final Object receivedMessage = eventAccumulator.getReceivedMessage(i);
         assertTrue(receivedMessage instanceof List<?>);

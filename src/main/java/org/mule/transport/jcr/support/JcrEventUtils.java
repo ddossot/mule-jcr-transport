@@ -27,7 +27,6 @@ import org.mule.transport.jcr.JcrContentPayloadType;
  */
 public abstract class JcrEventUtils
 {
-
     private static final Log LOG = LogFactory.getLog(JcrEventUtils.class);
 
     // This should really be in JCR API!
@@ -75,7 +74,7 @@ public abstract class JcrEventUtils
             return null;
         }
 
-        return event.getMuleContext().getExpressionManager().parse(expression, event.getMessage(), false);
+        return event.getMuleContext().getExpressionManager().parse(expression, event, false);
     }
 
     static EventContent getEventContent(final Event event,

@@ -10,9 +10,15 @@
 
 package org.mule.transport.jcr;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.InputStream;
 import java.util.Map;
 
+import org.junit.Test;
 import org.mule.RequestContext;
 import org.mule.api.MuleEvent;
 import org.mule.api.MuleMessage;
@@ -30,7 +36,6 @@ import org.mule.transport.jcr.filters.JcrPropertyNameFilter;
  */
 public class JcrMessageRequesterTestCase extends AbstractJcrMessagerTestCase
 {
-
     private JcrMessageRequester messageRequester;
 
     @Override
@@ -58,6 +63,7 @@ public class JcrMessageRequesterTestCase extends AbstractJcrMessagerTestCase
         messageRequester.initialise();
     }
 
+    @Test
     public void testReceiveInputStreamNonStreamingEndpoint() throws Exception
     {
         final JcrPropertyNameFilter jcrPropertyNameFilter = new JcrPropertyNameFilter();
@@ -68,6 +74,7 @@ public class JcrMessageRequesterTestCase extends AbstractJcrMessagerTestCase
         assertTrue(received.getPayload() instanceof InputStream);
     }
 
+    @Test
     public void testReceiveInputStreamStreamingEndpoint() throws Exception
     {
         final JcrPropertyNameFilter jcrPropertyNameFilter = new JcrPropertyNameFilter();
@@ -78,6 +85,7 @@ public class JcrMessageRequesterTestCase extends AbstractJcrMessagerTestCase
         assertTrue(received.getPayload() instanceof InputStream);
     }
 
+    @Test
     public void testReceiveWithEventUUID() throws Exception
     {
         MuleEvent event = getTestEvent(null);
@@ -93,6 +101,7 @@ public class JcrMessageRequesterTestCase extends AbstractJcrMessagerTestCase
         assertEquals(NullPayload.getInstance(), messageRequester.request(0).getPayload());
     }
 
+    @Test
     public void testReceiveWithEventUUIDAndNodeRelpath() throws Exception
     {
         MuleEvent event = getTestEvent(null);
@@ -112,6 +121,7 @@ public class JcrMessageRequesterTestCase extends AbstractJcrMessagerTestCase
         assertEquals(NullPayload.getInstance(), messageRequester.request(0).getPayload());
     }
 
+    @Test
     public void testReceiveWithEventUUIDAndPropertyRelpath() throws Exception
     {
         MuleEvent event = getTestEvent(null);
@@ -131,6 +141,7 @@ public class JcrMessageRequesterTestCase extends AbstractJcrMessagerTestCase
         assertEquals(NullPayload.getInstance(), messageRequester.request(0).getPayload());
     }
 
+    @Test
     public void testReceiveWithEventQuery() throws Exception
     {
         MuleEvent event = getTestEvent(null);
@@ -152,6 +163,7 @@ public class JcrMessageRequesterTestCase extends AbstractJcrMessagerTestCase
         assertEquals(NullPayload.getInstance(), messageRequester.request(0).getPayload());
     }
 
+    @Test
     public void testReceiveWithEventQueryAndNodeRelpath() throws Exception
     {
         MuleEvent event = getTestEvent(null);
@@ -177,6 +189,7 @@ public class JcrMessageRequesterTestCase extends AbstractJcrMessagerTestCase
         assertEquals(NullPayload.getInstance(), messageRequester.request(0).getPayload());
     }
 
+    @Test
     public void testReceiveWithEventQueryAndPropertyRelpath() throws Exception
     {
         MuleEvent event = getTestEvent(null);
@@ -202,6 +215,7 @@ public class JcrMessageRequesterTestCase extends AbstractJcrMessagerTestCase
         assertEquals(NullPayload.getInstance(), messageRequester.request(0).getPayload());
     }
 
+    @Test
     public void testReceiveWithEventNodeRelpath() throws Exception
     {
         MuleEvent event = getTestEvent(null);
@@ -219,6 +233,7 @@ public class JcrMessageRequesterTestCase extends AbstractJcrMessagerTestCase
         assertEquals(NullPayload.getInstance(), messageRequester.request(0).getPayload());
     }
 
+    @Test
     public void testReceiveWithEventPropertyRelpath() throws Exception
     {
         MuleEvent event = getTestEvent(null);
@@ -236,6 +251,7 @@ public class JcrMessageRequesterTestCase extends AbstractJcrMessagerTestCase
         assertEquals(NullPayload.getInstance(), messageRequester.request(0).getPayload());
     }
 
+    @Test
     public void testReceiveWithEventNodeAndPropertyRelpath() throws Exception
     {
         final MuleEvent event = getTestEvent(null);
@@ -248,6 +264,7 @@ public class JcrMessageRequesterTestCase extends AbstractJcrMessagerTestCase
         assertEquals(Long.class, messageRequester.request(0).getPayload().getClass());
     }
 
+    @Test
     public void testReceiveWithEventNodeAndPropertyRelpathFromRoot() throws Exception
     {
 
@@ -266,11 +283,13 @@ public class JcrMessageRequesterTestCase extends AbstractJcrMessagerTestCase
         assertEquals(Long.class, messageRequester.request(0).getPayload().getClass());
     }
 
+    @Test
     public void testReceiveByEndpointUriNoFilter() throws Exception
     {
         assertTrue(messageRequester.request(0).getPayload() instanceof Map<?, ?>);
     }
 
+    @Test
     public void testReceiveByEndpointUriWithBadFilter() throws Exception
     {
 
@@ -286,6 +305,7 @@ public class JcrMessageRequesterTestCase extends AbstractJcrMessagerTestCase
         fail("should have got an IAE");
     }
 
+    @Test
     public void testReceiveByEndpointUriWithPropertyNameFilter() throws Exception
     {
         JcrPropertyNameFilter jcrPropertyNameFilter = new JcrPropertyNameFilter();
@@ -299,6 +319,7 @@ public class JcrMessageRequesterTestCase extends AbstractJcrMessagerTestCase
         assertEquals(NullPayload.getInstance(), messageRequester.request(0).getPayload());
     }
 
+    @Test
     public void testReceiveByEndpointUriWithNodeNameFilter() throws Exception
     {
         JcrNodeNameFilter jcrNodeNameFilter = new JcrNodeNameFilter();
@@ -317,6 +338,7 @@ public class JcrMessageRequesterTestCase extends AbstractJcrMessagerTestCase
         assertEquals(NullPayload.getInstance(), messageRequester.request(0).getPayload());
     }
 
+    @Test
     public void testReceiveByEndpointUriWithBothNameFilters() throws Exception
     {
         final JcrNodeNameFilter jcrNodeNameFilter = new JcrNodeNameFilter();
@@ -332,6 +354,7 @@ public class JcrMessageRequesterTestCase extends AbstractJcrMessagerTestCase
         assertEquals(Long.class, messageRequester.request(0).getPayload().getClass());
     }
 
+    @Test
     public void testReceiveWithEventNodeRelpathAndPropertyFilter() throws Exception
     {
 
@@ -346,5 +369,4 @@ public class JcrMessageRequesterTestCase extends AbstractJcrMessagerTestCase
 
         assertEquals(Long.class, messageRequester.request(0).getPayload().getClass());
     }
-
 }
